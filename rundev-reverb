@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+npx concurrently  -c "#F3F76F,#A849E2,#83E249,#558EEA,#E75656,#ECC65C" "npm run dev" "npm run dev -w mixpost-pro-team" "npm run dev -w mixpost-enterprise" "php artisan queue:listen --tries=1 --timeout=0" "php artisan pail --timeout=0" "php artisan reverb:start -vv" --names=GENIE,MIXPOST-PRO,MIXPOST-ENTERPRISE,QUEUE,LOGS,REVERB
+

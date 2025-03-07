@@ -1,0 +1,84 @@
+{
+    "name": "miagenie/miagenie",
+    "type": "project",
+    "description": "MiaGenie App",
+    "require": {
+        "php": "^8.2",
+        "guzzlehttp/guzzle": "^7.8",
+        "inovector/mixpost-enterprise": "@dev",
+        "inovector/mixpost-pro-team": "@dev",
+        "laravel/framework": "^11.31",
+        "laravel/horizon": "^5.15",
+        "laravel/reverb": "^1.0",
+        "laravel/sanctum": "^4.0",
+        "laravel/tinker": "^2.9",
+        "league/flysystem-aws-s3-v3": "^3.0",
+        "league/flysystem-sftp-v3": "^3.0",
+        "sentry/sentry-laravel": "^4.9"
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.23",
+        "laravel/pail": "^1.1",
+        "laravel/pint": "^1.21",
+        "laravel/sail": "^1.26",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.1",
+        "phpunit/phpunit": "^11.0.1",
+        "spatie/laravel-ignition": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "repositories": {
+        "inovector/mixpost-pro-team": {
+            "type": "path",
+            "url": "./packages/inovector/mixpost-pro-team",
+            "options": {
+                "symlink": true
+            }
+        },
+        "inovector/mixpost-enterprise": {
+            "type": "path",
+            "url": "./packages/inovector/mixpost-enterprise",
+            "options": {
+                "symlink": true
+            }
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-update-cmd": [
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
+            "if test $(composer show | grep -c mixpost) -ne 0; then php artisan mixpost:publish-assets --force=true; fi;",
+            "if test $(composer show | grep -c mixpost) -ne 0; then php artisan mixpost-enterprise:publish-assets --force=true; fi;"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": []
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
