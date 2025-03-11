@@ -1,5 +1,4 @@
 /.phpunit.cache
-/database/migrations/*mixpost*.php
 /node_modules
 /public/build
 /public/hot
