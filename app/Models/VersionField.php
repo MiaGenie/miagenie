@@ -78,6 +78,8 @@ class VersionField extends Model
      */
     public function options(): HasMany
     {
-        return $this->hasMany(VersionFieldOption::class, 'field_id');
+        return $this->hasMany(VersionFieldOption::class, 'field_id')
+            ->oldest('group')
+            ->oldest('position');
     }
 }
