@@ -36,7 +36,7 @@ trait IngestVersionFields
             }
         }
 
-        $this->merge(array_merge(...$processedOptions));
+        $this->merge(['options' => array_merge(...$processedOptions)]);
     }
 
     /**
