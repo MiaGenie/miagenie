@@ -1,0 +1,166 @@
+{
+  "_GripVertical-BiF2zQh-.js": {
+    "file": "assets/GripVertical-BiF2zQh-.js",
+    "name": "GripVertical",
+    "imports": [
+      "resources/js/app.js",
+      "_Panel-Cfb-Mw5E.js"
+    ]
+  },
+  "_NoResult-lOIqwyAd.js": {
+    "file": "assets/NoResult-lOIqwyAd.js",
+    "name": "NoResult",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_Panel-Cfb-Mw5E.js": {
+    "file": "assets/Panel-Cfb-Mw5E.js",
+    "name": "Panel",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_Save-CIC-k8Ev.js": {
+    "file": "assets/Save-CIC-k8Ev.js",
+    "name": "Save",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_VerticalGroup-CPLrOPr5.js": {
+    "file": "assets/VerticalGroup-CPLrOPr5.js",
+    "name": "VerticalGroup",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "resources/fonts/Inter-Bold.ttf": {
+    "file": "assets/Inter-Bold-BwjTkqu6.ttf",
+    "src": "resources/fonts/Inter-Bold.ttf"
+  },
+  "resources/fonts/Inter-Medium.ttf": {
+    "file": "assets/Inter-Medium-DmUT3eZm.ttf",
+    "src": "resources/fonts/Inter-Medium.ttf"
+  },
+  "resources/fonts/Inter-Regular.ttf": {
+    "file": "assets/Inter-Regular-CKX1N0ak.ttf",
+    "src": "resources/fonts/Inter-Regular.ttf"
+  },
+  "resources/fonts/Inter-SemiBold.ttf": {
+    "file": "assets/Inter-SemiBold-DtdDzxp6.ttf",
+    "src": "resources/fonts/Inter-SemiBold.ttf"
+  },
+  "resources/js/Pages/Genie/Admin/Versions/CreateEdit.vue": {
+    "file": "assets/CreateEdit-D91Wujyd.js",
+    "name": "CreateEdit",
+    "src": "resources/js/Pages/Genie/Admin/Versions/CreateEdit.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_VerticalGroup-CPLrOPr5.js",
+      "_Save-CIC-k8Ev.js",
+      "_Panel-Cfb-Mw5E.js"
+    ]
+  },
+  "resources/js/Pages/Genie/Admin/Versions/Fields/CreateEdit.vue": {
+    "file": "assets/CreateEdit-B8hXYe7Q.js",
+    "name": "CreateEdit",
+    "src": "resources/js/Pages/Genie/Admin/Versions/Fields/CreateEdit.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_VerticalGroup-CPLrOPr5.js",
+      "_Save-CIC-k8Ev.js",
+      "_Panel-Cfb-Mw5E.js",
+      "_GripVertical-BiF2zQh-.js"
+    ]
+  },
+  "resources/js/Pages/Genie/Admin/Versions/Fields/Index.vue": {
+    "file": "assets/Index-DH6wc9Pa.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Genie/Admin/Versions/Fields/Index.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_GripVertical-BiF2zQh-.js",
+      "_Save-CIC-k8Ev.js",
+      "_Panel-Cfb-Mw5E.js",
+      "_NoResult-lOIqwyAd.js"
+    ]
+  },
+  "resources/js/Pages/Genie/Admin/Versions/Index.vue": {
+    "file": "assets/Index-WeQ0RAcr.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Genie/Admin/Versions/Index.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_Panel-Cfb-Mw5E.js",
+      "_NoResult-lOIqwyAd.js"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-C9GHyC8v.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/lang-json/de-DE.json",
+      "resources/lang-json/en-GB.json",
+      "resources/lang-json/es-ES.json",
+      "resources/lang-json/fr-FR.json",
+      "resources/lang-json/it-IT.json",
+      "resources/lang-json/pt-PT.json",
+      "resources/js/Pages/Genie/Admin/Versions/CreateEdit.vue",
+      "resources/js/Pages/Genie/Admin/Versions/Fields/CreateEdit.vue",
+      "resources/js/Pages/Genie/Admin/Versions/Fields/Index.vue",
+      "resources/js/Pages/Genie/Admin/Versions/Index.vue"
+    ],
+    "css": [
+      "assets/app-D0QdLrkp.css"
+    ],
+    "assets": [
+      "assets/Inter-Regular-CKX1N0ak.ttf",
+      "assets/Inter-Medium-DmUT3eZm.ttf",
+      "assets/Inter-SemiBold-DtdDzxp6.ttf",
+      "assets/Inter-Bold-BwjTkqu6.ttf"
+    ]
+  },
+  "resources/lang-json/de-DE.json": {
+    "file": "assets/de-DE-Ils3esq_.js",
+    "name": "de-DE",
+    "src": "resources/lang-json/de-DE.json",
+    "isDynamicEntry": true
+  },
+  "resources/lang-json/en-GB.json": {
+    "file": "assets/en-GB-DQd2ObEa.js",
+    "name": "en-GB",
+    "src": "resources/lang-json/en-GB.json",
+    "isDynamicEntry": true
+  },
+  "resources/lang-json/es-ES.json": {
+    "file": "assets/es-ES-Cd_sXenJ.js",
+    "name": "es-ES",
+    "src": "resources/lang-json/es-ES.json",
+    "isDynamicEntry": true
+  },
+  "resources/lang-json/fr-FR.json": {
+    "file": "assets/fr-FR-8m-b9whr.js",
+    "name": "fr-FR",
+    "src": "resources/lang-json/fr-FR.json",
+    "isDynamicEntry": true
+  },
+  "resources/lang-json/it-IT.json": {
+    "file": "assets/it-IT-EDBrVnzl.js",
+    "name": "it-IT",
+    "src": "resources/lang-json/it-IT.json",
+    "isDynamicEntry": true
+  },
+  "resources/lang-json/pt-PT.json": {
+    "file": "assets/pt-PT-m87z9GZd.js",
+    "name": "pt-PT",
+    "src": "resources/lang-json/pt-PT.json",
+    "isDynamicEntry": true
+  }
+}
