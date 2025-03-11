@@ -113,11 +113,10 @@ trait IngestVersionsContent
     {
         $rule = $field->min_length ? '|min:' . $field->min_length : '';
 
+        $inputTypeMaxLength = constant('App\Constants\FormTypeDefaults::' . $type . '_MAX_LENGTH');
+
         $rule .= '|max:';
-        $rule .= min(
-            (int) $field->max_length,
-            constant('App\Constants\FormTypeDefaults::' . $type . '_MAX_LENGTH')
-        );
+        $rule .= (int) $field->max_length > 0 ? min((int) $field->max_length, $inputTypeMaxLength) : $inputTypeMaxLength;
 
         return $rule;
     }

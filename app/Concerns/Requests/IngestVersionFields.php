@@ -117,7 +117,7 @@ trait IngestVersionFields
 
         $this->inputType ??= FormInputType::withInputOptions($this->input('input_type'), true);
 
-        if (!$this->fieldType->get('hasLength')) {
+        if (!$this->inputType->get('hasLength')) {
             $params['min_length'] = null;
             $params['max_length'] = null;
         }
