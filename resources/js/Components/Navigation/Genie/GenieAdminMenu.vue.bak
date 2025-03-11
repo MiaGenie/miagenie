@@ -1,0 +1,58 @@
+<script setup>
+import MenuItem from "@/Components/Sidebar/MenuItem.vue"
+import MenuDelimiter from "@/Components/Sidebar/MenuDelimiter.vue"
+import MenuGroupHeader from "@/Components/Sidebar/MenuGroupHeader.vue"
+import MenuGroupBody from "@/Components/Sidebar/MenuGroupBody.vue"
+import Document from "@/Icons/Document.vue";
+import AssistantIcon from "@/Icons/Genie/Assistant.vue";
+import RulesIcon from "@/Icons/Genie/Rules.vue";
+import VectorIcon from "@/Icons/Genie/Vector.vue";
+import VersionIcon from "@/Icons/Genie/Version.vue";
+</script>
+<template>
+    <MenuGroupHeader>
+    {{ $t('genie.genie') }}
+    </MenuGroupHeader>
+    <MenuGroupBody>
+    <MenuItem :url="route('mixpost.genie.rules.index')"
+              :active="$page.component === 'Admin/Genie/Rules/Index'">
+        <template #icon>
+            <RulesIcon/>
+        </template>
+        {{ $t('genie.rules') }}
+    </MenuItem>
+
+    <MenuItem :url="route('mixpost.genie.genie_assistants.index')"
+              :active="$page.component === 'Admin/Genie/Assistants/Index'">
+        <template #icon>
+            <AssistantIcon/>
+        </template>
+        {{ $t('genie.assistants') }}
+    </MenuItem>
+
+    <MenuItem :url="route('mixpost.genie.genie_vectors.index')"
+              :active="$page.component === 'Admin/Genie/Vectors/Index'">
+        <template #icon>
+            <VectorIcon/>
+        </template>
+        {{ $t('genie.vectors') }}
+    </MenuItem>
+
+    <MenuItem :url="route('genie.admin.files.index')"
+              :active="$page.component === 'Genie/Admin/Files'">
+        <template #icon>
+            <Document/>
+        </template>
+        {{ $t('genie.files') }}
+    </MenuItem>
+
+    <MenuItem :url="route('genie.admin.versions.index')"
+              :active="$page.component === 'Genie/Admin/Versions/Index'">
+        <template #icon>
+            <VersionIcon/>
+        </template>
+        {{ $t('genie.versions') }}
+    </MenuItem>
+    </MenuGroupBody>
+    <MenuDelimiter/>
+</template>
