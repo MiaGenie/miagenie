@@ -13,6 +13,7 @@ import CalendarIcon from "@/Icons/Calendar.vue"
 import PhotoIcon from "@/Icons/Photo.vue"
 import ShareIcon from "@/Icons/Share.vue"
 import UserMenu from "@/Components/Navigation/UserMenu.vue";
+import GenieWorkspaceMenu from "@/Components/Navigation/Genie/GenieWorkspaceMenu.vue";
 import DashboardIcon from "@/Icons/Dashboard.vue";
 import WebhooksIcon from "@/Icons/Webhooks.vue";
 import RectangleGroup from "../../Icons/RectangleGroup.vue";
@@ -91,6 +92,9 @@ const {isWorkspaceAdminRole, isWorkspaceEditorRole} = useWorkspace();
             </MenuGroupBody>
 
             <template v-if="isWorkspaceAdminRole">
+
+                <GenieWorkspaceMenu />
+
                 <MenuDelimiter/>
                 <MenuGroupHeader :create-url="route('mixpost.posts.create', {workspace: workspaceCtx.id})">
                     {{ $t('post.configuration') }}

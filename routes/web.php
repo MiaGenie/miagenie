@@ -17,6 +17,8 @@ Route::name('genie.')
             )
         )->group(function () {
             require __DIR__ . '/includes/genie.php';
+
+            require __DIR__ . '/includes/genie-workspace.php';
         });
     });
 
