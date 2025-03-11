@@ -253,20 +253,12 @@ return [
      * The available locales for the Mixpost
      */
     'locales' => [
-        ['short' => 'ar', 'long' => 'ar-SA', 'direction' => 'rtl', 'english' => 'Arabic (Saudi Arabia)', 'native' => 'العربية (المملكة العربية السعودية)'],
-        ['short' => 'ca', 'long' => 'ca-ES', 'direction' => 'ltr', 'english' => 'Catalan (Spain)', 'native' => 'Català (España)'],
-        ['short' => 'cs', 'long' => 'cs-CZ', 'direction' => 'ltr', 'english' => 'Czech (Czechia)', 'native' => 'Čeština (Česko)'],
-        ['short' => 'de', 'long' => 'de-DE', 'direction' => 'ltr', 'english' => 'German (Germany)', 'native' => 'Deutsch (Deutschland)'],
-        ['short' => 'en', 'long' => 'en-GB', 'direction' => 'ltr', 'english' => 'English (GB)', 'native' => 'English (GB)'],
-        ['short' => 'es', 'long' => 'es-ES', 'direction' => 'ltr', 'english' => 'Spanish (Spain)', 'native' => 'Español (España)'],
-        ['short' => 'es', 'long' => 'es-MX', 'direction' => 'ltr', 'english' => 'Spanish (Mexico)', 'native' => 'Español (México)'],
-        ['short' => 'eu', 'long' => 'eu-ES', 'direction' => 'ltr', 'english' => 'Basque (Spain)', 'native' => 'Euskara (Espainia)'],
-        ['short' => 'fr', 'long' => 'fr-CA', 'direction' => 'ltr', 'english' => 'French (Canada)', 'native' => 'Français (Canada)'],
-        ['short' => 'fr', 'long' => 'fr-FR', 'direction' => 'ltr', 'english' => 'French (France)', 'native' => 'Français (France)'],
-        ['short' => 'it', 'long' => 'it-IT', 'direction' => 'ltr', 'english' => 'Italian (Italy)', 'native' => 'Italiano (Italia)'],
-        ['short' => 'ro', 'long' => 'ro-RO', 'direction' => 'ltr', 'english' => 'Romanian (Romania)', 'native' => 'Română (Romania)'],
-        ['short' => 'ru', 'long' => 'ru-RU', 'direction' => 'ltr', 'english' => 'Russian (Russia)', 'native' => 'Русский (Россия)'],
-        ['short' => 'sk', 'long' => 'sk-SK', 'direction' => 'ltr', 'english' => 'Slovak (Slovakia)', 'native' => 'Slovenčina (Slovensko)'],
+        ['short' => 'de', 'long' => 'de-DE', 'direction' => 'ltr', 'english' => 'German)', 'native' => 'Deutsch'],
+        ['short' => 'en', 'long' => 'en-GB', 'direction' => 'ltr', 'english' => 'English', 'native' => 'English'],
+        ['short' => 'es', 'long' => 'es-ES', 'direction' => 'ltr', 'english' => 'Spanish', 'native' => 'Español'],
+        ['short' => 'fr', 'long' => 'fr-FR', 'direction' => 'ltr', 'english' => 'French', 'native' => 'Français'],
+        ['short' => 'it', 'long' => 'it-IT', 'direction' => 'ltr', 'english' => 'Italian', 'native' => 'Italiano'],
+        ['short' => 'pt', 'long' => 'pt-PT', 'direction' => 'ltr', 'english' => 'Portuguese', 'native' => 'Português'],
     ]
 ];
 

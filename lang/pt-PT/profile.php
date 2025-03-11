@@ -1,0 +1,31 @@
+<?php
+
+return [
+    'edit_profile' => 'Editar perfil',
+    'profile_information' => 'Informações do perfil',
+    'update_your_account' => 'Actualize as informações do perfil e o endereço de correio eletrónico da sua conta.',
+    'preferences' => 'As minhas preferências',
+    'update_preferences' => 'Actualize as suas preferências gerais.',
+    'security_confirm_password' => 'Para sua segurança, confirme a sua palavra-passe para continuar.',
+    'password_changed' => 'A palavra-passe foi alterada',
+    'current_password' => 'Palavra-passe atual',
+    'new_password' => 'Nova palavra-passe',
+    'confirm_new_password' => 'Confirmar a nova palavra-passe',
+    'preferences_updated' => 'As preferências foram actualizadas',
+    'time_format' => 'Formato da hora',
+    'hour' => 'hora',
+    'first_day_week' => 'Primeiro dia da semana',
+    'sunday' => 'Domingo',
+    'monday' => 'Segunda-feira',
+    'two_factor_enabled' => 'Autenticação de dois factores activada',
+    'two_factor_disabled' => 'Autenticação de dois factores desactivada',
+    'install_totp' => 'Instale uma aplicação de autenticação móvel compatível com TOTP, como o Google Authenticator, no seu dispositivo móvel ou computador.',
+    'scan_qr_code' => 'Digitalize este código QR com a sua aplicação de autenticação, preencha o código e clique em Confirmar.',
+    'secret_key' => 'A sua chave secreta',
+    'store_recovery_codes' => 'Guarde estes códigos de recuperação num gestor de palavras-passe seguro. Podem ser utilizados para recuperar o acesso à sua conta se o dispositivo de autenticação de dois factores se perder.',
+    'regenerate_recovery_codes' => 'Regenerar códigos de recuperação',
+    'show_recovery_codes' => 'Mostrar códigos de recuperação',
+    'code' => 'Código',
+    'delete_account' => 'Eliminar conta',
+    'delete_account_desc' => 'A eliminação da sua conta resultará na remoção permanente de todos os dados da conta e recursos associados, incluindo os dados de quaisquer espaços de trabalho pertencentes.'
+];
