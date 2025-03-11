@@ -1,0 +1,30 @@
+<?php
+
+return [
+    'activity' => 'Atividade',
+    'write_comment' => 'Escrever um comentário...',
+    'send' => 'Enviar',
+    'reply_n' => ':count resposta | :count respostas',
+    'reply' => 'Responder',
+    'thread_by' => 'Tópico por',
+    'delete_comment' => 'Apagar comentário',
+    'delete_comment_confirm' => 'Tem a certeza de que pretende apagar este comentário?',
+    'new_comment' => 'Novo comentário',
+    'by' => 'Por :name',
+    'new_activity' => 'Nova atividade',
+    'new_post_activity' => 'Nova atividade para o post',
+    'created_post' => ':user criou este post',
+    'post_publishing_failed' => 'O processo de publicação falhou',
+    'post_published' => 'Publicação do post efectuada com sucesso',
+    'schedule_approval' => ':user agendou este post para :datetime e submeteu-o para aprovação',
+    'post_approved' => ':user aprovou o agendamento deste post para :datetime',
+    'scheduled_post' => ':user agendou esta publicação para :datetime',
+    'publishing' => 'Processo de publicação iniciado',
+    'user_set_drafts' => ':user moveu esta publicação para rascunhos',
+    'set_drafts' => 'A publicação foi movida para rascunhos.',
+    'update_scheduled_at' => ':user actualizou a hora de agendamento de :old_datetime para :new_datetime',
+    'watch' => 'Ver',
+    'notify_all_activity' => 'Notificar-me sobre todas as actividades desta tarefa.',
+    'unwatch' => 'Não observar',
+    'notify_mentions_only' => 'Notificar-me apenas sobre as menções.'
+];

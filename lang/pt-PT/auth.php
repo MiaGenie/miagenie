@@ -1,0 +1,45 @@
+<?php
+
+return [
+    'login' => 'Iniciar sessão',
+    'login_account' => 'Iniciar sessão na sua conta',
+    'sign_in' => 'Iniciar sessão',
+    'sign_out' => 'Terminar sessão',
+    'let_email_address' => 'Indique-nos o seu endereço de correio eletrónico e enviar-lhe-emos uma ligação para redefinição da palavra-passe que lhe permitirá escolher uma nova.',
+    'enter_details' => 'Introduza os seus dados',
+    'remember_me' => 'Lembrar-me',
+    'dont_have_account' => 'Não tem uma conta?',
+    'register_here' => 'Registar aqui',
+    'confirm_your_password' => 'Confirme a sua palavra-passe',
+    'confirm_forgot_password' => 'Esqueceu-se da sua palavra-passe?',
+    'update_password' => 'Atualizar a palavra-passe',
+    'password_has_been_changed' => 'A palavra-passe foi alterada',
+    'leave_blank_password' => 'Deixar em branco se não pretender alterar a palavra-passe',
+    'confirm_secure_password' => 'Certifique-se de que a sua conta está a utilizar uma palavra-passe longa e aleatória para se manter seguro.',
+    'password_reset_link' => 'Enviámos por e-mail a sua ligação de reposição da palavra-passe!',
+    'send_password_reset' => 'Enviar e-mail de redefinição da palavra-passe',
+    'password' => 'Palavra-passe',
+    'reset_password' => 'Redefinir palavra-passe',
+    'password_dont_match' => 'O campo de confirmação da palavra-passe atual não corresponde.',
+    'confirm_password' => 'Confirmar palavra-passe',
+    'two_factor_authentication' => 'Autenticação de dois factores',
+    'confirm_access_authentication_code' => 'Confirme o acesso à sua conta introduzindo o código de autenticação fornecido pela sua aplicação de autenticação.',
+    'confirm_access_emergency_codes' => 'Confirme o acesso à sua conta introduzindo um dos seus códigos de recuperação de emergência.',
+    'recovery_code' => 'Código de recuperação',
+    'use_recovery_code' => 'Utilizar um código de recuperação',
+    'use_authentication_code' => 'Utilizar um código de autenticação',
+    'provided_two_factor_code_invalid' => 'O código de dois factores fornecido era inválido.',
+    'security_using_two_factor' => 'Adicione segurança adicional à sua conta utilizando a autenticação de dois factores.',
+    'two_factor_auth_code_invalid' => 'O código de autenticação de dois factores fornecido era inválido.',
+    'forgot_password' => 'Esqueceu-se da sua palavra-passe?',
+    'backend' =>
+        [
+        'notification' =>
+            [
+            'reset_password_notification' => 'Notificação de redefinição de senha',
+            'password_reset_request_received' => 'Está a receber este e-mail porque recebemos um pedido de redefinição da palavra-passe para a sua conta.',
+            'password_reset_link_expiry' => 'Este link de redefinição de senha expirará em :count minutes.',
+            'no_password_reset_required' => 'Se não solicitou uma redefinição da palavra-passe, não é necessária qualquer ação adicional',
+        ],
+    ],
+];
