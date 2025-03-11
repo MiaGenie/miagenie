@@ -68,16 +68,12 @@ trait IngestVersionFields
     private function getTypeForLength(): string
     {
         $this->fieldType ??= FormFieldType::withFieldOptions($this->input('field_type'), true);
-        $this->inputType ??= FormInputType::withInputOptions($this->input('input_type'), true);
 
-        if (!$this->fieldType->get('hasLength') && !$this->inputType->get('hasLength')) {
-            return '';
+        if ($this->fieldType->get('name') === 'TEXTAREA') {
+            return 'TEXTAREA';
         }
 
-        $type = $this->fieldType->get('name') == 'TEXTAREA' ? 'TEXTAREA' : '';
-        $type = $this->fieldType->get('name') == 'INPUT' ? $this->inputType->get('name') : $type;
-
-        return $type;
+        return $this->fieldType->get('name') == 'INPUT' ? FormInputType::tryFrom($this->input('input_type'))->name : '';
     }
 
     /**
@@ -108,11 +104,20 @@ trait IngestVersionFields
     private function filterInputParams(): array
     {
         $this->fieldType ??= FormFieldType::withFieldOptions($this->input('field_type'), true);
-        $this->inputType ??= FormInputType::withInputOptions($this->input('input_type'), true);
 
         $params = [];
 
-        if (!$this->inputType->get('hasLength') && !$this->fieldType->get('hasLength')) {
+        if (!$this->fieldType->get('isInput')) {
+            $params['min_value'] = null;
+            $params['max_value'] = null;
+            $params['step'] = null;
+
+            return $params;
+        }
+
+        $this->inputType ??= FormInputType::withInputOptions($this->input('input_type'), true);
+
+        if (!$this->fieldType->get('hasLength')) {
             $params['min_length'] = null;
             $params['max_length'] = null;
         }

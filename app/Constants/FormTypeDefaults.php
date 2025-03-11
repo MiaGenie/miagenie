@@ -17,7 +17,7 @@ final class FormTypeDefaults
     /**
      * @var int
      */
-    public const ROWS_MAX = 4;
+    public const ROWS_MAX = 30;
 
     /**
      * @var int
