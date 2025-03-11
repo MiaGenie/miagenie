@@ -119,10 +119,10 @@ return [
     'competitors_desc' => 'Your direct competitors. This information is important to help improve your strategy',
     'create_competitor' => 'Create Competitor',
     'edit_competitor' => 'Edit competitor',
-    'create_new_competitor' => 'Create new competitor',
-    'delete_competitors' => 'Delete competitors',
-    'delete_competitors_confirm' => 'Are you sure you want to delete selected competitors?',
+    'delete_competitor' => 'Delete competitor',
+    'competitor_updated' => 'Competitor updated successfully',
     'competitor_deleted' => 'Competitor deleted successfully',
     'competitor_created' => 'Competitor created successfully',
+    'delete_competitor_confirm' => 'Are you sure you want to delete this competitor?',
 
 ];

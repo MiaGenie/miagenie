@@ -1,35 +1,70 @@
 {
-  "_GripVertical-BiF2zQh-.js": {
-    "file": "assets/GripVertical-BiF2zQh-.js",
+  "_Admin-CBWc8Vq1.js": {
+    "file": "assets/Admin-CBWc8Vq1.js",
+    "name": "Admin",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_DropdownButton-LXoHonJX.js": {
+    "file": "assets/DropdownButton-LXoHonJX.js",
+    "name": "DropdownButton",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_GripVertical-D_722pwy.js": {
+    "file": "assets/GripVertical-D_722pwy.js",
     "name": "GripVertical",
     "imports": [
       "resources/js/app.js",
-      "_Panel-Cfb-Mw5E.js"
+      "_Panel-DZbVdm3H.js"
     ]
   },
-  "_NoResult-lOIqwyAd.js": {
-    "file": "assets/NoResult-lOIqwyAd.js",
+  "_NoResult-CvEMGtp0.js": {
+    "file": "assets/NoResult-CvEMGtp0.js",
     "name": "NoResult",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_Panel-Cfb-Mw5E.js": {
-    "file": "assets/Panel-Cfb-Mw5E.js",
+  "_Panel-DZbVdm3H.js": {
+    "file": "assets/Panel-DZbVdm3H.js",
     "name": "Panel",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_Save-CIC-k8Ev.js": {
-    "file": "assets/Save-CIC-k8Ev.js",
+  "_Save-PML30Ol5.js": {
+    "file": "assets/Save-PML30Ol5.js",
     "name": "Save",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_VerticalGroup-CPLrOPr5.js": {
-    "file": "assets/VerticalGroup-CPLrOPr5.js",
+  "_Switch-CvA-cFW8.js": {
+    "file": "assets/Switch-CvA-cFW8.js",
+    "name": "Switch",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_Table-DMvgiI1z.js": {
+    "file": "assets/Table-DMvgiI1z.js",
+    "name": "Table",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_Trash-CaGsRXu_.js": {
+    "file": "assets/Trash-CaGsRXu_.js",
+    "name": "Trash",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "_VerticalGroup-CDkQhhVL.js": {
+    "file": "assets/VerticalGroup-CDkQhhVL.js",
     "name": "VerticalGroup",
     "imports": [
       "resources/js/app.js"
@@ -52,56 +87,94 @@
     "src": "resources/fonts/Inter-SemiBold.ttf"
   },
   "resources/js/Pages/Genie/Admin/Versions/CreateEdit.vue": {
-    "file": "assets/CreateEdit-D91Wujyd.js",
+    "file": "assets/CreateEdit-CcAluNDI.js",
     "name": "CreateEdit",
     "src": "resources/js/Pages/Genie/Admin/Versions/CreateEdit.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_VerticalGroup-CPLrOPr5.js",
-      "_Save-CIC-k8Ev.js",
-      "_Panel-Cfb-Mw5E.js"
+      "_VerticalGroup-CDkQhhVL.js",
+      "_Trash-CaGsRXu_.js",
+      "_Admin-CBWc8Vq1.js",
+      "_Panel-DZbVdm3H.js",
+      "_Switch-CvA-cFW8.js",
+      "_Save-PML30Ol5.js"
     ]
   },
   "resources/js/Pages/Genie/Admin/Versions/Fields/CreateEdit.vue": {
-    "file": "assets/CreateEdit-B8hXYe7Q.js",
+    "file": "assets/CreateEdit-Dq2lvfl0.js",
     "name": "CreateEdit",
     "src": "resources/js/Pages/Genie/Admin/Versions/Fields/CreateEdit.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_VerticalGroup-CPLrOPr5.js",
-      "_Save-CIC-k8Ev.js",
-      "_Panel-Cfb-Mw5E.js",
-      "_GripVertical-BiF2zQh-.js"
+      "_VerticalGroup-CDkQhhVL.js",
+      "_Trash-CaGsRXu_.js",
+      "_Admin-CBWc8Vq1.js",
+      "_Panel-DZbVdm3H.js",
+      "_Switch-CvA-cFW8.js",
+      "_GripVertical-D_722pwy.js",
+      "_Save-PML30Ol5.js"
     ]
   },
   "resources/js/Pages/Genie/Admin/Versions/Fields/Index.vue": {
-    "file": "assets/Index-DH6wc9Pa.js",
+    "file": "assets/Index-DEOVBT47.js",
     "name": "Index",
     "src": "resources/js/Pages/Genie/Admin/Versions/Fields/Index.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_GripVertical-BiF2zQh-.js",
-      "_Save-CIC-k8Ev.js",
-      "_Panel-Cfb-Mw5E.js",
-      "_NoResult-lOIqwyAd.js"
+      "_GripVertical-D_722pwy.js",
+      "_Trash-CaGsRXu_.js",
+      "_Admin-CBWc8Vq1.js",
+      "_Panel-DZbVdm3H.js",
+      "_NoResult-CvEMGtp0.js",
+      "_DropdownButton-LXoHonJX.js",
+      "_Save-PML30Ol5.js"
     ]
   },
   "resources/js/Pages/Genie/Admin/Versions/Index.vue": {
-    "file": "assets/Index-WeQ0RAcr.js",
+    "file": "assets/Index-C8OOnGkb.js",
     "name": "Index",
     "src": "resources/js/Pages/Genie/Admin/Versions/Index.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_Panel-Cfb-Mw5E.js",
-      "_NoResult-lOIqwyAd.js"
+      "_Admin-CBWc8Vq1.js",
+      "_Panel-DZbVdm3H.js",
+      "_Table-DMvgiI1z.js",
+      "_NoResult-CvEMGtp0.js"
+    ]
+  },
+  "resources/js/Pages/Genie/Workspace/Competitors/CreateEdit.vue": {
+    "file": "assets/CreateEdit-BhKpH5qv.js",
+    "name": "CreateEdit",
+    "src": "resources/js/Pages/Genie/Workspace/Competitors/CreateEdit.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_VerticalGroup-CDkQhhVL.js",
+      "_Trash-CaGsRXu_.js",
+      "_Panel-DZbVdm3H.js",
+      "_Save-PML30Ol5.js"
+    ]
+  },
+  "resources/js/Pages/Genie/Workspace/Competitors/Index.vue": {
+    "file": "assets/Index-D_Wkr8Mt.js",
+    "name": "Index",
+    "src": "resources/js/Pages/Genie/Workspace/Competitors/Index.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_Panel-DZbVdm3H.js",
+      "_Table-DMvgiI1z.js",
+      "_NoResult-CvEMGtp0.js",
+      "_Trash-CaGsRXu_.js",
+      "_DropdownButton-LXoHonJX.js"
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-C9GHyC8v.js",
+    "file": "assets/app-DZxRtPrZ.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -115,7 +188,9 @@
       "resources/js/Pages/Genie/Admin/Versions/CreateEdit.vue",
       "resources/js/Pages/Genie/Admin/Versions/Fields/CreateEdit.vue",
       "resources/js/Pages/Genie/Admin/Versions/Fields/Index.vue",
-      "resources/js/Pages/Genie/Admin/Versions/Index.vue"
+      "resources/js/Pages/Genie/Admin/Versions/Index.vue",
+      "resources/js/Pages/Genie/Workspace/Competitors/CreateEdit.vue",
+      "resources/js/Pages/Genie/Workspace/Competitors/Index.vue"
     ],
     "css": [
       "assets/app-D0QdLrkp.css"
@@ -134,7 +209,7 @@
     "isDynamicEntry": true
   },
   "resources/lang-json/en-GB.json": {
-    "file": "assets/en-GB-DQd2ObEa.js",
+    "file": "assets/en-GB-D3mMw63D.js",
     "name": "en-GB",
     "src": "resources/lang-json/en-GB.json",
     "isDynamicEntry": true
