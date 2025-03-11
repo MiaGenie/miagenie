@@ -58,6 +58,7 @@ class Version extends Model
     public function competitors(): HasMany
     {
         return $this->hasMany(VersionField::class, 'version_id')
-            ->where('group_type', VersionGroupType::COMPETITORS);
+            ->where('group_type', VersionGroupType::COMPETITORS)
+            ->oldest('position');
     }
 }
