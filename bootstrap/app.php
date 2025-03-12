@@ -1,8 +1,10 @@
 <?php
 
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Inovector\MixpostEnterprise\Schedule as MixpostSchedule;
 use Sentry\Laravel\Integration;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -24,4 +26,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         Integration::handles($exceptions);
 
-    })->create();
+    })
+    ->withSchedule(function (Schedule $schedule) {
+
+        MixpostSchedule::register($schedule);
+
+    })
+    ->create();
