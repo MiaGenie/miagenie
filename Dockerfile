@@ -17,7 +17,6 @@ RUN --mount=type=secret,id=composer-auth \
     php artisan package:discover -n --ansi &&\
     php artisan mixpost:publish-assets --force=true -n --ansi &&\
     php artisan mixpost-enterprise:publish-assets --force=true -n --ansi &&\
-    php artisan route:clear -n --ansi &&\
     php artisan event:clear -n --ansi &&\
     php artisan storage:link --force -n --ansi  &&\
     chown www-data:www-data /var/www/html -R
