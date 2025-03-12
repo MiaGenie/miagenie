@@ -14,9 +14,6 @@ RUN apt update &&\
 RUN --mount=type=secret,id=composer-auth \
     COMPOSER_AUTH=$(cat /run/secrets/composer-auth) \
     composer install --no-cache --no-scripts --no-dev --ansi --no-interaction &&\
-    php artisan mixpost:publish-assets --force=true -n --ansi &&\
-    php artisan mixpost-enterprise:publish-assets --force=true -n --ansi &&\
-    php artisan storage:link --force -n --ansi  &&\
     chown www-data:www-data /var/www/html -R
 
 USER www-data
