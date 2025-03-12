@@ -16,10 +16,10 @@ RUN --mount=type=secret,id=composer-auth \
     composer install --no-cache --no-scripts --no-dev --ansi --no-interaction &&\
     mkdir -p /var/www/html/public/vendor/genie-pro &&\
     cp -r /var/www/html/vendor/inovector/mixpost-pro-team/resources/dist/vendor/genie-pro \
-    /var/www/html/public/vendor/genie-pro &&\
+    /var/www/html/public/vendor &&\
     mkdir -p /var/www/html/public/vendor/genie-enterprise &&\
     cp -r /var/www/html/vendor/inovector/mixpost-enterprise/resources/dist/vendor/genie-enterprise \
-    /var/www/html/public/vendor/genie-enterprise &&\
+    /var/www/html/public/vendor &&\
     chown www-data:www-data /var/www/html -R
 
 USER www-data
