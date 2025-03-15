@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Workspace;
 
+use App\Concerns\Controller\HasFieldOptions;
 use App\Enums\FormFieldType;
 use App\Http\Requests\Workspace\Competitor\StoreCompetitor;
 use App\Http\Requests\Workspace\Competitor\UpdateCompetitor;
 use App\Http\Resources\CompetitorResource;
 use App\Models\Competitor;
-use App\Models\Version;
 use App\Models\WorkspaceVersion;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -16,9 +16,7 @@ use Inovector\Mixpost\Facades\WorkspaceManager;
 
 class CompetitorsController extends Controller
 {
-    /**
-     * @param Request $request
-     */
+    use HasFieldOptions;
     public function index(Request $request)
     {
 
@@ -40,7 +38,7 @@ class CompetitorsController extends Controller
                 'keyword' => $request->query('keyword', ''),
             ],
             'records' => fn () => CompetitorResource::collection($records),
-            'fieldList' => $fieldList
+            'fieldList' => $fieldList,
         ]);
     }
 
@@ -52,17 +50,16 @@ class CompetitorsController extends Controller
             ->version
             ->toArray();
 
+        $fieldList['competitors'] = $this->groupFieldOptions($fieldList['competitors']);
+
         return Inertia::render('Genie/Workspace/Competitors/CreateEdit', [
             'mode' => 'create',
             'fieldList' => $fieldList,
             'fieldTypes' => FormFieldType::withFieldOptions(),
-            'record' => null
+            'record' => null,
         ]);
     }
 
-    /**
-     * @param StoreCompetitor $storeCompetitor
-     */
     public function store(StoreCompetitor $storeCompetitor)
     {
         $record = $storeCompetitor->handle();
@@ -71,14 +68,11 @@ class CompetitorsController extends Controller
             'genie.competitors.edit',
             [
                 'workspace' => WorkspaceManager::current()->uuid,
-                'competitor' => $record->uuid
+                'competitor' => $record->uuid,
             ]
         )->with('success', __('genie.competitor_created'));
     }
 
-    /**
-     * @param Request $request
-     */
     public function edit(Request $request)
     {
         $record = Competitor::firstOrFailByUuid($request->route('competitor'));
@@ -89,17 +83,16 @@ class CompetitorsController extends Controller
             ->version
             ->toArray();
 
+        $fieldList['competitors'] = $this->groupFieldOptions($fieldList['competitors']);
+
         return Inertia::render('Genie/Workspace/Competitors/CreateEdit', [
             'mode' => 'edit',
             'fieldList' => $fieldList,
             'fieldTypes' => FormFieldType::withFieldOptions(),
-            'record' => new CompetitorResource($record)
+            'record' => new CompetitorResource($record),
         ]);
     }
 
-    /**
-     * @param UpdateCompetitor $updateCompetitor
-     */
     public function update(UpdateCompetitor $updateCompetitor)
     {
         $updateCompetitor->handle();
@@ -107,16 +100,13 @@ class CompetitorsController extends Controller
         return redirect()->back()->with('success', __('genie.competitor_updated'));
     }
 
-    /**
-     * @param Request $request
-     */
     public function destroy(Request $request)
     {
         $query = Competitor::byWorkspace(WorkspaceManager::current())
             ->where('uuid', $request->route('competitor'))
             ->delete();
 
-        if (!$query) {
+        if (! $query) {
             return redirect()
                 ->route('genie.competitors.index', ['workspace' => $request->route('workspace')])
                 ->with('error', __('genie.competitor_not_found'));
