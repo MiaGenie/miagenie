@@ -53,11 +53,15 @@ const {notify} = useNotifications();
 const {isCreate, isEdit} = usePageMode();
 const {onError} = useRouter();
 
+const fieldType = (field) => {
+    return find(props.fieldTypes, ['value', Number(field.field_type)]);
+}
+
 const form = useForm(isEdit.value ? cloneDeep(props.record) :
 
     props.fieldList.competitors.reduce(
         (list, field) => {
-            list.content[field.code_name] = '';
+            list.content[field.code_name] = fieldType(field).hasOptions ? [] : '';
             return list;
         }, {
             'content': {}
@@ -150,10 +154,6 @@ const deleteCompetitor = () => {
             );
         })
         .show();
-}
-
-const fieldType = (field) => {
-    return find(props.fieldTypes, ['value', Number(field.field_type)]);
 }
 
 </script>
