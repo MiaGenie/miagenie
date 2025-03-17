@@ -7,7 +7,6 @@ use App\Http\Requests\Workspace\Competitor\StoreCompetitor;
 use App\Http\Requests\Workspace\Competitor\UpdateCompetitor;
 use App\Http\Resources\CompetitorResource;
 use App\Models\Competitor;
-use App\Models\Version;
 use App\Models\WorkspaceVersion;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;

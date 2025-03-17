@@ -6,7 +6,7 @@ import {useI18n} from "vue-i18n";
 import useNotifications from "@/Composables/useNotifications";
 import usePageMode from "@/Composables/usePageMode";
 import useRouter from "@/Composables/useRouter";
-import CompetitorAction from "@/Components/Genie/Competitors/CompetitorAction.vue";
+import BriefingAction from "@/Components/Genie/Briefings/BriefingAction.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import PageHeader from "@/Components/DataDisplay/PageHeader.vue";
 import Error from "@/Components/Form/Error.vue";
@@ -22,6 +22,9 @@ import Flex from "@/Components/Layout/Flex.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import X from "@/Icons/X.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
+import Checkbox from "@/Components/Form/Checkbox.vue";
+import Select from "@/Components/Form/Select.vue";
+import Radio from "@/Components/Form/Radio.vue";
 
 const {t: $t} = useI18n()
 
@@ -55,7 +58,7 @@ const {onError} = useRouter();
 
 const form = useForm(isEdit.value ? cloneDeep(props.record) :
 
-    props.fieldList.competitors.reduce(
+    props.fieldList.briefings.reduce(
         (list, field) => {
             list.content[field.code_name] = '';
             return list;
@@ -69,7 +72,7 @@ const store = () => {
     form.transform((data) => ({
         ...data,
         'version' : props.fieldList.uuid
-    })).post(route(`${routePrefix}.competitors.store`, {
+    })).post(route(`${routePrefix}.briefings.store`, {
         'workspace': workspaceCtx.id
     }), {
         onError: (errors) => {
@@ -82,9 +85,9 @@ const update = () => {
     form.transform((data) => ({
         ...data,
         'version' : props.fieldList.uuid
-    })).put(route(`${routePrefix}.competitors.update`, {
+    })).put(route(`${routePrefix}.briefings.update`, {
         'workspace': workspaceCtx.id,
-        competitor: props.record.id
+        briefing: props.record.id
     }), {
         preserveScroll: true,
         onError: (errors) => {
@@ -120,28 +123,28 @@ const attemptClose = () => {
 }
 
 const backToList = () => {
-    router.get(route('genie.competitors.index', {
+    router.get(route('genie.briefings.index', {
         workspace: workspaceCtx.id
     }));
 }
 
-const deleteCompetitor = () => {
+const deleteBriefing = () => {
     confirmation()
-        .title($t("genie.delete_competitor"))
-        .description($t("genie.delete_competitor_confirm"))
+        .title($t("genie.delete_briefing"))
+        .description($t("genie.delete_briefing_confirm"))
         .destructive()
         .onConfirm((dialog) => {
             dialog.isLoading(true);
 
             router.delete(
-                route('genie.competitors.delete',
+                route('genie.briefings.delete',
                     {
                         workspace: workspaceCtx.id,
-                        competitor: props.record.id
+                        briefing: props.record.id
                     }), {
                     preserveScroll: true,
                     onSuccess() {
-                        notify('success', $t('genie.competitor_deleted'))
+                        notify('success', $t('genie.briefing_deleted'))
                     },
                     onFinish() {
                         dialog.reset();
@@ -159,12 +162,12 @@ const fieldType = (field) => {
 </script>
 <template>
 
-    <Head :title="mode === 'create' ? $t('genie.create_competitor') : $t('genie.edit_competitor')"/>
+    <Head :title="mode === 'create' ? $t('genie.create_briefing') : $t('genie.edit_briefing')"/>
 
     <div class="w-full mx-auto row-py">
-        <PageHeader :title="mode === 'create' ? $t('genie.create_competitor') : $t('genie.edit_competitor')">
+        <PageHeader :title="mode === 'create' ? $t('genie.create_briefing') : $t('genie.edit_briefing')">
             <template v-if="isEdit">
-                <CompetitorAction :record="record" />
+                <BriefingAction :record="record" />
             </template>
         </PageHeader>
 
@@ -175,10 +178,10 @@ const fieldType = (field) => {
 
                     <template #title>{{ $t("general.details") }}</template>
 
-                    <template v-for="(field, index) in fieldList.competitors" :key="index">
+                    <template v-for="(field, index) in fieldList.briefings" :key="index">
                         <VerticalGroup class="form-field mt-lg">
                             <template #title>
-                                <label :for="field.code_name">{{ field.name }}</label>
+                                <label :for="field.code_name">{{ field.description }}</label>
                                 <LabelSuffix v-if="field.required" :danger="true">*</LabelSuffix>
                             </template>
 
@@ -197,12 +200,58 @@ const fieldType = (field) => {
                             <template v-if="fieldType(field).name === 'TEXTAREA'">
 
                                 <Textarea v-model="form.content[field.code_name]"
-                                          :placeholder="field.description"
+                                          :placeholder="field.sub_description"
                                           :error="form.errors[field.code_name] !== undefined"
                                           :id="field.code_name"
                                           class="w-full placeholder:italic placeholder:text-sm"
                                           :rows="field.size ?? 4"
                                 />
+
+                            </template>
+
+                            <template v-if="fieldType(field).name === 'CHECKBOX'">
+
+                                <Flex class="items-start">
+                                    <Checkbox v-model="form.content[field.code_name]"
+                                              :checked="form.active"
+                                              id="active"/>
+                                    <Label for="active">{{ $t('general.active') }}</Label>
+                                </Flex>
+
+                            </template>
+
+                            <template v-if="fieldType(field).name === 'DROP_DOWN'">
+
+                                <Flex class="items-start">
+                                    <Select v-model="form.content[field.code_name]"
+                                            id="testing" >
+                                        <template v-for="(option, index) in field.options" :key="index">
+                                            <option :value="option.code_name">{{ option.name }}</option>
+                                        </template>
+                                    </Select>
+                                </Flex>
+
+                            </template>
+
+                            <template v-if="fieldType(field).name === 'RADIO'">
+
+                                <Flex class="items-start">
+                                    <template v-for="(option, index) in field.options" :key="field.options[index].group">
+                                        <Label>
+                                            <Radio v-model:checked="field.options[index].group"
+                                                   :value="option.code_name"/>
+                                            {{ option.name }}
+                                        </Label>
+                                    </template>
+                                </Flex>
+
+                            </template>
+
+                            <template v-if="fieldType(field).name === 'RADIO_GROUP'">
+
+                                <Flex class="items-start">
+
+                                </Flex>
 
                             </template>
 
@@ -249,7 +298,7 @@ const fieldType = (field) => {
                     <Flex v-if="isEdit">
 
                         <DangerButton
-                            @click="deleteCompetitor"
+                            @click="deleteBriefing"
                             :disabled="form.processing"
                         >
                             {{ $t("general.delete") }}

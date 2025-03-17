@@ -9,7 +9,7 @@ import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import Pagination from "@/Components/Navigation/Pagination.vue";
 import NoResult from "@/Components/Util/NoResult.vue";
-import CompetitorItem from "@/Components/Genie/Competitors/CompetitorItem.vue";
+import BriefingItem from "@/Components/Genie/Briefings/BriefingItem.vue";
 import Plus from "@/Icons/Plus.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 
@@ -39,20 +39,20 @@ provide('fieldList', props.fieldList);
 
 </script>
 <template>
-    <Head :title="$t('genie.competitors')"/>
+    <Head :title="$t('genie.briefings')"/>
 
     <div class="w-full mx-auto row-py">
-        <PageHeader :title="$t('genie.competitors')">
+        <PageHeader :title="$t('genie.briefings')">
             <template #description>
-                {{ $t('genie.competitors_desc') }}
+                {{ $t('genie.briefings_desc') }}
             </template>
         </PageHeader>
 
         <div class="w-full row-px mt-lg">
-            <Link :href="route(`${routePrefix}.competitors.create`, {workspace: workspaceCtx.id})">
+            <Link :href="route(`${routePrefix}.briefings.create`, {workspace: workspaceCtx.id})">
                 <PrimaryButton size="sm">
                     <Plus class="mr-xs" />
-                    {{ $t('genie.create_competitor') }}
+                    {{ $t('genie.create_briefing') }}
                 </PrimaryButton>
             </Link>
 
@@ -75,7 +75,7 @@ provide('fieldList', props.fieldList);
                     <template #body>
                         <template v-for="item in records.data" :key="item.id">
 
-                            <CompetitorItem :item="item" />
+                            <BriefingItem :item="item" />
 
                         </template>
                     </template>

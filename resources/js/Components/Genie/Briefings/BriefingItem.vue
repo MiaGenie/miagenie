@@ -6,7 +6,7 @@ import Badge from "@/Components/DataDisplay/Badge.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import Flex from "@/Components/Layout/Flex.vue";
-import CompetitorItemAction from "./BriefingItemAction.vue";
+import BriefingItemAction from "./BriefingItemAction.vue";
 
 const {t: $t} = useI18n();
 

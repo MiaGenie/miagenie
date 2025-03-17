@@ -7,7 +7,6 @@ use App\Http\Requests\Workspace\Briefing\StoreBriefing;
 use App\Http\Requests\Workspace\Briefing\UpdateBriefing;
 use App\Http\Resources\BriefingResource;
 use App\Models\Briefing;
-use App\Models\Version;
 use App\Models\WorkspaceVersion;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;

@@ -61,4 +61,14 @@ class Version extends Model
             ->where('group_type', VersionGroupType::COMPETITORS)
             ->oldest('position');
     }
+
+    /**
+     * @return HasMany
+     */
+    public function briefings(): HasMany
+    {
+        return $this->hasMany(VersionField::class, 'version_id')
+            ->where('group_type', VersionGroupType::BRIEFINGS)
+            ->oldest('position');
+    }
 }

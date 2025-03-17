@@ -15,6 +15,7 @@ import Label from "@/Components/Form/Label.vue";
 import LabelSuffix from "@/Components/Form/LabelSuffix.vue";
 import Textarea from "@/Components/Form/Textarea.vue";
 import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
+import Checkbox from "@/Components/Form/Checkbox.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import Trash from "@/Icons/Trash.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
@@ -203,6 +204,14 @@ const fieldType = (field) => {
                                           class="w-full placeholder:italic placeholder:text-sm"
                                           :rows="field.size ?? 4"
                                 />
+
+                            </template>
+                            <template v-if="fieldType(field).name === 'CHECKBOX'">
+
+                                <Flex class="items-start">
+                                    <Checkbox v-model:checked="form.active" id="active"/>
+                                    <Label for="active">{{ $t('general.active') }}</Label>
+                                </Flex>
 
                             </template>
 
