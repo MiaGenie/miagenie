@@ -1,6 +1,6 @@
 <script setup>
 import {Head, router, useForm} from '@inertiajs/vue3';
-import {inject, ref, watch} from "vue";
+import {inject, onMounted, ref, watch} from "vue";
 import {useI18n} from "vue-i18n";
 import useRouter from "@/Composables/useRouter";
 import {cloneDeep} from "lodash";
@@ -52,11 +52,9 @@ const props = defineProps({
     }
 })
 
-const confirmation = inject('confirmation');
-const filteredVectors = ref({});
-
 const {isCreate, isEdit} = usePageMode();
 const {onError} = useRouter();
+const confirmation = inject('confirmation');
 
 const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     name: '',
@@ -70,6 +68,21 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     temperature: 1,
     top_p: 1,
 });
+
+const filteredVectors = ref({});
+const filterVectors = () => {
+    filteredVectors.value = cloneDeep(props.vectorIds).filter(
+        (vector) => {
+            return Number(vector.vector_type) === Number(form.assistant_type);
+        }
+    )
+}
+
+onMounted(() => {filterVectors()})
+
+watch( () => form.assistant_type, () => {
+    filterVectors()
+})
 
 const store = () => {
     form.post(route('genie.admin.assistants.store'), {
@@ -145,14 +158,6 @@ const deleteAssistant = () => {
             );
         }).show();
 }
-
-watch( () => form.assistant_type, () => {
-    filteredVectors.value = cloneDeep(props.vectorIds).filter(
-        (vector) => {
-            return Number(vector.vector_type) === Number(form.assistant_type);
-        }
-    )
-})
 
 </script>
 <template>
