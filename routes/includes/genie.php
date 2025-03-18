@@ -29,14 +29,14 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
         });
     });
 
-/*    Route::prefix('vectors')->name('vectors.')->group(function () {
+    Route::prefix('vectors')->name('vectors.')->group(function () {
         Route::get('/', [VectorsController::class, 'index'])->name('index');
         Route::get('create', [VectorsController::class, 'create'])->name('create');
         Route::post('store', [VectorsController::class, 'store'])->name('store');
         Route::get('{vector}', [VectorsController::class, 'edit'])->name('edit');
         Route::put('{vector}', [VectorsController::class, 'update'])->name('update');
         Route::delete('{vector}', [VectorsController::class, 'destroy'])->name('delete');
-    });*/
+    });
 
     Route::prefix('files')->name('files.')->group(function () {
         Route::get('/', [FilesController::class, 'index'])->name('index');
