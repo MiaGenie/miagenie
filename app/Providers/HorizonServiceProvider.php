@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Gate;
 use Inovector\Mixpost\Models\Admin;
-use Laravel\Horizon\Horizon;
 use Laravel\Horizon\HorizonApplicationServiceProvider;
 
 class HorizonServiceProvider extends HorizonApplicationServiceProvider

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
@@ -10,9 +11,13 @@ use App\Http\Requests\Admin\StoreVersion;
 use App\Http\Requests\Admin\UpdateVersion;
 use App\Http\Resources\Admin\VersionResource;
 use App\Models\Version;
+use Inertia\Response;
 
 class VersionsController extends Controller
 {
+    /**
+     * @return Response
+     */
     public function index()
     {
         $records = Version::query()
@@ -27,6 +32,9 @@ class VersionsController extends Controller
         ]);
     }
 
+    /**
+     * @return Response
+     */
     public function create()
     {
         return Inertia::render('Genie/Admin/Versions/CreateEdit', [
@@ -38,6 +46,7 @@ class VersionsController extends Controller
 
     /**
      * @param StoreVersion $storeVersion
+     * @return RedirectResponse
      */
     public function store(StoreVersion $storeVersion)
     {
@@ -50,6 +59,7 @@ class VersionsController extends Controller
 
     /**
      * @param Request $request
+     * @return Response
      */
     public function edit(Request $request)
     {
@@ -64,6 +74,7 @@ class VersionsController extends Controller
 
     /**
      * @param UpdateVersion $updateVersion
+     * @return RedirectResponse
      */
     public function update(UpdateVersion $updateVersion)
     {
@@ -74,6 +85,7 @@ class VersionsController extends Controller
 
     /**
      * @param Request $request
+     * @return RedirectResponse
      */
     public function destroy(Request $request)
     {

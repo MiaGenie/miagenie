@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Concerns\Enum\WithGroupOptions;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
@@ -18,11 +19,15 @@ use App\Http\Resources\Admin\VersionFieldResource;
 use App\Http\Resources\Admin\VersionResource;
 use App\Models\Version;
 use App\Models\VersionField;
+use Inertia\Response;
 
 class VersionFieldsController extends Controller
 {
+
+
     /**
      * @param Request $request
+     * @return Response
      */
     public function index(Request $request)
     {
@@ -49,18 +54,17 @@ class VersionFieldsController extends Controller
 
     /**
      * @param Request $request
+     * @return Response
      */
     public function create(Request $request)
     {
         $version = Version::firstOrFailByUuid($request->route('version'));
 
-        $groupType = $request->input('group_type');
-
         return Inertia::render('Genie/Admin/Versions/Fields/CreateEdit', [
             'mode' => 'create',
             'version' => fn () => new VersionResource($version),
             'record' => null,
-            'groupType' => $groupType,
+            'groupType' => $request->input('group_type'),
             'groupTypes' => VersionGroupType::withGroupOptions(),
             'fieldTypes' => FormFieldType::withFieldOptions(),
             'inputTypes' => FormInputType::withInputOptions(),
@@ -70,6 +74,7 @@ class VersionFieldsController extends Controller
 
     /**
      * @param StoreVersionField $storeVersionField
+     * @return RedirectResponse
      * @throws \Throwable
      */
     public function store(StoreVersionField $storeVersionField)
@@ -88,6 +93,7 @@ class VersionFieldsController extends Controller
 
     /**
      * @param Request $request
+     * @return Response
      */
     public function edit(Request $request)
     {
@@ -110,6 +116,7 @@ class VersionFieldsController extends Controller
 
     /**
      * @param UpdateVersionField $updateVersionField
+     * @return RedirectResponse
      * @throws \Throwable
      */
     public function update(UpdateVersionField $updateVersionField)
@@ -121,6 +128,7 @@ class VersionFieldsController extends Controller
 
     /**
      * @param UpdateVersionFieldPositions $updateVersionFieldPositions
+     * @return JsonResponse
      */
     public function updatePositions(UpdateVersionFieldPositions $updateVersionFieldPositions)
     {
@@ -131,6 +139,7 @@ class VersionFieldsController extends Controller
 
     /**
      * @param Request $request
+     * @return RedirectResponse
      */
     public function destroy(Request $request)
     {
