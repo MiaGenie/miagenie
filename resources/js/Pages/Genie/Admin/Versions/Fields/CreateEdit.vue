@@ -18,7 +18,7 @@ import LabelSuffix from "@/Components/Form/LabelSuffix.vue";
 import Select from "@/Components/Form/Select.vue";
 import Textarea from "@/Components/Form/Textarea.vue";
 import VersionHeader from "@/Components/DataDisplay/Genie/VersionHeader.vue";
-import FieldOptionsGroup from "@/Components/Genie/Versions/FieldOptionsGroup.vue";
+import VersionFieldOptionsGroup from "@/Components/Genie/Versions/VersionFieldOptionsGroup.vue";
 import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
@@ -66,7 +66,6 @@ const props = defineProps({
     }
 })
 
-const routePrefix = inject('routePrefix');
 const confirmation = inject('confirmation');
 const {notify} = useNotifications();
 const {isCreate, isEdit} = usePageMode();
@@ -410,7 +409,7 @@ const deleteField = () => {
                             <LabelSuffix :danger="true">*</LabelSuffix>
                         </template>
 
-                        <FieldOptionsGroup v-model="form.options" />
+                        <VersionFieldOptionsGroup v-model="form.options" />
 
                         <template #footer>
                             <Error :message="optionsErrors()"/>
