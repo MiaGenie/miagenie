@@ -1,0 +1,1 @@
+import{_ as t,c as o,o as s,r as c}from"./app-rdd_LANQ.js";const n={},r={class:"text-lg font-medium"};function a(e,_){return s(),o("div",r,[c(e.$slots,"default")])}const i=t(n,[["render",a]]);export{i as S};
