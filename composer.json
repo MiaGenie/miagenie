@@ -43,11 +43,11 @@
     "repositories": {
         "inovector/mixpost-pro-team": {
             "type": "vcs",
-            "url": "https://github.com/miagenie/mixpost-pro-team"
+            "url": "https://github.com/miagenie/mixpost-pro-team.git"
         },
         "inovector/mixpost-enterprise": {
             "type": "vcs",
-            "url": "https://github.com/miagenie/mixpost-enterprise"
+            "url": "https://github.com/miagenie/mixpost-enterprise.git"
         }
     },
     "scripts": {
