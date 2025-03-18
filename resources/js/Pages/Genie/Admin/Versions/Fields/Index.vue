@@ -2,18 +2,16 @@
 import {Head, router} from '@inertiajs/vue3';
 import Draggable from 'vuedraggable';
 import {cloneDeep, pickBy, throttle} from "lodash";
-import {inject, ref, watch} from "vue";
+import {ref, watch} from "vue";
 import {useI18n} from "vue-i18n";
-import useRouter from "@/Composables/useRouter";
-import useNotifications from "@/Composables/useNotifications.js";
 import AdminLayout from "@/Layouts/Admin.vue";
 import DragTable from "@/Components/DataDisplay/Genie/DragTable.vue";
 import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import VersionHeader from '@/Components/DataDisplay/Genie/VersionHeader.vue';
-import GenieVersionFieldItem from "@/Components/Genie/Versions/GenieVersionFieldItem.vue";
-import GenieVersionFieldsIndexActions from "@/Components/Genie/Versions/GenieVersionFieldsIndexActions.vue";
+import VersionFieldItem from "@/Components/Genie/Versions/VersionFieldItem.vue";
+import VersionFieldsIndexActions from "@/Components/Genie/Versions/VersionFieldsIndexActions.vue";
 import Pagination from "@/Components/Navigation/Pagination.vue";
 import Tabs from "@/Components/Navigation/Tabs.vue";
 import Tab from "@/Components/Navigation/Tab.vue";
@@ -23,11 +21,6 @@ import NoResult from "@/Components/Util/NoResult.vue";
 defineOptions({layout: AdminLayout});
 
 const {t: $t} = useI18n()
-
-const routePrefix = inject('routePrefix');
-const confirmation = inject('confirmation');
-const {onError} = useRouter();
-const {notify} = useNotifications();
 
 const props = defineProps({
     records: {
@@ -97,7 +90,7 @@ watch(() => props.records.data, () => {
 
         <div class="w-full row-px">
 
-            <GenieVersionFieldsIndexActions
+            <VersionFieldsIndexActions
                 @editingPositions="editingPositions = $event"
                 @isLoading="isLoading = $event"
                 :fieldList="fieldList"
@@ -183,7 +176,7 @@ watch(() => props.records.data, () => {
                             item-key="id"
                         >
                             <template #item="{element}">
-                                <GenieVersionFieldItem
+                                <VersionFieldItem
                                     :field="element"
                                     :is-filtered="isFiltered"
                                     :editing-positions="editingPositions"

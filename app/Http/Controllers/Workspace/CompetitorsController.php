@@ -9,14 +9,21 @@ use App\Http\Requests\Workspace\Competitor\UpdateCompetitor;
 use App\Http\Resources\CompetitorResource;
 use App\Models\Competitor;
 use App\Models\WorkspaceVersion;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
+use Inertia\Response;
 use Inovector\Mixpost\Facades\WorkspaceManager;
 
 class CompetitorsController extends Controller
 {
     use HasFieldOptions;
+
+    /**
+     * @param Request $request
+     * @return Response
+     */
     public function index(Request $request)
     {
 
@@ -42,6 +49,9 @@ class CompetitorsController extends Controller
         ]);
     }
 
+    /**
+     * @return Response
+     */
     public function create()
     {
         $fieldList = WorkspaceVersion::byWorkspace(WorkspaceManager::current())
@@ -60,6 +70,10 @@ class CompetitorsController extends Controller
         ]);
     }
 
+    /**
+     * @param StoreCompetitor $storeCompetitor
+     * @return RedirectResponse
+     */
     public function store(StoreCompetitor $storeCompetitor)
     {
         $record = $storeCompetitor->handle();
@@ -73,6 +87,10 @@ class CompetitorsController extends Controller
         )->with('success', __('genie.competitor_created'));
     }
 
+    /**
+     * @param Request $request
+     * @return Response
+     */
     public function edit(Request $request)
     {
         $record = Competitor::firstOrFailByUuid($request->route('competitor'));
@@ -93,6 +111,10 @@ class CompetitorsController extends Controller
         ]);
     }
 
+    /**
+     * @param UpdateCompetitor $updateCompetitor
+     * @return RedirectResponse
+     */
     public function update(UpdateCompetitor $updateCompetitor)
     {
         $updateCompetitor->handle();
@@ -100,6 +122,10 @@ class CompetitorsController extends Controller
         return redirect()->back()->with('success', __('genie.competitor_updated'));
     }
 
+    /**
+     * @param Request $request
+     * @return RedirectResponse
+     */
     public function destroy(Request $request)
     {
         $query = Competitor::byWorkspace(WorkspaceManager::current())

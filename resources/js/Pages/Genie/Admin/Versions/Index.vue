@@ -8,7 +8,7 @@ import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
 import Table from "@/Components/DataDisplay/Table.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
-import GenieVersionItem from "@/Components/Genie/Versions/GenieVersionItem.vue";
+import VersionItem from "@/Components/Genie/Versions/VersionItem.vue";
 import Pagination from "@/Components/Navigation/Pagination.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import NoResult from "@/Components/Util/NoResult.vue";
@@ -96,7 +96,7 @@ const props = defineProps({
                             v-for="item in records.data"
                             :key="item.id"
                         >
-                            <GenieVersionItem :item="item" />
+                            <VersionItem :item="item" />
                         </template>
                     </template>
 

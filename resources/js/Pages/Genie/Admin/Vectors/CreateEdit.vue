@@ -158,11 +158,8 @@ const removeFile = (item) => {
     <Head :title="mode === 'create' ? $t('genie.create_vector') : $t('genie.edit_vector')"/>
 
     <div class="w-full mx-auto row-py">
-        <PageHeader :title="mode === 'create' ? $t('genie.create_vector') : $t('genie.edit_vector')">
-            <template v-if="isEdit">
-                <VectorAction :record="record" :edit="false"/>
-            </template>
-        </PageHeader>
+
+        <PageHeader :title="mode === 'create' ? $t('genie.create_vector') : $t('genie.edit_vector')" />
 
         <div class="row-px">
             <form method="post" @submit.prevent="submit">

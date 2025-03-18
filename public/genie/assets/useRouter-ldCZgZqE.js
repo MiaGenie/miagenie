@@ -1,0 +1,1 @@
+import{i as s,K as i}from"./app-CHoXxGmg.js";const f=()=>{const{notify:r}=i(),n=s("authPasswordConfirmation");return{onError:(o,t=null)=>{if(o.confirm_password){n().onConfirm(t).show();return}r("error",o)}}};export{f as u};

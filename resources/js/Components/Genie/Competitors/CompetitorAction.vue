@@ -9,7 +9,6 @@ import useRouter from "@/Composables/useRouter";
 
 const {t: $t} = useI18n();
 
-const routePrefix = inject('routePrefix');
 const confirmation = inject('confirmation');
 const workspaceCtx = inject('workspaceCtx');
 
@@ -36,7 +35,7 @@ const deleteCompetitorAfterConfirmed = (dialog) => {
     dialog.isLoading(true);
 
     router.delete(
-        route(`${routePrefix}.competitors.delete`, {
+        route('genie.competitors.delete', {
             workspace: workspaceCtx.id,
             competitor: props.record.id,
         }),
