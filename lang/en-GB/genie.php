@@ -6,6 +6,8 @@ return [
 
     'genie' => 'Genie',
     'ai_provider' => 'AI Provider',
+    'open_ai' => 'Open AI',
+    'config' => 'Genie Config',
 
     'updated' => 'Updated',
     'created' => 'Created',
@@ -45,6 +47,16 @@ return [
     'assistant_top_p' => 'Top P',
 
     'vectors' => 'Vectors',
+    'vectors_desc' => 'MiaGenie Vectors',
+    'create_vector' => 'Create Vector',
+    'edit_vector' => 'Edit Vector',
+    'delete_vector' => 'Delete Vector',
+    'vector_updated' => 'Vector Updated',
+    'vector_created' => 'Vector Created',
+    'vector_deleted' => 'Vector Deleted',
+    'delete_vector_confirm' => 'Are you sure you want to delete this vector?',
+    'vector_files' => 'Vector Files',
+    'vector_type' => 'Type',
 
     'versions' => 'Versions',
     'versions_desc' => 'MiaGenie Versions',
@@ -114,6 +126,7 @@ return [
     'file_library' => 'Genie Files',
     'do_you_want_delete' => 'Are you sure you want to delete selected files?',
     'delete_file' => 'Delete file',
+    'add_file' => 'Add File',
 
     'competitors' => 'Competitors',
     'competitors_desc' => 'Your direct competitors. This information is important to help improve your strategy',
