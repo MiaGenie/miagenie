@@ -59,7 +59,7 @@ class VectorsController extends Controller
         $record = $storeVector->handle();
 
         return redirect()
-            ->route('genie.admin.vectors.edit', ['vectors' => $record->uuid])
+            ->route('genie.admin.vectors.edit', ['vector' => $record->uuid])
             ->with('success', __('genie.created'));
     }
 
@@ -101,10 +101,10 @@ class VectorsController extends Controller
         if (! $query) {
             return redirect()
                 ->route('genie.admin.vectors.index')
-                ->with('error', __('genie.vectors_not_found'));
+                ->with('error', __('genie.not_found'));
         }
 
         return redirect()->route('genie.admin.vectors.index')
-            ->with('success', __('genie.vectors_deleted'));
+            ->with('success', __('genie.vector_deleted'));
     }
 }
