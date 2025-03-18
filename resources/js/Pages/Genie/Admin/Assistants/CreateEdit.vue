@@ -1,0 +1,422 @@
+<script setup>
+import {Head, router, useForm} from '@inertiajs/vue3';
+import {inject, ref, watch} from "vue";
+import {useI18n} from "vue-i18n";
+import useRouter from "@/Composables/useRouter";
+import {cloneDeep} from "lodash";
+import usePageMode from "@/Composables/usePageMode";
+import AdminLayout from "@/Layouts/Admin.vue";
+import DangerButton from "@/Components/Button/DangerButton.vue";
+import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
+import PageHeader from "@/Components/DataDisplay/PageHeader.vue";
+import Error from "@/Components/Form/Error.vue";
+import Input from "@/Components/Form/Input.vue";
+import LabelSuffix from "@/Components/Form/LabelSuffix.vue";
+import Select from "@/Components/Form/Select.vue";
+import Textarea from "@/Components/Form/Textarea.vue";
+import AssistantAction from "@/Components/Genie/Assistants/AssistantAction.vue";
+import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
+import Panel from "@/Components/Surface/Panel.vue";
+import Save from "@/Icons/Genie/Save.vue";
+import Trash from "@/Icons/Trash.vue";
+import X from "@/Icons/X.vue";
+
+defineOptions({layout: AdminLayout});
+
+const {t: $t} = useI18n()
+
+const props = defineProps({
+    mode: {
+        required: true,
+        type: String,
+        default: 'create',
+    },
+    assistantTypes: {
+        type: Object,
+        required: true
+    },
+    models: {
+        type: Object,
+        required: true
+    },
+    assistantType: {
+        type: String
+    },
+    vectorIds: {
+        type: Object,
+        required: true
+    },
+    record: {
+        type: Object
+    }
+})
+
+const confirmation = inject('confirmation');
+const filteredVectors = ref({});
+
+const {isCreate, isEdit} = usePageMode();
+const {onError} = useRouter();
+
+const form = useForm(isEdit.value ? cloneDeep(props.record) : {
+    name: '',
+    assistant_type: props.assistantType ?? '',
+    description: '',
+    instructions: '',
+    model: '',
+    vector_id: '',
+    response_format: '',
+    json_schema: '',
+    temperature: 1,
+    top_p: 1,
+});
+
+const store = () => {
+    form.post(route('genie.admin.assistants.store'), {
+        onError: (errors) => {
+            onError(errors, store);
+        },
+    });
+}
+
+const update = () => {
+    form.put(route('genie.admin.assistants.update', {assistant: props.record.id}), {
+        preserveScroll: true,
+        onError: (errors) => {
+            onError(errors, update);
+        },
+    });
+}
+
+const submit = () => {
+    if (isCreate.value) {
+        store();
+    }
+
+    if (isEdit.value) {
+        update();
+    }
+}
+
+const attemptClose = () => {
+    if (!form.isDirty) {
+        backToList();
+        return;
+    }
+
+    confirmation()
+        .title($t('genie.are_you_sure'))
+        .description($t('genie.unsaved_will_lost'))
+        .btnConfirmName($t('genie.discard'))
+        .onConfirm(() => {
+            backToList();
+        })
+        .show();
+}
+
+const backToList = () => {
+    router.get(route(
+        'genie.admin.assistants.index',
+        {assistant_type: form.assistant_type}
+    ));
+}
+
+const deleteAssistant = () => {
+    confirmation()
+        .title($t("genie.delete_assistant"))
+        .description($t("genie.delete_assistant_confirm"))
+        .destructive()
+        .onConfirm((dialog) => {
+            dialog.isLoading(true);
+
+            router.delete(
+                route(
+                    'genie.admin.assistants.delete',
+                    {assistant: props.record.id}
+                ), {
+                    preserveScroll: true,
+                    onSuccess() {
+                        notify('success', $t('genie.assistant_deleted'))
+                    },
+                    onFinish() {
+                        dialog.reset();
+                    }
+                }
+            );
+        }).show();
+}
+
+watch( () => form.assistant_type, () => {
+    filteredVectors.value = cloneDeep(props.vectorIds).filter(
+        (vector) => {
+            return Number(vector.vector_type) === Number(form.assistant_type);
+        }
+    )
+})
+
+</script>
+<template>
+    <Head :title="mode === 'create' ? $t('genie.create_assistant') : $t('genie.edit_assistant')"/>
+
+    <div class="w-full mx-auto row-py">
+
+        <PageHeader :title="mode === 'create' ? $t('genie.create_assistant') : $t('genie.edit_assistant')" />
+
+        <div class="row-px">
+            <form method="post" @submit.prevent="submit">
+                <Panel>
+                    <template #title>{{ $t("general.details") }}</template>
+
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="name">{{ $t("general.name") }}
+                                <LabelSuffix :danger="true">*</LabelSuffix>
+                            </label>
+                        </template>
+
+                        <Input v-model="form.name"
+                               :error="form.errors.name !== undefined"
+                               type="text"
+                               id="name"
+                               :autofocus="isCreate"
+                               required
+                        />
+
+                        <template #footer>
+                            <Error :message="form.errors.name"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="assistant_type">{{ $t("genie.assistant_type") }}</label>
+                            <LabelSuffix :danger="true">*</LabelSuffix>
+                        </template>
+
+                        <Select v-model="form.assistant_type" id="assistant_type" required>
+                            <option v-for="(option) in assistantTypes" :value="option.value">{{option.title}}</option>
+                        </Select>
+
+                        <template #footer>
+                            <Error :message="form.errors.assistant_type"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="description">{{ $t("genie.description") }}</label>
+                        </template>
+
+                        <Textarea v-model="form.description"
+                                  :error="form.errors.description !== undefined"
+                                  id="description"
+                                  class="w-full"
+                                  rows="3"/>
+
+                        <template #footer>
+                            <Error :message="form.errors.description"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="instructions">{{ $t("genie.assistant_instructions") }}</label>
+                            <LabelSuffix :danger="true">*</LabelSuffix>
+                        </template>
+
+                        <Textarea v-model="form.instructions"
+                                  :error="form.errors.instructions !== undefined"
+                                  id="instructions"
+                                  class="w-full"
+                                  rows="10"
+                                  required/>
+
+                        <template #footer>
+                            <Error :message="form.errors.instructions"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="model">{{ $t("genie.assistant_model") }}</label>
+                            <LabelSuffix :danger="true">*</LabelSuffix>
+                        </template>
+
+                        <Select
+                            v-model="form.model"
+                            :error="form.errors.model !== undefined"
+                            id="model"
+                            required
+                        >
+                            <option
+                                v-for="(option) in props.models"
+                                :value="option.id"
+                            >
+                                {{option.id}}
+                            </option>
+                        </Select>
+
+                        <template #footer>
+                            <Error :message="form.errors.model"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="vector_id">{{ $t("genie.assistant_vector_id") }}</label>
+                        </template>
+
+                        <Select
+                            v-model="form.vector_id"
+                            :error="form.errors.vector_id !== undefined"
+                            id="vector_id"
+                        >
+                            <template v-for="(option) in filteredVectors">
+                                <option :value="option.id">
+                                    {{option.name}}
+                                </option>
+                            </template>
+                        </Select>
+
+                        <template #footer>
+                            <Error :message="form.errors.vector_id"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="response_format">{{ $t("genie.assistant_response_format") }}</label>
+                            <LabelSuffix :danger="true">*</LabelSuffix>
+                        </template>
+
+                        <Select
+                            v-model="form.response_format"
+                            :error="form.errors.response_format !== undefined"
+                            id="response_format"
+                            required
+                        >
+                            <option value="text">text</option>
+                            <option value="json_object">json_object</option>
+                            <option value="json_schema">json_schema</option>
+                        </Select>
+
+                        <template #footer>
+                            <Error :message="form.errors.response_format"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup v-if="form.response_format==='json_schema'" class="form-field mt-lg">
+                        <template #title>
+                            <label for="json_schema">{{ $t("genie.assistant_json_schema") }}</label>
+                            <LabelSuffix :danger="true">*</LabelSuffix>
+                        </template>
+
+                        <Textarea v-model="form.json_schema"
+                                  :error="form.errors.json_schema !== undefined"
+                                  id="response_format"
+                                  class="w-full"
+                                  required
+                                  rows="10"/>
+
+                        <template #footer>
+                            <Error :message="form.errors.json_schema"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="temperature">{{ $t("genie.assistant_temperature") }}
+                            </label>
+                        </template>
+
+                        <template #description>
+                            {{ form.temperature }}
+                        </template>
+
+                        <Input v-model="form.temperature"
+                               default="1"
+                               type="range"
+                               min="0"
+                               max="2"
+                               step="0.01"
+                               id="temperature"
+                               required/>
+
+                        <template #footer>
+                            <Error :message="form.errors.temperature"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="top_p">{{ $t("genie.assistant_top_p") }}
+                            </label>
+                        </template>
+
+                        <template #description>
+                            {{ form.top_p }}
+                        </template>
+
+                        <Input v-model="form.top_p"
+                               default="1"
+                               type="range"
+                               min="0"
+                               max="2"
+                               step="0.01"
+                               id="top_p"
+                               required/>
+
+                        <template #footer>
+                            <Error :message="form.errors.top_p"/>
+                        </template>
+                    </VerticalGroup>
+
+                </Panel>
+
+                <div class="flex flex-row items-center justify-between mt-lg">
+                    <div class="flex gap-6">
+
+                        <PrimaryButton
+                            type="submit"
+                            :isLoading="form.processing"
+                            :disabled="form.processing"
+                            :hidden-text-on-small-screen=true
+                        >
+                            {{ isCreate ? $t("general.create") : $t("general.update") }}
+                            <template #icon>
+                                <Save/>
+                            </template>
+                        </PrimaryButton>
+
+                        <SecondaryButton
+                            @click="attemptClose"
+                            type="button"
+                            :disabled="form.processing"
+                            :hidden-text-on-small-screen=true
+                        >
+                            {{ $t("general.close") }}
+                            <template #icon>
+                                <X/>
+                            </template>
+                        </SecondaryButton>
+
+                    </div>
+                    <div v-if="isEdit">
+
+                        <DangerButton
+                            @click="deleteAssistant"
+                            :disabled="form.processing"
+                            :hidden-text-on-small-screen=true
+                        >
+                            {{ $t("general.delete") }}
+                            <template #icon>
+                                <Trash/>
+                            </template>
+                        </DangerButton>
+
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</template>

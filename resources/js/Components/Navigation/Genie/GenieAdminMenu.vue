@@ -7,6 +7,7 @@ import VersionIcon from "@/Icons/Genie/Version.vue";
 import CogIcon from "@/Icons/Cog.vue";
 import DocumentIcon from "@/Icons/Document.vue";
 import VectorIcon from "@/Icons/Genie/Vector.vue";
+import AssistantIcon from "@/Icons/Genie/Assistant.vue";
 </script>
 <template>
     <MenuGroupHeader>
@@ -14,6 +15,14 @@ import VectorIcon from "@/Icons/Genie/Vector.vue";
     </MenuGroupHeader>
 
     <MenuGroupBody>
+
+        <MenuItem :url="route('genie.admin.assistants.index')"
+                  :active="$page.component === 'Genie/Admin/Assistants/Index'">
+            <template #icon>
+                <AssistantIcon/>
+            </template>
+            {{ $t('genie.assistants') }}
+        </MenuItem>
 
         <MenuItem :url="route('genie.admin.vectors.index')"
                   :active="$page.component === 'Genie/Admin/Vectors/Index'">

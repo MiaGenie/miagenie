@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AssistantsController;
 use App\Http\Controllers\Admin\FilesController;
 use App\Http\Controllers\Admin\ConfigsController;
 use App\Http\Controllers\Admin\VectorsController;
@@ -36,6 +37,15 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
         Route::get('{vector}', [VectorsController::class, 'edit'])->name('edit');
         Route::put('{vector}', [VectorsController::class, 'update'])->name('update');
         Route::delete('{vector}', [VectorsController::class, 'destroy'])->name('delete');
+    });
+
+    Route::prefix('assistants')->name('assistants.')->group(function () {
+        Route::get('/', [AssistantsController::class, 'index'])->name('index');
+        Route::get('create', [AssistantsController::class, 'create'])->name('create');
+        Route::post('store', [AssistantsController::class, 'store'])->name('store');
+        Route::get('{assistant}', [AssistantsController::class, 'edit'])->name('edit');
+        Route::put('{assistant}', [AssistantsController::class, 'update'])->name('update');
+        Route::delete('{assistant}', [AssistantsController::class, 'destroy'])->name('delete');
     });
 
     Route::prefix('files')->name('files.')->group(function () {
