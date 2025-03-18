@@ -48,9 +48,9 @@ class StoreCompetitor extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->fieldList = Version::findByUuid($this->input('version'))
-            ->with(['fields' => ['options']])
+            ->with(['competitors' => ['options']])
             ->firstOrFail()
-            ->fields;
+            ->competitors;
 
         $this->validationRules = $this->getValidationRules()->toArray();
     }
