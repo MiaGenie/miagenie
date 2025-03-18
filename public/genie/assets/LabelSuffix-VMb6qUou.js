@@ -1,1 +1,0 @@
-import{c as r,o as t,r as n,B as s}from"./app-rdd_LANQ.js";const c={__name:"LabelSuffix",props:{danger:{type:Boolean,default:!1}},setup(e){return(a,o)=>(t(),r("span",{class:s([{"text-red-500":e.danger,"text-gray-500":!e.danger},"font-normal"])},[n(a.$slots,"default")],2))}};export{c as _};
