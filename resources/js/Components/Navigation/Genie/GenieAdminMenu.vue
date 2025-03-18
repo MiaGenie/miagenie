@@ -5,6 +5,7 @@ import MenuGroupHeader from "@/Components/Sidebar/MenuGroupHeader.vue"
 import MenuGroupBody from "@/Components/Sidebar/MenuGroupBody.vue"
 import VersionIcon from "@/Icons/Genie/Version.vue";
 import CogIcon from "@/Icons/Cog.vue";
+import DocumentIcon from "@/Icons/Document.vue";
 </script>
 <template>
     <MenuGroupHeader>
@@ -12,6 +13,14 @@ import CogIcon from "@/Icons/Cog.vue";
     </MenuGroupHeader>
 
     <MenuGroupBody>
+
+        <MenuItem :url="route('genie.admin.files.index')"
+                  :active="$page.component === 'Genie/Admin/Files'">
+            <template #icon>
+                <DocumentIcon/>
+            </template>
+            {{ $t('genie.files') }}
+        </MenuItem>
 
         <MenuItem :url="route('genie.admin.versions.index')"
                   :active="$page.component === 'Genie/Admin/Versions/Index'">
