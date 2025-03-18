@@ -7,7 +7,7 @@ ADD ./ /var/www/html
 WORKDIR /var/www/html
 
 RUN apt update &&\
-    apt install -y ffmpeg &&\
+    apt install -y ffmpeg git &&\
     apt clean &&\
     install-php-extensions bcmath gd intl
 
