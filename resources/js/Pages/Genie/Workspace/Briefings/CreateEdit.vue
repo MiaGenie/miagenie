@@ -25,7 +25,6 @@ import DangerButton from "@/Components/Button/DangerButton.vue";
 import Checkbox from "@/Components/Form/Checkbox.vue";
 import Select from "@/Components/Form/Select.vue";
 import Radio from "@/Components/Form/Radio.vue";
-import HorizontalGroup from "mixpost-enterprise/resources/js/Components/Layout/HorizontalGroup.vue";
 
 const {t: $t} = useI18n()
 
@@ -192,7 +191,7 @@ const fieldType = (field) => {
                                        type="text"
                                        :id="field.code_name"
                                        @keydown.enter.prevent=""
-                                       :placeholder="field.description"
+                                       :placeholder="field.sub_description"
                                        :error="form.errors[field.code_name] !== undefined"
                                        :required="field.required"
                                 />
@@ -235,16 +234,20 @@ const fieldType = (field) => {
                             </template>
 
                             <template v-if="fieldType(field).name === 'RADIO'">
-                                <Flex class="items-start">
+
+                                <Flex class="items-start" :wrap="true" :col="true" >
                                     <template v-for="(group, index) in field.options" :key="index">
-                                        <template v-for="option in field.options[index]" :key="option.name">
-                                            <Radio v-model:checked="form[field.code_name + index]" :value="option.name"/>
-                                            <Label>
-                                                {{ option.name }}
-                                            </Label>
-                                        </template>
+                                        <Flex class="items-start" :responsive="false">
+                                            <template v-for="(option, index_option) in field.options[index]" :key="option.code_name">
+                                                <Radio v-model:checked="form.content[field.code_name][index]" :value="option.code_name"/>
+                                                <Label>
+                                                    {{ option.name }}
+                                                </Label>
+                                            </template>
+                                        </Flex>
                                     </template>
                                 </Flex>
+
                             </template>
 
                             <template v-if="fieldType(field).name === 'RADIO_GROUP'">
