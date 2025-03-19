@@ -23,7 +23,7 @@ class UpdateCompetitor extends FormRequest
     private Collection $fieldList;
 
     /**
-     * @return array[]
+     * @return array
      */
     public function rules(): array
     {

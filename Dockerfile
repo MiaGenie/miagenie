@@ -7,13 +7,14 @@ ADD ./ /var/www/html
 WORKDIR /var/www/html
 
 RUN apt update &&\
-    apt install -y ffmpeg &&\
+    apt install -y ffmpeg git &&\
     apt clean &&\
     install-php-extensions bcmath gd intl
 
 RUN --mount=type=secret,id=composer-auth \
     COMPOSER_AUTH=$(cat /run/secrets/composer-auth) \
-    composer install --no-cache --no-scripts --no-dev --ansi --no-interaction &&\
+    composer install --no-scripts --no-dev --ansi --no-interaction &&\
+    composer clear-cache &&\
     mkdir -p /var/www/html/public/vendor/genie-pro &&\
     cp -r /var/www/html/vendor/inovector/mixpost-pro-team/resources/dist/vendor/genie-pro \
     /var/www/html/public/vendor &&\

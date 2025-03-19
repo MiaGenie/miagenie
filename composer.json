@@ -15,7 +15,8 @@
         "league/flysystem-aws-s3-v3": "^3.0",
         "league/flysystem-sftp-v3": "^3.0",
         "sentry/sentry-laravel": "^4.9",
-        "spatie/laravel-translatable": "^6.11"
+        "spatie/laravel-translatable": "^6.11",
+        "openai-php/client": "^v0.10.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -42,11 +43,11 @@
     "repositories": {
         "inovector/mixpost-pro-team": {
             "type": "vcs",
-            "url": "https://github.com/miagenie/mixpost-pro-team"
+            "url": "https://github.com/miagenie/mixpost-pro-team.git"
         },
         "inovector/mixpost-enterprise": {
             "type": "vcs",
-            "url": "https://github.com/miagenie/mixpost-enterprise"
+            "url": "https://github.com/miagenie/mixpost-enterprise.git"
         }
     },
     "scripts": {
