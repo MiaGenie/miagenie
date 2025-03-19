@@ -38,12 +38,12 @@ const getRoute = (name) => {
         case 'edit':
             return route('genie.briefings.edit', {
                 workspace: workspaceCtx.id,
-                competitor: props.itemId
+                briefing: props.itemId
             });
         case 'delete':
             return route('genie.briefings.delete', {
                 workspace: workspaceCtx.id,
-                competitor: props.itemId
+                briefing: props.itemId
             });
         default:
             return '';

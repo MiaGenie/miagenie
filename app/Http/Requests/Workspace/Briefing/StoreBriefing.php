@@ -48,9 +48,9 @@ class StoreBriefing extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->fieldList = Version::findByUuid($this->input('version'))
-            ->with(['fields' => ['options']])
+            ->with(['briefings' => ['options']])
             ->firstOrFail()
-            ->fields;
+            ->briefings;
 
         $this->validationRules = $this->getValidationRules()->toArray();
     }

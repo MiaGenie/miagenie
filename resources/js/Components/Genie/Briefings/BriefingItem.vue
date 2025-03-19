@@ -37,7 +37,7 @@ const percentage = Number(fieldsCount.filled / fieldsCount.total * 100).toFixed(
     <TableRow :hoverable="true">
 
         <TableCell>
-            {{ item.content[identifier.code_name] }}
+            {{ item.id }}
 
             <Flex :responsive="false" class="md:hidden">
                 <Badge :variant="percentage == 100 ? 'success' : 'error'">

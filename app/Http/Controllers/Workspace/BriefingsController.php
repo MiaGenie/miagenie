@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Workspace;
 
+use App\Concerns\Controller\HasFieldOptions;
 use App\Enums\FormFieldType;
 use App\Http\Requests\Workspace\Briefing\StoreBriefing;
 use App\Http\Requests\Workspace\Briefing\UpdateBriefing;
@@ -15,6 +16,8 @@ use Inovector\Mixpost\Facades\WorkspaceManager;
 
 class BriefingsController extends Controller
 {
+    use HasFieldOptions;
+
     /**
      * @param Request $request
      */
@@ -50,6 +53,8 @@ class BriefingsController extends Controller
             ->firstOrFail()
             ->version
             ->toArray();
+
+        $fieldList['briefings'] = $this->groupFieldOptions($fieldList['briefings']);
 
         return Inertia::render('Genie/Workspace/Briefings/CreateEdit', [
             'mode' => 'create',
@@ -87,6 +92,8 @@ class BriefingsController extends Controller
             ->firstOrFail()
             ->version
             ->toArray();
+
+        $fieldList['briefings'] = $this->groupFieldOptions($fieldList['briefings']);
 
         return Inertia::render('Genie/Workspace/Briefings/CreateEdit', [
             'mode' => 'edit',

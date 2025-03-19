@@ -3,7 +3,7 @@
 namespace App\Http\Requests\Workspace\Briefing;
 
 use App\Concerns\IngestVersionsContent;
-use App\Models\Competitor;
+use App\Models\Briefing;
 use App\Models\Version;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Collection;
@@ -50,9 +50,9 @@ class UpdateBriefing extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->fieldList = Version::findByUuid($this->input('version'))
-            ->with(['fields' => ['options']])
+            ->with(['briefings' => ['options']])
             ->firstOrFail()
-            ->fields;
+            ->briefings;
 
         $this->validationRules = $this->getValidationRules()->toArray();
     }
