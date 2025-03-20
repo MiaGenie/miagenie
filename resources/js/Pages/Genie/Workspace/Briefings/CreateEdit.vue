@@ -60,7 +60,16 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) :
 
     props.fieldList.briefings.reduce(
         (list, field) => {
-            list.content[field.code_name] = props.fieldTypes.find((field_type) => field_type.value === field.field_type  ).hasOptions ? {} : '' ;
+            list.content[field.code_name] = props.fieldTypes.find((field_type) => field_type.value === field.field_type  ).hasOptions ? [] : '' ;
+            if(Array.isArray(list.content[field.code_name])) {
+                field.options.forEach(function(group, indexGroup){
+                    const nextGroup = group.filter(option => option.checked === 1);
+                    nextGroup.forEach(function(option, indexOption){
+                        list.content[field.code_name].push(option.code_name);
+                    });
+                });
+            }
+
             return list;
         }, {
             'content': {}
@@ -211,11 +220,13 @@ const fieldType = (field) => {
 
                             <template v-if="fieldType(field).name === 'CHECKBOX'">
 
-                                <Flex class="items-start">
-                                    <Checkbox v-model="form.content[field.code_name]"
-                                              :checked="form.active"
-                                              id="active"/>
-                                    <Label for="active">{{ $t('general.active') }}</Label>
+                                <Flex class="items-start" :col="true">
+                                    <template v-for="(option, index_option) in field.options[0]" :key="option.code_name">
+                                        <Checkbox v-model:checked="form.content[field.code_name]" :value="option.code_name"/>
+                                        <Label>
+                                            {{ option.name }}
+                                        </Label>
+                                    </template>
                                 </Flex>
 
                             </template>
