@@ -25,6 +25,8 @@ import DangerButton from "@/Components/Button/DangerButton.vue";
 import Checkbox from "@/Components/Form/Checkbox.vue";
 import Select from "@/Components/Form/Select.vue";
 import Radio from "@/Components/Form/Radio.vue";
+import TableCell from "mixpost-enterprise/resources/js/Components/DataDisplay/TableCell.vue";
+import TableRow from "mixpost-enterprise/resources/js/Components/DataDisplay/TableRow.vue";
 
 const {t: $t} = useI18n()
 
@@ -220,14 +222,16 @@ const fieldType = (field) => {
 
                             <template v-if="fieldType(field).name === 'CHECKBOX'">
 
-                                <Flex class="items-start" :col="true">
+
+                                <TableCell class="">
                                     <template v-for="(option, index_option) in field.options[0]" :key="option.code_name">
-                                        <Checkbox v-model:checked="form.content[field.code_name]" :value="option.code_name"/>
-                                        <Label>
+                                        <Flex class="py-sm">
+                                            <Checkbox v-model:checked="form.content[field.code_name]" :value="option.code_name"/>
                                             {{ option.name }}
-                                        </Label>
+                                        </Flex>
                                     </template>
-                                </Flex>
+                                </TableCell>
+
 
                             </template>
 
@@ -236,7 +240,7 @@ const fieldType = (field) => {
                                 <Flex class="items-start">
                                     <Select v-model="form.content[field.code_name]"
                                             id="testing" >
-                                        <template v-for="(option, index) in field.options" :key="index">
+                                        <template v-for="(option, index) in field.options[0]" :key="index">
                                             <option :value="option.code_name">{{ option.name }}</option>
                                         </template>
                                     </Select>
@@ -246,35 +250,35 @@ const fieldType = (field) => {
 
                             <template v-if="fieldType(field).name === 'RADIO'">
 
-                                <Flex class="items-start" :wrap="true" :col="true" >
+                                <div >
                                     <template v-for="(group, index) in field.options" :key="index">
-                                        <Flex class="items-start" :responsive="false">
+                                        <TableRow class="">
                                             <template v-for="(option, index_option) in field.options[index]" :key="option.code_name">
-                                                <Radio v-model:checked="form.content[field.code_name][index]" :value="option.code_name"/>
-                                                <Label>
+                                                <TableCell class="">
+                                                    <Radio v-model:checked="form.content[field.code_name][index]" :value="option.code_name"/>
                                                     {{ option.name }}
-                                                </Label>
+                                                </TableCell>
                                             </template>
-                                        </Flex>
+                                        </TableRow>
                                     </template>
-                                </Flex>
+                                </div>
 
                             </template>
 
                             <template v-if="fieldType(field).name === 'RADIO_GROUP'">
 
-                                <Flex class="items-start" :wrap="true" :col="true" >
+                                <div >
                                     <template v-for="(group, index) in field.options" :key="index">
-                                        <Flex class="items-start" :responsive="false">
+                                        <TableRow class="">
                                             <template v-for="(option, index_option) in field.options[index]" :key="option.code_name">
-                                                <Radio v-model:checked="form.content[field.code_name][index]" :value="option.code_name"/>
-                                                <Label>
+                                                <TableCell class="">
+                                                    <Radio v-model:checked="form.content[field.code_name][index]" :value="option.code_name"/>
                                                     {{ option.name }}
-                                                </Label>
+                                                </TableCell>
                                             </template>
-                                        </Flex>
+                                        </TableRow>
                                     </template>
-                                </Flex>
+                                </div>
 
                             </template>
 
