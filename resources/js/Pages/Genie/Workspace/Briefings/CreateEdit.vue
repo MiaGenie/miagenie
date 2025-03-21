@@ -25,8 +25,8 @@ import DangerButton from "@/Components/Button/DangerButton.vue";
 import Checkbox from "@/Components/Form/Checkbox.vue";
 import Select from "@/Components/Form/Select.vue";
 import Radio from "@/Components/Form/Radio.vue";
-import TableCell from "mixpost-enterprise/resources/js/Components/DataDisplay/TableCell.vue";
-import TableRow from "mixpost-enterprise/resources/js/Components/DataDisplay/TableRow.vue";
+import TableCell from "@/Components/DataDisplay/TableCell.vue";
+import TableRow from "@/Components/DataDisplay/TableRow.vue";
 
 const {t: $t} = useI18n()
 
@@ -250,18 +250,16 @@ const fieldType = (field) => {
 
                             <template v-if="fieldType(field).name === 'RADIO'">
 
-                                <div >
+                                <TableCell class="">
                                     <template v-for="(group, index) in field.options" :key="index">
-                                        <TableRow class="">
-                                            <template v-for="(option, index_option) in field.options[index]" :key="option.code_name">
-                                                <TableCell class="">
-                                                    <Radio v-model:checked="form.content[field.code_name][index]" :value="option.code_name"/>
-                                                    {{ option.name }}
-                                                </TableCell>
-                                            </template>
-                                        </TableRow>
+                                        <template v-for="(option, index_option) in field.options[index]" :key="option.code_name">
+                                            <Flex class="py-sm">
+                                                <Radio v-model:checked="form.content[field.code_name][index]" :value="option.code_name"/>
+                                                {{ option.name }}
+                                            </Flex>
+                                        </template>
                                     </template>
-                                </div>
+                                </TableCell>
 
                             </template>
 
