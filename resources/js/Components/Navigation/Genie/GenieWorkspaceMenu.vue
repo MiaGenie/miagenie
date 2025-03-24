@@ -6,6 +6,7 @@ import MenuGroupHeader from "@/Components/Sidebar/MenuGroupHeader.vue"
 import MenuGroupBody from "@/Components/Sidebar/MenuGroupBody.vue"
 import CompetitorIcon from "@/Icons/Genie/Competitor.vue";
 import BriefingIcon from "@/Icons/Genie/Briefings.vue";
+import StrategyIcon from "@/Icons/Genie/Strategies.vue";
 
 const workspaceCtx = inject('workspaceCtx');
 </script>
@@ -28,6 +29,13 @@ const workspaceCtx = inject('workspaceCtx');
                 <BriefingIcon/>
             </template>
             {{ $t('genie.briefings') }}
+        </MenuItem>
+        <MenuItem :url="route('genie.strategies.index', {workspace: workspaceCtx.id})"
+                  :active="$page.component === 'Genie/Strategies/Index'">
+            <template #icon>
+                <StrategyIcon/>
+            </template>
+            {{ $t('genie.strategies') }}
         </MenuItem>
     </MenuGroupBody>
 </template>

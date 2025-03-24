@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Workspace\CompetitorsController;
 use App\Http\Controllers\Workspace\BriefingsController;
+use App\Http\Controllers\Workspace\StrategiesController;
 use Illuminate\Support\Facades\Route;
 use Inovector\Mixpost\Enums\WorkspaceUserRole;
 use Inovector\Mixpost\Http\Base\Middleware\CheckWorkspaceUser;
@@ -35,5 +36,15 @@ Route::middleware(array_merge([
             Route::get('{briefing}', [BriefingsController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
             Route::put('{briefing}', [BriefingsController::class, 'update'])->name('update');
             Route::delete('{briefing}', [BriefingsController::class, 'destroy'])->name('delete');
+        });
+
+        // strategy
+        Route::prefix('strategies')->name('strategies.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
+            Route::get('/', [StrategiesController::class, 'index'])->name('index')->withoutMiddleware($editorMiddleware);
+            Route::get('create', [StrategiesController::class, 'create'])->name('create');
+            Route::post('store', [StrategiesController::class, 'store'])->name('store');
+            Route::get('{strategy}', [StrategiesController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
+            Route::put('{strategy}', [StrategiesController::class, 'update'])->name('update');
+            Route::delete('{strategy}', [StrategiesController::class, 'destroy'])->name('delete');
         });
     });
