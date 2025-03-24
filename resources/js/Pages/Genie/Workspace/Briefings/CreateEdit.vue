@@ -240,6 +240,7 @@ const fieldType = (field) => {
                                 <Flex class="items-start">
                                     <Select v-model="form.content[field.code_name]"
                                             id="testing" >
+                                        <option></option>
                                         <template v-for="(option, index) in field.options[0]" :key="index">
                                             <option :value="option.code_name">{{ option.name }}</option>
                                         </template>
