@@ -9,7 +9,7 @@ import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import Pagination from "@/Components/Navigation/Pagination.vue";
 import NoResult from "@/Components/Util/NoResult.vue";
-import StrategyItem from "@/Components/Genie/Briefings/StrategyItem.vue";
+import StrategyItem from "@/Components/Genie/Strategies/StrategyItem.vue";
 import Plus from "@/Icons/Plus.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 

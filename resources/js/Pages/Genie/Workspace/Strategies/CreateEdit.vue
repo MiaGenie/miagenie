@@ -6,7 +6,7 @@ import {useI18n} from "vue-i18n";
 import useNotifications from "@/Composables/useNotifications";
 import usePageMode from "@/Composables/usePageMode";
 import useRouter from "@/Composables/useRouter";
-import StrategyAction from "@/Components/Genie/Strategy/StrategyAction.vue";
+import StrategyAction from "@/Components/Genie/Strategies/StrategyAction.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import PageHeader from "@/Components/DataDisplay/PageHeader.vue";
 import Error from "@/Components/Form/Error.vue";
