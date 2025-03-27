@@ -1,6 +1,6 @@
 <script setup>
 import {Head, router, useForm} from '@inertiajs/vue3';
-import {inject} from "vue";
+import {inject, provide} from "vue";
 import {cloneDeep, find} from "lodash";
 import {useI18n} from "vue-i18n";
 import useNotifications from "@/Composables/useNotifications";
@@ -9,20 +9,14 @@ import useRouter from "@/Composables/useRouter";
 import CompetitorAction from "@/Components/Genie/Competitors/CompetitorAction.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import PageHeader from "@/Components/DataDisplay/PageHeader.vue";
-import Error from "@/Components/Form/Error.vue";
-import Input from "@/Components/Form/Input.vue";
-import Label from "@/Components/Form/Label.vue";
-import LabelSuffix from "@/Components/Form/LabelSuffix.vue";
-import Textarea from "@/Components/Form/Textarea.vue";
-import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
-import Checkbox from "@/Components/Form/Checkbox.vue";
-import Panel from "@/Components/Surface/Panel.vue";
 import Trash from "@/Icons/Trash.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import Flex from "@/Components/Layout/Flex.vue";
+import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import X from "@/Icons/X.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
+import VersionFieldsForm from "@/Components/Form/Genie/FieldsForm.vue";
 
 const {t: $t} = useI18n()
 
@@ -157,6 +151,8 @@ const deleteCompetitor = () => {
         .show();
 }
 
+provide(/* key */ 'form', /* value */ form);
+
 </script>
 <template>
 
@@ -173,54 +169,7 @@ const deleteCompetitor = () => {
             <form method="post" @submit.prevent="submit">
 
                 <Panel>
-
-                    <template #title>{{ $t("general.details") }}</template>
-
-                    <template v-for="(field, index) in fieldList.competitors" :key="index">
-                        <VerticalGroup class="form-field mt-lg">
-                            <template #title>
-                                <label :for="field.code_name">{{ field.name }}</label>
-                                <LabelSuffix v-if="field.required" :danger="true">*</LabelSuffix>
-                            </template>
-
-                            <template v-if="fieldType(field).name === 'INPUT'">
-
-                                <Input v-model="form.content[field.code_name]"
-                                       type="text"
-                                       :id="field.code_name"
-                                       @keydown.enter.prevent=""
-                                       :placeholder="field.description"
-                                       :error="form.errors[field.code_name] !== undefined"
-                                       :required="field.required"
-                                />
-
-                            </template>
-                            <template v-if="fieldType(field).name === 'TEXTAREA'">
-
-                                <Textarea v-model="form.content[field.code_name]"
-                                          :placeholder="field.description"
-                                          :error="form.errors[field.code_name] !== undefined"
-                                          :id="field.code_name"
-                                          class="w-full placeholder:italic placeholder:text-sm"
-                                          :rows="field.size ?? 4"
-                                />
-
-                            </template>
-                            <template v-if="fieldType(field).name === 'CHECKBOX'">
-
-                                <Flex class="items-start">
-                                    <Checkbox v-model:checked="form.active" id="active"/>
-                                    <Label for="active">{{ $t('general.active') }}</Label>
-                                </Flex>
-
-                            </template>
-
-                            <template #footer>
-                                <Error :message="form.errors.content?.field.code_name"/>
-                            </template>
-                        </VerticalGroup>
-                    </template>
-
+                    <VersionFieldsForm :fieldTypes="props.fieldTypes" :fieldList="props.fieldList.competitors"></VersionFieldsForm>
                 </Panel>
 
                 <Flex

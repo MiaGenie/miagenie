@@ -1,7 +1,7 @@
 <script setup>
 import {Head, router, useForm} from '@inertiajs/vue3';
-import {inject} from "vue";
-import {cloneDeep, find} from "lodash";
+import {inject, provide} from "vue";
+import {cloneDeep} from "lodash";
 import {useI18n} from "vue-i18n";
 import useNotifications from "@/Composables/useNotifications";
 import usePageMode from "@/Composables/usePageMode";
@@ -9,26 +9,16 @@ import useRouter from "@/Composables/useRouter";
 import StrategyAction from "@/Components/Genie/Strategies/StrategyAction.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import PageHeader from "@/Components/DataDisplay/PageHeader.vue";
-import Error from "@/Components/Form/Error.vue";
-import Input from "@/Components/Form/Input.vue";
-import Label from "@/Components/Form/Label.vue";
-import LabelSuffix from "@/Components/Form/LabelSuffix.vue";
-import Textarea from "@/Components/Form/Textarea.vue";
-import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
-import Panel from "@/Components/Surface/Panel.vue";
 import Trash from "@/Icons/Trash.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import Flex from "@/Components/Layout/Flex.vue";
+import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import X from "@/Icons/X.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
-import Checkbox from "@/Components/Form/Checkbox.vue";
-import Select from "@/Components/Form/Select.vue";
-import Radio from "@/Components/Form/Radio.vue";
-import TableCell from "@/Components/DataDisplay/TableCell.vue";
-import TableRow from "@/Components/DataDisplay/TableRow.vue";
+import VersionFieldsForm from "@/Components/Form/Genie/FieldsForm.vue";
 
-const {t: $t} = useI18n()
+const {t: $t} = useI18n();
 
 const props = defineProps({
     mode: {
@@ -166,9 +156,7 @@ const deleteStrategy = () => {
         .show();
 }
 
-const fieldType = (field) => {
-    return find(props.fieldTypes, ['value', Number(field.field_type)]);
-}
+provide(/* key */ 'form', /* value */ form);
 
 </script>
 <template>
@@ -186,107 +174,7 @@ const fieldType = (field) => {
             <form method="post" @submit.prevent="submit">
 
                 <Panel>
-
-                    <template #title>{{ $t("general.details") }}</template>
-
-                    <template v-for="(field, index) in fieldList.strategies" :key="index">
-                        <VerticalGroup class="form-field mt-lg">
-                            <template #title>
-                                <label :for="field.code_name">{{ field.description }}</label>
-                                <LabelSuffix v-if="field.required" :danger="true">*</LabelSuffix>
-                            </template>
-
-                            <template v-if="fieldType(field).name === 'INPUT'">
-
-                                <Input v-model="form.content[field.code_name]"
-                                       type="text"
-                                       :id="field.code_name"
-                                       @keydown.enter.prevent=""
-                                       :placeholder="field.sub_description"
-                                       :error="form.errors[field.code_name] !== undefined"
-                                       :required="field.required"
-                                />
-
-                            </template>
-                            <template v-if="fieldType(field).name === 'TEXTAREA'">
-
-                                <Textarea v-model="form.content[field.code_name]"
-                                          :placeholder="field.sub_description"
-                                          :error="form.errors[field.code_name] !== undefined"
-                                          :id="field.code_name"
-                                          class="w-full placeholder:italic placeholder:text-sm"
-                                          :rows="field.size ?? 4"
-                                />
-
-                            </template>
-
-                            <template v-if="fieldType(field).name === 'CHECKBOX'">
-
-
-                                <TableCell class="">
-                                    <template v-for="(option, index_option) in field.options[0]" :key="option.code_name">
-                                        <Flex class="py-sm">
-                                            <Checkbox v-model:checked="form.content[field.code_name]" :value="option.code_name"/>
-                                            {{ option.name }}
-                                        </Flex>
-                                    </template>
-                                </TableCell>
-
-
-                            </template>
-
-                            <template v-if="fieldType(field).name === 'DROP_DOWN'">
-
-                                <Flex class="items-start">
-                                    <Select v-model="form.content[field.code_name]"
-                                            id="testing" >
-                                        <option></option>
-                                        <template v-for="(option, index) in field.options[0]" :key="index">
-                                            <option :value="option.code_name">{{ option.name }}</option>
-                                        </template>
-                                    </Select>
-                                </Flex>
-
-                            </template>
-
-                            <template v-if="fieldType(field).name === 'RADIO'">
-
-                                <TableCell class="">
-                                    <template v-for="(group, index) in field.options" :key="index">
-                                        <template v-for="(option, index_option) in field.options[index]" :key="option.code_name">
-                                            <Flex class="py-sm">
-                                                <Radio v-model:checked="form.content[field.code_name][index]" :value="option.code_name"/>
-                                                {{ option.name }}
-                                            </Flex>
-                                        </template>
-                                    </template>
-                                </TableCell>
-
-                            </template>
-
-                            <template v-if="fieldType(field).name === 'RADIO_GROUP'">
-
-                                <div >
-                                    <template v-for="(group, index) in field.options" :key="index">
-                                        <TableRow class="">
-                                            <template v-for="(option, index_option) in field.options[index]" :key="option.code_name">
-                                                <TableCell class="">
-                                                    <Radio v-model:checked="form.content[field.code_name][index]" :value="option.code_name"/>
-                                                    {{ option.name }}
-                                                </TableCell>
-                                            </template>
-                                        </TableRow>
-                                    </template>
-                                </div>
-
-                            </template>
-
-                            <template #footer>
-                                <Error :message="form.errors.content?.field.code_name"/>
-                            </template>
-                        </VerticalGroup>
-                    </template>
-
+                    <VersionFieldsForm :fieldTypes="props.fieldTypes" :fieldList="props.fieldList.strategies"></VersionFieldsForm>
                 </Panel>
 
                 <Flex
@@ -324,7 +212,7 @@ const fieldType = (field) => {
                     <Flex v-if="isEdit">
 
                         <DangerButton
-                            @click="deleteBriefing"
+                            @click="deleteStrategy"
                             :disabled="form.processing"
                         >
                             {{ $t("general.delete") }}
