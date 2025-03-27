@@ -57,7 +57,7 @@ const deleteStrategyAfterConfirmed = (dialog) => {
 <template>
     <Flex :responsive="false" class="items-center">
 
-            <DangerButton @click="confirmDeleteBriefing" size="sm">
+            <DangerButton @click="confirmDeleteStrategy" size="sm">
                 <template #icon>
                     <Trash/>
                 </template>
