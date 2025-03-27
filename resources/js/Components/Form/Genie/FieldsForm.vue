@@ -42,7 +42,7 @@ const fieldType = (field) => {
     <template v-for="(field, index) in props.fieldList" :key="index">
         <VerticalGroup class="form-field mt-lg">
             <template #title>
-                <label :for="field.code_name">{{ field.description }}</label>
+                <label :for="field.code_name">{{ field.name }}</label>
                 <LabelSuffix v-if="field.required" :danger="true">*</LabelSuffix>
             </template>
 
@@ -52,7 +52,7 @@ const fieldType = (field) => {
                        type="text"
                        :id="field.code_name"
                        @keydown.enter.prevent=""
-                       :placeholder="field.sub_description"
+                       :placeholder="field.description"
                        :error="form.errors[field.code_name] !== undefined"
                        :required="field.required"
                 />
@@ -62,7 +62,7 @@ const fieldType = (field) => {
             <template v-if="fieldType(field).name === 'TEXTAREA'">
 
                 <Textarea v-model="form.content[field.code_name]"
-                          :placeholder="field.sub_description"
+                          :placeholder="field.description"
                           :error="form.errors[field.code_name] !== undefined"
                           :id="field.code_name"
                           class="w-full placeholder:italic placeholder:text-sm"

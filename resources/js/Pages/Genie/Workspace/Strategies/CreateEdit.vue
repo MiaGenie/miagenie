@@ -52,6 +52,8 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) :
 
     props.fieldList.strategies.reduce(
         (list, field) => {
+            field.name = field.description;
+            field.description = field.sub_description;
             list.content[field.code_name] = props.fieldTypes.find((field_type) => field_type.value === field.field_type  ).hasOptions ? [] : '' ;
             if(Array.isArray(list.content[field.code_name])) {
                 field.options.forEach(function(group, indexGroup){
