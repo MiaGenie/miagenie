@@ -1,1 +1,0 @@
-import{I as t,c as o,a as s,H as c}from"./app-C4hlEBVo.js";const n={},r={class:"text-lg font-medium"};function a(e,l){return s(),o("div",r,[c(e.$slots,"default")])}const i=t(n,[["render",a]]);export{i as S};

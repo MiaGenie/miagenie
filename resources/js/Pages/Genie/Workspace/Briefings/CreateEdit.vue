@@ -1,12 +1,12 @@
 <script setup>
 import {Head, router, useForm} from '@inertiajs/vue3';
 import {inject, provide} from "vue";
-import {cloneDeep, find} from "lodash";
+import {cloneDeep} from "lodash";
 import {useI18n} from "vue-i18n";
 import useNotifications from "@/Composables/useNotifications";
 import usePageMode from "@/Composables/usePageMode";
 import useRouter from "@/Composables/useRouter";
-import CompetitorAction from "@/Components/Genie/Competitors/CompetitorAction.vue";
+import BriefingAction from "@/Components/Genie/Briefings/BriefingAction.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import PageHeader from "@/Components/DataDisplay/PageHeader.vue";
 import Trash from "@/Icons/Trash.vue";
@@ -48,15 +48,22 @@ const {notify} = useNotifications();
 const {isCreate, isEdit} = usePageMode();
 const {onError} = useRouter();
 
-const fieldType = (field) => {
-    return find(props.fieldTypes, ['value', Number(field.field_type)]);
-}
-
 const form = useForm(isEdit.value ? cloneDeep(props.record) :
 
-    props.fieldList.competitors.reduce(
+    props.fieldList.briefings.reduce(
         (list, field) => {
-            list.content[field.code_name] = fieldType(field).hasOptions ? [] : '';
+            field.name = field.description;
+            field.description = field.sub_description;
+            list.content[field.code_name] = props.fieldTypes.find((field_type) => field_type.value === field.field_type  ).hasOptions ? [] : '' ;
+            if(Array.isArray(list.content[field.code_name])) {
+                field.options.forEach(function(group, indexGroup){
+                    const nextGroup = group.filter(option => option.checked === 1);
+                    nextGroup.forEach(function(option, indexOption){
+                        list.content[field.code_name].push(option.code_name);
+                    });
+                });
+            }
+
             return list;
         }, {
             'content': {}
@@ -68,7 +75,7 @@ const store = () => {
     form.transform((data) => ({
         ...data,
         'version' : props.fieldList.uuid
-    })).post(route(`${routePrefix}.competitors.store`, {
+    })).post(route(`genie.briefings.store`, {
         'workspace': workspaceCtx.id
     }), {
         onError: (errors) => {
@@ -81,9 +88,9 @@ const update = () => {
     form.transform((data) => ({
         ...data,
         'version' : props.fieldList.uuid
-    })).put(route(`${routePrefix}.competitors.update`, {
+    })).put(route(`genie.briefings.update`, {
         'workspace': workspaceCtx.id,
-        competitor: props.record.id
+        briefing: props.record.id
     }), {
         preserveScroll: true,
         onError: (errors) => {
@@ -119,28 +126,28 @@ const attemptClose = () => {
 }
 
 const backToList = () => {
-    router.get(route('genie.competitors.index', {
+    router.get(route('genie.briefings.index', {
         workspace: workspaceCtx.id
     }));
 }
 
-const deleteCompetitor = () => {
+const deleteBriefing = () => {
     confirmation()
-        .title($t("genie.delete_competitor"))
-        .description($t("genie.delete_competitor_confirm"))
+        .title($t("genie.delete_briefing"))
+        .description($t("genie.delete_briefing_confirm"))
         .destructive()
         .onConfirm((dialog) => {
             dialog.isLoading(true);
 
             router.delete(
-                route('genie.competitors.delete',
+                route('genie.briefings.delete',
                     {
                         workspace: workspaceCtx.id,
-                        competitor: props.record.id
+                        briefing: props.record.id
                     }), {
                     preserveScroll: true,
                     onSuccess() {
-                        notify('success', $t('genie.competitor_deleted'))
+                        notify('success', $t('genie.briefing_deleted'))
                     },
                     onFinish() {
                         dialog.reset();
@@ -156,12 +163,12 @@ provide(/* key */ 'form', /* value */ form);
 </script>
 <template>
 
-    <Head :title="mode === 'create' ? $t('genie.create_competitor') : $t('genie.edit_competitor')"/>
+    <Head :title="mode === 'create' ? $t('genie.create_briefing') : $t('genie.edit_briefing')"/>
 
     <div class="w-full mx-auto row-py">
-        <PageHeader :title="mode === 'create' ? $t('genie.create_competitor') : $t('genie.edit_competitor')">
+        <PageHeader :title="mode === 'create' ? $t('genie.create_briefing') : $t('genie.edit_briefing')">
             <template v-if="isEdit">
-                <CompetitorAction :record="record" />
+                <BriefingAction :record="record" />
             </template>
         </PageHeader>
 
@@ -169,7 +176,7 @@ provide(/* key */ 'form', /* value */ form);
             <form method="post" @submit.prevent="submit">
 
                 <Panel>
-                    <VersionFieldsForm :fieldTypes="props.fieldTypes" :fieldList="props.fieldList.competitors"></VersionFieldsForm>
+                    <VersionFieldsForm :fieldTypes="props.fieldTypes" :fieldList="props.fieldList.briefings"></VersionFieldsForm>
                 </Panel>
 
                 <Flex
@@ -207,7 +214,7 @@ provide(/* key */ 'form', /* value */ form);
                     <Flex v-if="isEdit">
 
                         <DangerButton
-                            @click="deleteCompetitor"
+                            @click="deleteBriefing"
                             :disabled="form.processing"
                         >
                             {{ $t("general.delete") }}
