@@ -2,6 +2,8 @@
 import {computed, defineAsyncComponent, inject} from "vue";
 import ExclamationCircleIcon from "@/Icons/ExclamationCircle.vue"
 import ArrowDownTray from "@/Icons/Genie/ArrowDownTray.vue"
+import Sync from "@/Icons/Genie/Sync.vue"
+import Flex from "@/Components/Layout/Flex.vue";
 
 const props = defineProps({
     media: {
@@ -63,12 +65,24 @@ const imgHeightClass = computed(() => {
     <figure :class="{'border border-gray-200 rounded-md p-xs bg-stone-500': showCaption}" class="group relative">
         <slot/>
         <div
-            class="relative flex rounded"
+            class="relative flex rounded gap-3 items-center"
             :class="{'border border-red-500 p-md': media.hasOwnProperty('error')}"
         >
-            <component :is="fileTypeIcon"></component>
-            <div class="mt-xs text-sm">{{ media.name }}</div>
-
+            <Flex class="text-xs items-center" :col="true">
+                <component :is="fileTypeIcon"></component>
+                {{ fileSize }}
+            </Flex>
+            <Flex class="items-center" :col="true">
+                <div>
+                    <Sync />
+                </div>
+                <div @click="$emit('download')">
+                    <ArrowDownTray />
+                </div>
+            </Flex>
+            <Flex class="text-sm items-center" :col="true">
+                {{ media.name }}
+            </Flex>
             <div v-if="media.hasOwnProperty('error')" class="text-center">
                 <ExclamationCircleIcon class="w-8 h-8 mx-auto text-red-500"/>
                 <div class="mt-xs">{{ media.name }}</div>
@@ -77,14 +91,5 @@ const imgHeightClass = computed(() => {
                 </div>
             </div>
         </div>
-        <template v-if="showCaption">
-            <figcaption class="mt-xs px-1 text-xs flex justify-between items-center gap-2">
-
-                {{ fileSize }}
-                <div @click="$emit('download')">
-                    <ArrowDownTray />
-                </div>
-            </figcaption>
-        </template>
    </figure>
 </template>

@@ -17,7 +17,7 @@ import Input from "@/Components/Form/Input.vue";
 import Select from "@/Components/Form/Select.vue";
 import LabelSuffix from "@/Components/Form/LabelSuffix.vue";
 import Textarea from "@/Components/Form/Textarea.vue";
-import AddFile from "@/Components/Genie/Files/AddFile.vue";
+import VectorAddFile from "@/Components/Genie/Vectors/VectorAddFile.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
 import SuccessButton from "@/Components/Button/SuccessButton.vue";
@@ -215,7 +215,7 @@ const removeFile = (item) => {
                                 </VectorFile>
                             </template>
 
-                            <AddFile
+                            <VectorAddFile
                                 @insert="updateContent([...$event.items])"
                             >
                                 <SuccessButton
@@ -226,7 +226,7 @@ const removeFile = (item) => {
                                     </template>
                                     {{ $t('genie.add_file') }}
                                 </SuccessButton>
-                            </AddFile>
+                            </VectorAddFile>
 
                         </template>
 
