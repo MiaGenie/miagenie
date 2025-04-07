@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Throwable;
 
 class FileJob implements ShouldQueue
 {
@@ -17,6 +18,16 @@ class FileJob implements ShouldQueue
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
+
+    /**
+     * @var int
+     */
+    public int $tries = 5;
+
+    /**
+     * @var int
+     */
+    public int $timeout = 30;
 
     /**
      * @var File
@@ -66,5 +77,16 @@ class FileJob implements ShouldQueue
 
             $this->file->delete();
         }
+    }
+
+    /**
+     * @param Throwable|null $exception
+     * @return void
+     */
+    public function failed(?Throwable $exception): void
+    {
+
+        // do failed stuff
+
     }
 }

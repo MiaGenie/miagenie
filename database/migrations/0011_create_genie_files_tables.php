@@ -21,6 +21,7 @@ return new class extends Migration {
             $table->string('mime_type');
             $table->string('disk');
             $table->string('path');
+            $table->tinyInteger('status');
             $table->unsignedBigInteger('size');
             $table->string('file_id')->nullable();
             $table->timestamps();
