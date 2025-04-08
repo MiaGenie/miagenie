@@ -92,10 +92,13 @@ class FileJob implements ShouldQueue
      */
     public function failed(?Throwable $exception): void
     {
-        // do failed stuff
         $fileDb = File::find($this->file->id);
-        $fileDb->status = FileStatus::FAILED;
+        // do failed stuff
+        if ($this->action === 'upload') {
+            $fileDb->status = FileStatus::FAILED;
+        } elseif ($this->action === 'delete') {
+            $fileDb->status = FileStatus::FAILED_DELETION;
+        }
         $fileDb->save();
-
     }
 }
