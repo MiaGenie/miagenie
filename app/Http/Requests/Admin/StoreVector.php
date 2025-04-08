@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\FileStatus;
 use App\Enums\VectorType;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Vector;
@@ -33,7 +34,8 @@ class StoreVector extends FormRequest
             'name' => $this->input('name'),
             'description' => $this->input('description'),
             'files' => $this->input('files'),
-            'vector_type' => $this->input('vector_type')
+            'vector_type' => $this->input('vector_type'),
+            'status' => FileStatus::CREATED,
         ]);
     }
 }
