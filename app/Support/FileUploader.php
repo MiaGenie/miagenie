@@ -106,7 +106,7 @@ class FileUploader
             'mime_type' => $this->file->getMimeType(),
             'disk' => $this->disk,
             'path' => $path,
-            'status' => FileStatus::DISABLED,
+            'status' => FileStatus::CREATED,
             'size' => $this->file->getSize(),
         ];
     }

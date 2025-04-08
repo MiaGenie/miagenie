@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Enums\FileStatus;
 use App\Models\File;
 use App\Support\Facades\OpenAI;
+use Illuminate\Support\Facades\Log;
 
 
 class UploadFile
@@ -16,23 +17,29 @@ class UploadFile
      */
     public function __invoke(File $file): bool
     {
-        $File = File::find($file->id);
-        $File->status = FileStatus::ENABLED;
-        $File->save();
+        $fileDb = File::find($file->id);
+        $fileDb->status = FileStatus::UPLOADING;
+        $fileDb->save();
 
-        $upload = OpenAI::files()->upload(
-            [
-                'file' => fopen($file->getFullPath(), 'r'),
-                'purpose' => 'assistants'
-            ]
-        );
+        try {
+            $upload = OpenAI::files()->upload(
+                [
+                    'file' => fopen($file->getFullPath(), 'r'),
+                    'purpose' => 'assistants'
+                ]
+            );
 
-        if ($upload->id && 'file' === $upload->object) {
-            $File = File::find($file->id);
-            $File->file_id = $upload->id;
-            $File->status = FileStatus::ENABLED;
-            $File->save();
-            return true;
+            if ($upload->id && 'file' === $upload->object) {
+                $fileDb->file_id = $upload->id;
+                $fileDb->status = FileStatus::UPLOADED;
+                $fileDb->save();
+                return true;
+            }
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+
+            $fileDb->status = FileStatus::PENDING;
+            $fileDb->save();
         }
 
         return false;

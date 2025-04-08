@@ -4,12 +4,14 @@ namespace App\Jobs;
 
 use App\Actions\DeleteFile;
 use App\Actions\UploadFile;
+use App\Enums\FileStatus;
 use App\Models\File;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class FileJob implements ShouldQueue
@@ -22,7 +24,7 @@ class FileJob implements ShouldQueue
     /**
      * @var int
      */
-    public int $tries = 5;
+    public int $tries = 3;
 
     /**
      * @var int
@@ -58,15 +60,17 @@ class FileJob implements ShouldQueue
     {
         if ($this->action === 'upload') {
 
+            Log::info("TESTING BEFORE");
             $response = $uploadFile($this->file);
 
             if (! $response) {
+
+                Log::info("TESTING RETRY");
                 $this->release(30);
 
                 return;
             }
         } elseif ($this->action === 'delete') {
-
             $response = $deleteFile($this->file);
 
             if (! $response) {
@@ -85,8 +89,10 @@ class FileJob implements ShouldQueue
      */
     public function failed(?Throwable $exception): void
     {
-
         // do failed stuff
+        $fileDb = File::find($this->file->id);
+        $fileDb->status = FileStatus::FAILED;
+        $fileDb->save();
 
     }
 }
