@@ -60,17 +60,20 @@ class FileJob implements ShouldQueue
     {
         if ($this->action === 'upload') {
 
-            Log::info("TESTING BEFORE");
             $response = $uploadFile($this->file);
 
             if (! $response) {
 
-                Log::info("TESTING RETRY");
                 $this->release(30);
 
                 return;
             }
         } elseif ($this->action === 'delete') {
+
+            $fileDb = File::find($this->file->id);
+            $fileDb->status = FileStatus::TO_DELETE;
+            $fileDb->save();
+
             $response = $deleteFile($this->file);
 
             if (! $response) {
