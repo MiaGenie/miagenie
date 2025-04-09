@@ -4,7 +4,7 @@ namespace App\Enums;
 
 use App\Concerns\Enum\WithTitle;
 
-enum FileStatus: int
+enum OpenAISyncStatus: int
 {
     use WithTitle;
 
