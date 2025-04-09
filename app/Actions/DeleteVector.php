@@ -2,7 +2,7 @@
 
 namespace App\Actions;
 
-use App\Enums\FileStatus;
+use App\Enums\OpenAISyncStatus;
 use App\Models\Vector;
 use App\Support\Facades\OpenAI;
 use Illuminate\Support\Facades\Log;
@@ -18,7 +18,7 @@ class DeleteVector
     {
 
         $vectorDb = Vector::find($vector->id);
-        $vectorDb->status = FileStatus::DELETING;
+        $vectorDb->status = OpenAISyncStatus::DELETING;
         $vectorDb->save();
 
         try {
@@ -30,7 +30,7 @@ class DeleteVector
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
 
-            $vectorDb->status = FileStatus::PENDING_DELETION;
+            $vectorDb->status = OpenAISyncStatus::PENDING_DELETION;
             $vectorDb->save();
         }
 

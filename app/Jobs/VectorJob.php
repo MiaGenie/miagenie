@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Actions\DeleteVector;
 use App\Actions\UploadVector;
-use App\Enums\FileStatus;
+use App\Enums\OpenAISyncStatus;
 use App\Models\Vector;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -71,7 +71,7 @@ class VectorJob implements ShouldQueue
         } elseif ($this->action === 'delete') {
 
             $vectorDb = Vector::find($this->vector->id);
-            $vectorDb->status = FileStatus::TO_DELETE;
+            $vectorDb->status = OpenAISyncStatus::TO_DELETE;
             $vectorDb->save();
 
             $response = $deleteVector($this->vector);
@@ -95,9 +95,9 @@ class VectorJob implements ShouldQueue
         $vectorDb = Vector::find($this->vector->id);
         // do failed stuff
         if ($this->action === 'upload') {
-            $vectorDb->status = FileStatus::FAILED;
+            $vectorDb->status = OpenAISyncStatus::FAILED;
         } elseif ($this->action === 'delete') {
-            $vectorDb->status = FileStatus::FAILED_DELETION;
+            $vectorDb->status = OpenAISyncStatus::FAILED_DELETION;
         }
         $vectorDb->save();
     }

@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Actions\DeleteFile;
 use App\Actions\UploadFile;
-use App\Enums\FileStatus;
+use App\Enums\OpenAISyncStatus;
 use App\Models\File;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -71,7 +71,7 @@ class FileJob implements ShouldQueue
         } elseif ($this->action === 'delete') {
 
             $fileDb = File::find($this->file->id);
-            $fileDb->status = FileStatus::TO_DELETE;
+            $fileDb->status = OpenAISyncStatus::TO_DELETE;
             $fileDb->save();
 
             $response = $deleteFile($this->file);
@@ -95,9 +95,9 @@ class FileJob implements ShouldQueue
         $fileDb = File::find($this->file->id);
         // do failed stuff
         if ($this->action === 'upload') {
-            $fileDb->status = FileStatus::FAILED;
+            $fileDb->status = OpenAISyncStatus::FAILED;
         } elseif ($this->action === 'delete') {
-            $fileDb->status = FileStatus::FAILED_DELETION;
+            $fileDb->status = OpenAISyncStatus::FAILED_DELETION;
         }
         $fileDb->save();
     }

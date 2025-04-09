@@ -2,7 +2,7 @@
 
 namespace App\Actions;
 
-use App\Enums\FileStatus;
+use App\Enums\OpenAISyncStatus;
 use App\Models\Vector;
 use App\Support\Facades\OpenAI;
 use Illuminate\Support\Facades\Log;
@@ -17,7 +17,7 @@ class UploadVector
     public function __invoke(Vector $vector): bool
     {
         $vectorDb = Vector::find($vector->id);
-        $vectorDb->status = FileStatus::UPLOADING;
+        $vectorDb->status = OpenAISyncStatus::UPLOADING;
         $vectorDb->save();
 
         $file_ids = array_column($vector->files, "file_id");
@@ -31,14 +31,14 @@ class UploadVector
 
             if ($upload->id && 'vector_store' === $upload->object) {
                 $vectorDb->vector_id = $upload->id;
-                $vectorDb->status = FileStatus::UPLOADED;
+                $vectorDb->status = OpenAISyncStatus::UPLOADED;
                 $vectorDb->save();
                 return true;
             }
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
 
-            $vectorDb->status = FileStatus::PENDING;
+            $vectorDb->status = OpenAISyncStatus::PENDING;
             $vectorDb->save();
         }
 
