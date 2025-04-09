@@ -24,6 +24,7 @@ class VectorResource extends JsonResource
             'description' => $this->description,
             'files' => $this->files,
             'vector_type' => $this->vector_type,
+            'status' => $this->status,
         ];
 
     }

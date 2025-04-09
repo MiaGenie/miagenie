@@ -33,7 +33,7 @@ class Vector extends Model
      * @var array
      */
     protected $casts = [
-        'files' => 'object',
+        'files' => 'array',
     ];
 
     /**

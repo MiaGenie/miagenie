@@ -5,6 +5,7 @@ namespace App\Http\Requests\Admin;
 use App\Enums\FileStatus;
 use App\Enums\VectorType;
 use Illuminate\Foundation\Http\FormRequest;
+use App\Jobs\VectorJob;
 use App\Models\Vector;
 use Illuminate\Validation\Rule;
 
@@ -29,13 +30,16 @@ class StoreVector extends FormRequest
      */
     public function handle(): Vector
     {
-
-        return Vector::create([
+        $vector = Vector::create([
             'name' => $this->input('name'),
             'description' => $this->input('description'),
             'files' => $this->input('files'),
             'vector_type' => $this->input('vector_type'),
             'status' => FileStatus::CREATED,
         ]);
+
+        VectorJob::dispatch($vector, 'upload');
+
+        return $vector;
     }
 }

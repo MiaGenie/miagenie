@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\DeleteVector;
 use App\Enums\VectorType;
+use App\Http\Requests\Admin\DeleteVectors;
 use App\Http\Requests\Admin\StoreVector;
 use App\Http\Requests\Admin\UpdateVector;
 use App\Http\Resources\Admin\VectorResource;
 use App\Models\File;
 use App\Models\Vector;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
