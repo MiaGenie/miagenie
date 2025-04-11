@@ -22,7 +22,7 @@ return new class extends Migration {
             $table->json('files');
             $table->tinyInteger('vector_type');
             $table->tinyInteger('status');
-            $table->string('vector_id')->nullable();
+            $table->string('vector_provider_id')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

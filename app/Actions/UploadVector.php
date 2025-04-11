@@ -16,30 +16,24 @@ class UploadVector
      */
     public function __invoke(Vector $vector): bool
     {
-        $vectorDb = Vector::find($vector->id);
-        $vectorDb->status = OpenAISyncStatus::UPLOADING;
-        $vectorDb->save();
-
-        $file_ids = array_column($vector->files, "file_id");
+        $fileIds = array_column($vector->files, "file_provider_id");
         try {
             $upload = OpenAI::vectorStores()->create(
                 [
-                    'file_ids' => $file_ids,
+                    'file_ids' => $fileIds,
                     'name' => $vector->name,
                 ]
             );
 
             if ($upload->id && 'vector_store' === $upload->object) {
-                $vectorDb->vector_id = $upload->id;
+                $vectorDb = Vector::find($vector->id);
+                $vectorDb->vector_provider_id = $upload->id;
                 $vectorDb->status = OpenAISyncStatus::UPLOADED;
                 $vectorDb->save();
                 return true;
             }
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-
-            $vectorDb->status = OpenAISyncStatus::PENDING;
-            $vectorDb->save();
         }
 
         return false;

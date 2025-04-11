@@ -71,7 +71,7 @@ class VectorJob implements ShouldQueue
         } elseif ($this->action === 'delete') {
 
             $vectorDb = Vector::find($this->vector->id);
-            $vectorDb->status = OpenAISyncStatus::TO_DELETE;
+            $vectorDb->status = OpenAISyncStatus::DELETING;
             $vectorDb->save();
 
             $response = $deleteVector($this->vector);
@@ -95,9 +95,9 @@ class VectorJob implements ShouldQueue
         $vectorDb = Vector::find($this->vector->id);
         // do failed stuff
         if ($this->action === 'upload') {
-            $vectorDb->status = OpenAISyncStatus::FAILED;
+            $vectorDb->status = OpenAISyncStatus::FAILED_UPLOAD;
         } elseif ($this->action === 'delete') {
-            $vectorDb->status = OpenAISyncStatus::FAILED_DELETION;
+            $vectorDb->status = OpenAISyncStatus::FAILED_DELETE;
         }
         $vectorDb->save();
     }

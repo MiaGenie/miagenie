@@ -35,7 +35,7 @@ class StoreVector extends FormRequest
             'description' => $this->input('description'),
             'files' => $this->input('files'),
             'vector_type' => $this->input('vector_type'),
-            'status' => OpenAISyncStatus::CREATED,
+            'status' => OpenAISyncStatus::UPLOADING,
         ]);
 
         VectorJob::dispatch($vector, 'upload');
