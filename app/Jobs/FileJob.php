@@ -11,7 +11,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class FileJob implements ShouldQueue
@@ -71,7 +70,7 @@ class FileJob implements ShouldQueue
         } elseif ($this->action === 'delete') {
 
             $fileDb = File::find($this->file->id);
-            $fileDb->status = OpenAISyncStatus::TO_DELETE;
+            $fileDb->status = OpenAISyncStatus::DELETING;
             $fileDb->save();
 
             $response = $deleteFile($this->file);
@@ -95,9 +94,9 @@ class FileJob implements ShouldQueue
         $fileDb = File::find($this->file->id);
         // do failed stuff
         if ($this->action === 'upload') {
-            $fileDb->status = OpenAISyncStatus::FAILED;
+            $fileDb->status = OpenAISyncStatus::FAILED_UPLOAD;
         } elseif ($this->action === 'delete') {
-            $fileDb->status = OpenAISyncStatus::FAILED_DELETION;
+            $fileDb->status = OpenAISyncStatus::FAILED_DELETE;
         }
         $fileDb->save();
     }

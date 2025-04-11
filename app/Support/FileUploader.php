@@ -106,7 +106,7 @@ class FileUploader
             'mime_type' => $this->file->getMimeType(),
             'disk' => $this->disk,
             'path' => $path,
-            'status' => OpenAISyncStatus::CREATED,
+            'status' => OpenAISyncStatus::UPLOADING,
             'size' => $this->file->getSize(),
         ];
     }

@@ -17,10 +17,6 @@ class UploadFile
      */
     public function __invoke(File $file): bool
     {
-        $fileDb = File::find($file->id);
-        $fileDb->status = OpenAISyncStatus::UPLOADING;
-        $fileDb->save();
-
         try {
             $upload = OpenAI::files()->upload(
                 [
@@ -30,16 +26,14 @@ class UploadFile
             );
 
             if ($upload->id && 'file' === $upload->object) {
-                $fileDb->file_id = $upload->id;
+                $fileDb = File::find($file->id);
+                $fileDb->file_provider_id = $upload->id;
                 $fileDb->status = OpenAISyncStatus::UPLOADED;
                 $fileDb->save();
                 return true;
             }
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-
-            $fileDb->status = OpenAISyncStatus::PENDING;
-            $fileDb->save();
         }
 
         return false;

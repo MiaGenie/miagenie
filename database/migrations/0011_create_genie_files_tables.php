@@ -23,7 +23,7 @@ return new class extends Migration {
             $table->string('path');
             $table->tinyInteger('status');
             $table->unsignedBigInteger('size');
-            $table->string('file_id')->nullable();
+            $table->string('file_provider_id')->nullable();
             $table->timestamps();
         });
 

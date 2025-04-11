@@ -30,7 +30,7 @@ class File extends Model
         'path',
         'status',
         'size',
-        'file_id',
+        'file_provider_id',
     ];
 
     /**
