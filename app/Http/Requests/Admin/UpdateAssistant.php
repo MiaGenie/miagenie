@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\OpenAISyncStatus;
+use App\Jobs\AssistantJob;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Enums\AssistantType;
@@ -21,11 +23,11 @@ class UpdateAssistant extends FormRequest
         ];
     }
 
-    public function handle(): int
+    public function handle(): Assistant
     {
         $record = Assistant::firstOrFailByUuid($this->route('assistant'));
 
-        return $record->update([
+        $record->update([
             'name' => $this->input('name'),
             'assistant_type' => $this->input('assistant_type'),
             'description' => $this->input('description'),
@@ -36,7 +38,13 @@ class UpdateAssistant extends FormRequest
             'json_schema' => $this->input('response_format') === 'json_schema' ? $this->input('json_schema') : '',
             'temperature' => $this->input('temperature'),
             'top_p' => $this->input('top_p'),
+            'assistant_provider_id' => $this->input('assistant_provider_id'),
+            'status' => OpenAISyncStatus::UPDATING
         ]);
+
+        AssistantJob::dispatch($record, 'update');
+
+        return $record;
     }
 
 }

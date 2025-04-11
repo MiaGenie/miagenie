@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Requests\Admin\DeleteAssistants;
 use App\Builders\AssistantQuery;
 use App\Enums\AssistantType;
 use App\Http\Requests\Admin\StoreAssistant;
@@ -77,20 +78,20 @@ class AssistantsController extends Controller
 
     public function update(UpdateAssistant $updateAssistant): RedirectResponse
     {
-        $updateAssistant->handle();
+        $record = $updateAssistant->handle();
 
-        return redirect()->back()->with('success', __('genie.updated'));
+        return redirect()
+            ->route('genie.admin.assistants.edit', ['assistant' => $record->uuid])
+            ->with('success', __('genie.updated'));
     }
 
-    public function destroy(Request $request): RedirectResponse
+    /**
+     * @param DeleteAssistants $deleteAssistants
+     * @return RedirectResponse
+     */
+    public function destroy(DeleteAssistants $deleteAssistants): RedirectResponse
     {
-        $query = Assistant::where('uuid', $request->route('assistant'))->delete();
-
-        if (!$query) {
-            return redirect()
-                ->route('genie.admin.assistants.index')
-                ->with('error', __('genie.not_found'));
-        }
+        $deleteAssistants->handle();
 
         return redirect()->route('genie.admin.assistants.index')
             ->with('success', __('genie.assistant_deleted'));

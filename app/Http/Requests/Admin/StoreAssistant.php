@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\OpenAISyncStatus;
+use App\Jobs\AssistantJob;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use App\Enums\AssistantType;
@@ -23,8 +25,7 @@ class StoreAssistant extends FormRequest
 
     public function handle(): Assistant
     {
-
-        return Assistant::create([
+        $assistant = Assistant::create([
             'name' => $this->input('name'),
             'assistant_type' => $this->input('assistant_type'),
             'description' => $this->input('description'),
@@ -35,6 +36,11 @@ class StoreAssistant extends FormRequest
             'json_schema' => $this->input('response_format') === 'json_schema' ? $this->input('json_schema') : '',
             'temperature' => $this->input('temperature'),
             'top_p' => $this->input('top_p'),
+            'status' => OpenAISyncStatus::UPLOADING
         ]);
+
+        AssistantJob::dispatch($assistant, 'upload');
+
+        return $assistant;
     }
 }

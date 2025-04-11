@@ -22,11 +22,13 @@ class Assistant extends Model
         'description',
         'instructions',
         'model',
+        'assistant_provider_id',
         'vector_id',
         'response_format',
         'json_schema',
         'temperature',
-        'top_p'
+        'top_p',
+        'status'
     ];
 
     protected $casts = [
