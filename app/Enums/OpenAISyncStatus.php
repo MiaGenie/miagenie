@@ -8,15 +8,14 @@ enum OpenAISyncStatus: int
 {
     use WithTitle;
 
-    case CREATED = 1;
-    case UPLOADING = 2;
-    case UPLOADED = 3;
-    case PENDING = 4;
-    case FAILED = 5;
-    case TO_DELETE = 6;
+    case UPLOADING = 1;
+    case UPLOADED = 2;
+    case FAILED_UPLOAD = 3;
+    case UPDATING = 4;
+    case UPDATED = 5;
+    CASE FAILED_UPDATE = 6;
     case DELETING = 7;
-    case PENDING_DELETION = 8;
-    case FAILED_DELETION = 9;
+    case FAILED_DELETE = 8;
 
     /**
      * @return string
@@ -24,15 +23,14 @@ enum OpenAISyncStatus: int
     public function title(): string
     {
         return match ($this) {
-            self::CREATED => 'created',
             self::UPLOADING => 'uploading',
             self::UPLOADED => 'uploaded',
-            self::PENDING => 'pending',
-            self::FAILED => 'failed',
-            self::TO_DELETE => 'to_delete',
+            self::FAILED_UPLOAD => 'failed_upload',
+            self::UPDATING => 'updating',
+            self::UPDATED => 'updated',
+            self::FAILED_UPDATE => 'failed_update',
             self::DELETING => 'deleting',
-            self::PENDING_DELETION => 'pending_deletion',
-            self::FAILED_DELETION => 'failed_deletion'
+            self::FAILED_DELETE => 'failed_delete'
         };
     }
 }
