@@ -2,8 +2,10 @@
 
 namespace App\Actions;
 
+use App\Enums\OpenAISyncStatus;
 use App\Models\File;
 use App\Support\Facades\OpenAI;
+use Illuminate\Support\Facades\Log;
 
 
 class UploadFile
@@ -15,18 +17,23 @@ class UploadFile
      */
     public function __invoke(File $file): bool
     {
-        $upload = OpenAI::files()->upload(
-            [
-                'file' => fopen($file->getFullPath(), 'r'),
-                'purpose' => 'assistants'
-            ]
-        );
+        try {
+            $upload = OpenAI::files()->upload(
+                [
+                    'file' => fopen($file->getFullPath(), 'r'),
+                    'purpose' => 'assistants'
+                ]
+            );
 
-        if ($upload->id && 'file' === $upload->object) {
-            $File = File::find($file->id);
-            $File->file_id = $upload->id;
-            $File->save();
-            return true;
+            if ($upload->id && 'file' === $upload->object) {
+                $fileDb = File::find($file->id);
+                $fileDb->file_provider_id = $upload->id;
+                $fileDb->status = OpenAISyncStatus::UPLOADED;
+                $fileDb->save();
+                return true;
+            }
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
         }
 
         return false;

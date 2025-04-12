@@ -2,18 +2,19 @@
 
 namespace App\Jobs;
 
-use App\Actions\DeleteFile;
-use App\Actions\UploadFile;
+use App\Actions\DeleteVector;
+use App\Actions\UploadVector;
 use App\Enums\OpenAISyncStatus;
-use App\Models\File;
+use App\Models\Vector;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class FileJob implements ShouldQueue
+class VectorJob implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -31,9 +32,9 @@ class FileJob implements ShouldQueue
     public int $timeout = 30;
 
     /**
-     * @var File
+     * @var Vector
      */
-    private File $file;
+    private Vector $vector;
 
     /**
      * @var string
@@ -41,25 +42,25 @@ class FileJob implements ShouldQueue
     private string $action;
 
     /**
-     * @param File $file
+     * @param Vector $vector
      * @param string $action
      */
-    public function __construct(File $file, string $action)
+    public function __construct(Vector $vector, string $action)
     {
-        $this->file = $file;
+        $this->vector = $vector;
         $this->action = $action;
     }
 
     /**
-     * @param UploadFile $uploadFile
-     * @param DeleteFile $deleteFile
+     * @param UploadVector $uploadVector
+     * @param DeleteVector $deleteVector
      * @return void
      */
-    public function handle(UploadFile $uploadFile, DeleteFile $deleteFile): void
+    public function handle(UploadVector $uploadVector, DeleteVector $deleteVector): void
     {
         if ($this->action === 'upload') {
 
-            $response = $uploadFile($this->file);
+            $response = $uploadVector($this->vector);
 
             if (! $response) {
 
@@ -69,11 +70,11 @@ class FileJob implements ShouldQueue
             }
         } elseif ($this->action === 'delete') {
 
-            $fileDb = File::find($this->file->id);
-            $fileDb->status = OpenAISyncStatus::DELETING;
-            $fileDb->save();
+            $vectorDb = Vector::find($this->vector->id);
+            $vectorDb->status = OpenAISyncStatus::DELETING;
+            $vectorDb->save();
 
-            $response = $deleteFile($this->file);
+            $response = $deleteVector($this->vector);
 
             if (! $response) {
                 $this->release(30);
@@ -81,7 +82,7 @@ class FileJob implements ShouldQueue
                 return;
             }
 
-            $this->file->delete();
+            $this->vector->delete();
         }
     }
 
@@ -91,13 +92,13 @@ class FileJob implements ShouldQueue
      */
     public function failed(?Throwable $exception): void
     {
-        $fileDb = File::find($this->file->id);
+        $vectorDb = Vector::find($this->vector->id);
         // do failed stuff
         if ($this->action === 'upload') {
-            $fileDb->status = OpenAISyncStatus::FAILED_UPLOAD;
+            $vectorDb->status = OpenAISyncStatus::FAILED_UPLOAD;
         } elseif ($this->action === 'delete') {
-            $fileDb->status = OpenAISyncStatus::FAILED_DELETE;
+            $vectorDb->status = OpenAISyncStatus::FAILED_DELETE;
         }
-        $fileDb->save();
+        $vectorDb->save();
     }
 }

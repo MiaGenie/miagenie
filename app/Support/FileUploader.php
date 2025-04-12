@@ -7,6 +7,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use App\Models\File;
+use App\Enums\OpenAISyncStatus;
 
 class FileUploader
 {
@@ -105,6 +106,7 @@ class FileUploader
             'mime_type' => $this->file->getMimeType(),
             'disk' => $this->disk,
             'path' => $path,
+            'status' => OpenAISyncStatus::UPLOADING,
             'size' => $this->file->getSize(),
         ];
     }
@@ -116,7 +118,7 @@ class FileUploader
     public function uploadAndInsert(): File
     {
         return File::create(
-            Arr::only($this->upload(), ['name', 'mime_type', 'disk', 'path', 'size'])
+            Arr::only($this->upload(), ['name', 'mime_type', 'disk', 'path', 'status', 'size'])
         );
     }
 

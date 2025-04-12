@@ -25,14 +25,15 @@ class Vector extends Model
         'description',
         'files',
         'vector_type',
-        'vector_id'
+        'vector_id',
+        'status',
     ];
 
     /**
      * @var array
      */
     protected $casts = [
-        'files' => 'object',
+        'files' => 'array',
     ];
 
     /**

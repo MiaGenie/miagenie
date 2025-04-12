@@ -2,21 +2,21 @@
 
 namespace App\Actions;
 
-use App\Models\File;
+use App\Models\Vector;
 use App\Support\Facades\OpenAI;
 use Illuminate\Support\Facades\Log;
 
-class DeleteFile
+class DeleteVector
 {
 
     /**
-     * @param File $file
+     * @param Vector $vector
      * @return bool
      */
-    public function __invoke(File $file): bool
+    public function __invoke(Vector $vector): bool
     {
         try {
-            $upload = OpenAI::files()->delete($file->file_provider_id);
+            $upload = OpenAI::vectorStores()->delete($vector->vector_provider_id);
 
             if ($upload->deleted) {
                 return true;

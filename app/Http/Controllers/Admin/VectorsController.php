@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\VectorType;
+use App\Http\Requests\Admin\DeleteVector;
 use App\Http\Requests\Admin\StoreVector;
 use App\Http\Requests\Admin\UpdateVector;
 use App\Http\Resources\Admin\VectorResource;
@@ -91,18 +92,12 @@ class VectorsController extends Controller
     }
 
     /**
-     * @param Request $request
+     * @param DeleteVector $deleteVector
      * @return RedirectResponse
      */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(DeleteVector $deleteVector): RedirectResponse
     {
-        $query = Vector::where('uuid', $request->route('vector'))->delete();
-
-        if (! $query) {
-            return redirect()
-                ->route('genie.admin.vectors.index')
-                ->with('error', __('genie.not_found'));
-        }
+        $deleteVector->handle();
 
         return redirect()->route('genie.admin.vectors.index')
             ->with('success', __('genie.vector_deleted'));

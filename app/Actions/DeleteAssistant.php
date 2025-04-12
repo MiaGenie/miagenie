@@ -2,21 +2,21 @@
 
 namespace App\Actions;
 
-use App\Models\File;
+use App\Models\Assistant;
 use App\Support\Facades\OpenAI;
 use Illuminate\Support\Facades\Log;
 
-class DeleteFile
+class DeleteAssistant
 {
 
     /**
-     * @param File $file
+     * @param Assistant $assistant
      * @return bool
      */
-    public function __invoke(File $file): bool
+    public function __invoke(Assistant $assistant): bool
     {
         try {
-            $upload = OpenAI::files()->delete($file->file_provider_id);
+            $upload = OpenAI::assistants()->delete($assistant->assistant_provider_id);
 
             if ($upload->deleted) {
                 return true;

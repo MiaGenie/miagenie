@@ -18,6 +18,7 @@ class AssistantResource extends JsonResource
             'description' => $this->description,
             'instructions' => $this->instructions,
             'model' => $this->model,
+            'assistant_provider_id' => $this->assistant_provider_id,
             'vector_id' => $this->vector_id,
             'response_format' => $this->response_format,
             'json_schema' => $this->json_schema,
