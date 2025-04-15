@@ -4,10 +4,12 @@ import {useI18n} from "vue-i18n";
 import PureButtonLink from "@/Components/Button/PureButtonLink.vue";
 import PencilSquare from "@/Icons/PencilSquare.vue";
 import QueueList from "@/Icons/QueueList.vue";
-import RulesIcon from "@/Icons/Genie/Rules.vue";
+import {usePage} from "@inertiajs/vue3";
 
 const {t: $t} = useI18n()
-const routePrefix = inject('routePrefix');
+
+const version = usePage().props.version;
+
 const props = defineProps({
     itemId: {
         type: String,
@@ -18,16 +20,14 @@ const props = defineProps({
 const getRoute = (name) => {
     switch (name) {
         case 'edit':
-            return route('genie.admin.versions.edit', {
-                version: props.itemId,
+            return route('genie.admin.versions.rules.edit', {
+                version: version.id,
+                rule: props.itemId,
             });
-            case 'rules':
-            return route('genie.admin.versions.rules.index', {
-                version: props.itemId,
-            });
-        case 'fields':
-            return route('genie.admin.versions.fields.index', {
-                version: props.itemId,
+        case 'steps':
+            return route('genie.admin.versions.rules.steps.index', {
+                version: version.id,
+                rule: props.itemId,
             });
         default:
             return '';
@@ -39,17 +39,10 @@ const getRoute = (name) => {
     <div>
         <div class="flex flex-row items-center justify-end gap-lg">
             <PureButtonLink
-                :href="getRoute('fields')"
-                v-tooltip="$t('genie.fields')"
+                :href="getRoute('steps')"
+                v-tooltip="$t('genie.steps')"
             >
                 <QueueList/>
-            </PureButtonLink>
-
-            <PureButtonLink
-                :href="getRoute('rules')"
-                v-tooltip="$t('genie.rules')"
-            >
-                <RulesIcon/>
             </PureButtonLink>
 
             <PureButtonLink

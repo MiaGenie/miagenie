@@ -1,12 +1,12 @@
 <script setup>
-import {useI18n} from "vue-i18n";
 import {find} from "lodash";
+import {useI18n} from "vue-i18n";
 import {usePage} from "@inertiajs/vue3";
-import VersionItemAction from "./VersionItemAction.vue";
-import Badge from "@/Components/DataDisplay/Badge.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
+import RuleItemAction from "@/Components/Genie/Rules/RuleItemAction.vue";
 import Flex from "@/Components/Layout/Flex.vue";
+import Badge from "@/Components/DataDisplay/Badge.vue";
 
 const {t: $t} = useI18n();
 
@@ -14,8 +14,18 @@ const props = defineProps({
     item: {
         type: Object,
         required: true
+    },
+    isFiltered: {
+        type: Boolean,
+        default: false
     }
 })
+
+const ruleTypes = usePage().props.ruleTypes;
+
+const currentType = () => {
+    return find(ruleTypes, ['value', Number(props.item.rule_type)]);
+}
 
 const statusTypes = usePage().props.statusTypes;
 
@@ -44,6 +54,17 @@ const statusBadge = () => {
 
         <TableCell>
             {{ item.name }}
+            <Flex
+                class="text-gray-500 italic lg:hidden"
+            >
+                {{ item.version_id }}
+            </Flex>
+            <Flex
+                class="text-gray-500 italic"
+                :class="[isFiltered ? 'hidden' : 'lg:hidden']"
+            >
+                {{ $t(`genie.rule_type_${currentType().title}`) }}
+            </Flex>
             <Flex class="items-start">
                 <Badge
                     :variant="statusBadge()"
@@ -60,6 +81,19 @@ const statusBadge = () => {
             </Flex>
         </TableCell>
 
+        <TableCell
+            class="hidden lg:table-cell"
+        >
+            {{ item.version_id }}
+        </TableCell>
+
+        <TableCell
+            class="hidden"
+            :class="[isFiltered ? '' : 'lg:table-cell']"
+        >
+            {{ $t(`genie.rule_type_${currentType().title}`) }}
+        </TableCell>
+
         <TableCell class="hidden sm:table-cell">
             <Badge :variant="statusBadge()">
                 {{ versionStatus().title }}
@@ -73,7 +107,9 @@ const statusBadge = () => {
         </TableCell>
 
         <TableCell>
-            <VersionItemAction :itemId="item.id"/>
+            <RuleItemAction
+                :itemId="item.id"
+            />
         </TableCell>
 
     </TableRow>
