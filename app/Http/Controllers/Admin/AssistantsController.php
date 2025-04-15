@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Requests\Admin\DeleteAssistants;
+use App\Http\Requests\Admin\DeleteAssistant;
 use App\Builders\AssistantQuery;
 use App\Enums\AssistantType;
 use App\Http\Requests\Admin\StoreAssistant;
 use App\Http\Requests\Admin\UpdateAssistant;
 use App\Http\Resources\Admin\AssistantResource;
+use App\Models\AIModel;
 use App\Models\Assistant;
 use App\Models\Vector;
 use App\Support\Facades\OpenAI;
@@ -17,6 +18,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
+use PhpParser\Node\Stmt\Foreach_;
 
 class AssistantsController extends Controller
 {
@@ -40,11 +42,12 @@ class AssistantsController extends Controller
 
     public function create(Request $request): Response
     {
+
         return Inertia::render('Genie/Admin/Assistants/CreateEdit', [
             'mode' => 'create',
             'assistantTypes' => AssistantType::withTitle(),
             'assistantType' => $request->input('assistant_type'),
-            'models' => OpenAI::models()->list()->data,
+            'models' => AIModel::all(),
             'vectorIds' => Vector::all('id', 'name', 'vector_type'),
             'record' => null
         ]);
@@ -86,10 +89,10 @@ class AssistantsController extends Controller
     }
 
     /**
-     * @param DeleteAssistants $deleteAssistants
+     * @param DeleteAssistant $deleteAssistants
      * @return RedirectResponse
      */
-    public function destroy(DeleteAssistants $deleteAssistants): RedirectResponse
+    public function destroy(DeleteAssistant $deleteAssistants): RedirectResponse
     {
         $deleteAssistants->handle();
 

@@ -6,8 +6,15 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class AssistantResource extends JsonResource
 {
+    /**
+     * @var string|null
+     */
     public static $wrap = null;
 
+    /**
+     * @param $request
+     * @return array
+     */
     public function toArray($request): array
     {
 
@@ -24,6 +31,7 @@ class AssistantResource extends JsonResource
             'json_schema' => $this->json_schema,
             'temperature' => $this->temperature,
             'top_p' => $this->top_p,
+            'reasoning_effort' => $this->reasoning_effort,
         ];
 
     }

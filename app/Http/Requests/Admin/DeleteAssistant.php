@@ -2,11 +2,12 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\OpenAISyncStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Jobs\AssistantJob;
 use App\Models\Assistant;
 
-class DeleteAssistants extends FormRequest
+class DeleteAssistant extends FormRequest
 {
     /**
      * @return void
@@ -14,6 +15,10 @@ class DeleteAssistants extends FormRequest
     public function handle(): void
     {
         $assistant = Assistant::firstOrFailByUuid($this->route('assistant'));
+
+        $assistant->update([
+            'status' => OpenAISyncStatus::DELETING
+        ]);
 
         AssistantJob::dispatch($assistant, 'delete');
     }

@@ -24,7 +24,7 @@ class AssistantJob implements ShouldQueue
     /**
      * @var int
      */
-    public int $tries = 3;
+    public int $tries = 1;
 
     /**
      * @var int
@@ -80,10 +80,6 @@ class AssistantJob implements ShouldQueue
             }
         } elseif ($this->action === 'delete') {
 
-            $assistantDb = Assistant::find($this->assistant->id);
-            $assistantDb->status = OpenAISyncStatus::DELETING;
-            $assistantDb->save();
-
             $response = $deleteAssistant($this->assistant);
 
             if (! $response) {
@@ -106,6 +102,8 @@ class AssistantJob implements ShouldQueue
         // do failed stuff
         if ($this->action === 'upload') {
             $assistantDb->status = OpenAISyncStatus::FAILED_UPLOAD;
+        } elseif ($this->action === 'update') {
+            $assistantDb->status = OpenAISyncStatus::FAILED_UPDATE;
         } elseif ($this->action === 'delete') {
             $assistantDb->status = OpenAISyncStatus::FAILED_DELETE;
         }

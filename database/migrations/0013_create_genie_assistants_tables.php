@@ -27,6 +27,7 @@ return new class extends Migration {
             $table->text('json_schema')->nullable();
             $table->string('temperature')->nullable();
             $table->string('top_p')->nullable();
+            $table->string('reasoning_effort')->nullable();
             $table->tinyInteger('status');
             $table->string('assistant_provider_id')->nullable();
             $table->timestamps();

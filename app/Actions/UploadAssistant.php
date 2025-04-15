@@ -12,35 +12,8 @@ class UploadAssistant
 {
     public function __invoke(Assistant $assistant): bool
     {
-        if ($assistant->vector_id) {
-            $vectorDB = Vector::find($assistant->vector_id);
-            $assistantToolResource = ['file_search' => ['vector_store_ids' => [$vectorDB->vector_provider_id]]];
-
-            $assistantTools = [
-                ['type' => 'file_search'],
-            ];
-        }
-
-        $assistantResponseFormat = ['type' => $assistant->response_format];
-
-        if ($assistant->response_format === 'json_schema') {
-            $assistantResponseFormat['json_schema'] = $assistant->json_schema;
-        }
-
         try {
-            $upload = OpenAI::assistants()->create(
-                [
-                    'model' => $assistant->model,
-                    'description' => $assistant->description,
-                    'instructions' => $assistant->instructions,
-                    'name' => $assistant->name,
-                    'tools' => $assistantTools ?? [],
-                    'tool_resources' => $assistantToolResource ?? null,
-                    'response_format' => $assistantResponseFormat,
-                    'temperature' => (float)$assistant->temperature,
-                    'top_p' => (float)$assistant->top_p,
-                ]
-            );
+            $upload = OpenAI::assistants()->create($this->assistantData($assistant));
 
             if ($upload->id && $upload->object === 'assistant') {
                 $assistantDb = Assistant::find($assistant->id);
@@ -55,5 +28,42 @@ class UploadAssistant
         }
 
         return false;
+    }
+
+    /**
+     * @param Assistant $assistant
+     * @return array
+     */
+    private function assistantData(Assistant $assistant): array
+    {
+        $assistantData = [
+            'name' => $assistant->name,
+            'description' => $assistant->description,
+            'model' => $assistant->model,
+            'instructions' => $assistant->instructions
+        ];
+
+        if ($assistant->vector_id) {
+            $vectorStore = Vector::find($assistant->vector_id)?->vector_provider_id;
+            $assistantData['tools'] = [['type' => 'file_search']];
+            $assistantData['tool_resources'] = ['file_search' => ['vector_store_ids' => [$vectorStore]]];
+        }
+
+        $responseFormat['type'] = $assistant->response_format;
+        if ($assistant->response_format === 'json_schema') {
+            $responseFormat['json_schema'] = json_decode($assistant->json_schema, true);
+        }
+        $assistantData['response_format'] = $responseFormat;
+
+        if ($assistant->temperature !== '1') {
+            $assistantData['temperature'] = (float)$assistant->temperature;
+        }
+
+        if ($assistant->top_p !== '1') {
+            $assistantData['top_p'] = (float)$assistant->top_p;
+        }
+
+
+        return $assistantData;
     }
 }

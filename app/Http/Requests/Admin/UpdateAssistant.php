@@ -11,6 +11,9 @@ use App\Models\Assistant;
 
 class UpdateAssistant extends FormRequest
 {
+    /**
+     * @return array
+     */
     public function rules(): array
     {
         return [
@@ -23,6 +26,9 @@ class UpdateAssistant extends FormRequest
         ];
     }
 
+    /**
+     * @return Assistant
+     */
     public function handle(): Assistant
     {
         $record = Assistant::firstOrFailByUuid($this->route('assistant'));
@@ -38,6 +44,7 @@ class UpdateAssistant extends FormRequest
             'json_schema' => $this->input('response_format') === 'json_schema' ? $this->input('json_schema') : '',
             'temperature' => $this->input('temperature'),
             'top_p' => $this->input('top_p'),
+            'reasoning_effort' => $this->input('reasoning_effort'),
             'assistant_provider_id' => $this->input('assistant_provider_id'),
             'status' => OpenAISyncStatus::UPDATING
         ]);

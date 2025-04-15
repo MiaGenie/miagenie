@@ -28,6 +28,7 @@ class Assistant extends Model
         'json_schema',
         'temperature',
         'top_p',
+        'reasoning_effort',
         'status'
     ];
 
