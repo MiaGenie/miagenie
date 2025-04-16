@@ -73,7 +73,7 @@ class AssistantsController extends Controller
         return Inertia::render('Genie/Admin/Assistants/CreateEdit', [
             'mode' => 'edit',
             'assistantTypes' => AssistantType::withTitle(),
-            'models' => OpenAI::models()->list()->data,
+            'models' => AIModel::all(),
             'vectorIds' => Vector::all('id', 'name', 'vector_type'),
             'record' => new AssistantResource($record)
         ]);
