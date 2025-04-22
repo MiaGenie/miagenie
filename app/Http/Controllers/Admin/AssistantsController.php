@@ -11,14 +11,12 @@ use App\Http\Resources\Admin\AssistantResource;
 use App\Models\AIModel;
 use App\Models\Assistant;
 use App\Models\Vector;
-use App\Support\Facades\OpenAI;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
-use PhpParser\Node\Stmt\Foreach_;
 
 class AssistantsController extends Controller
 {
@@ -65,10 +63,6 @@ class AssistantsController extends Controller
     public function edit(Request $request): Response
     {
         $record = Assistant::firstOrFailByUuid($request->route('assistant'));
-
-        $vectors = Vector::all()->mapWithKeys(function ($item) {
-            return [$item['id'] => $item['name']];
-        });
 
         return Inertia::render('Genie/Admin/Assistants/CreateEdit', [
             'mode' => 'edit',
