@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Concerns\Requests\IngestAssistantFields;
 use App\Enums\OpenAISyncStatus;
 use App\Jobs\AssistantJob;
 use Illuminate\Foundation\Http\FormRequest;
@@ -11,6 +12,8 @@ use App\Models\Assistant;
 
 class StoreAssistant extends FormRequest
 {
+    use IngestAssistantFields;
+
     /**
      * @return array
      */
@@ -51,4 +54,13 @@ class StoreAssistant extends FormRequest
 
         return $assistant;
     }
+
+    /**
+     * @return void
+     */
+    /*protected function prepareForValidation(): void
+    {
+        $this->ingestParameters();
+        $this->ingestOptions();
+    }*/
 }

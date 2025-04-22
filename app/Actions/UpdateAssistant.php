@@ -40,9 +40,10 @@ class UpdateAssistant
     {
         $assistantData = [
             'name' => $assistant->name,
-            'description' => $assistant->description,
+            'description' => $assistant->description ?? '',
             'model' => $assistant->model,
-            'instructions' => $assistant->instructions
+            'instructions' => $assistant->instructions,
+            'reasoning_effort' => $assistant->reasoning_effort
         ];
 
         if ($assistant->vector_id) {
