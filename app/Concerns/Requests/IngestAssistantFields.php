@@ -78,8 +78,8 @@ trait IngestAssistantFields
         }
 
         if (!$fieldModel->temperature_top_p) {
-            $params['temperature'] = 1;
-            $params['top_p'] = 1;
+            $params['temperature'] = null;
+            $params['top_p'] = null;
         }
 
         return $params;
