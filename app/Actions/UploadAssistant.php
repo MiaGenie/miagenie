@@ -55,11 +55,11 @@ class UploadAssistant
         }
         $assistantData['response_format'] = $responseFormat;
 
-        if ($assistant->temperature !== '1') {
+        if ($assistant->temperature !== '1' && $assistant->temperature !== null) {
             $assistantData['temperature'] = (float)$assistant->temperature;
         }
 
-        if ($assistant->top_p !== '1') {
+        if ($assistant->top_p !== '1' && $assistant->top_p !== null) {
             $assistantData['top_p'] = (float)$assistant->top_p;
         }
 
