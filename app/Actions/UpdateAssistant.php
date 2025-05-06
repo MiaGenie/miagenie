@@ -70,9 +70,11 @@ class UpdateAssistant
             $assistantData['top_p'] = (float)$assistant->top_p;
         }
 
-        if ($assistant->reasoning_effort) {
-            $assistantData['reasoning_effort'] = 'medium';
-        }
+        // if ($assistant->reasoning_effort) {
+            $assistantData['reasoning_effort'] = $assistant->reasoning_effort;
+        // }
+
+
 
         return $assistantData;
     }
