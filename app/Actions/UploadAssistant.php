@@ -15,6 +15,8 @@ class UploadAssistant
         try {
             $upload = OpenAI::assistants()->create($this->assistantData($assistant));
 
+            Log::info('OPENAI - upload - ' . json_encode($upload, true));
+
             if ($upload->id && $upload->object === 'assistant') {
                 $assistantDb = Assistant::find($assistant->id);
                 $assistantDb->assistant_provider_id = $upload->id;
@@ -55,14 +57,17 @@ class UploadAssistant
         }
         $assistantData['response_format'] = $responseFormat;
 
-        if ($assistant->temperature !== '1' && $assistant->temperature !== null) {
+        if ($assistant->temperature) {
             $assistantData['temperature'] = (float)$assistant->temperature;
         }
 
-        if ($assistant->top_p !== '1' && $assistant->top_p !== null) {
+        if ($assistant->top_p) {
             $assistantData['top_p'] = (float)$assistant->top_p;
         }
 
+        if ($assistant->reasoning_effort) {
+            $assistantData['reasoning_effort'] = 'medium';
+        }
 
         return $assistantData;
     }

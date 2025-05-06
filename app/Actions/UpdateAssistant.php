@@ -18,6 +18,8 @@ class UpdateAssistant
                 $this->assistantData($assistant)
             );
 
+            Log::info('OPENAI - update - ' . json_encode($upload, true));
+
             if ($upload->id && $upload->object === 'assistant') {
                 $assistantDb = Assistant::find($assistant->id);
                 $assistantDb->status = OpenAISyncStatus::UPDATED;
@@ -42,8 +44,7 @@ class UpdateAssistant
             'name' => $assistant->name,
             'description' => $assistant->description ?? '',
             'model' => $assistant->model,
-            'instructions' => $assistant->instructions,
-            'reasoning_effort' => $assistant->reasoning_effort
+            'instructions' => $assistant->instructions
         ];
 
         if ($assistant->vector_id) {
@@ -61,12 +62,16 @@ class UpdateAssistant
         }
         $assistantData['response_format'] = $responseFormat;
 
-        if ($assistant->temperature !== '1' && $assistant->temperature !== null) {
+        if ($assistant->temperature) {
             $assistantData['temperature'] = (float)$assistant->temperature;
         }
 
-        if ($assistant->top_p !== '1' && $assistant->top_p !== null) {
+        if ($assistant->top_p) {
             $assistantData['top_p'] = (float)$assistant->top_p;
+        }
+
+        if ($assistant->reasoning_effort) {
+            $assistantData['reasoning_effort'] = 'medium';
         }
 
         return $assistantData;

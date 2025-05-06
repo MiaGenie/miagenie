@@ -63,6 +63,5 @@ class UpdateAssistant extends FormRequest
     protected function prepareForValidation(): void
     {
         $this->ingestParameters();
-        // $this->ingestOptions();
     }
 }

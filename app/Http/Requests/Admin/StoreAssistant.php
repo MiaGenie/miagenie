@@ -58,9 +58,8 @@ class StoreAssistant extends FormRequest
     /**
      * @return void
      */
-    /*protected function prepareForValidation(): void
+    protected function prepareForValidation(): void
     {
         $this->ingestParameters();
-        $this->ingestOptions();
-    }*/
+    }
 }

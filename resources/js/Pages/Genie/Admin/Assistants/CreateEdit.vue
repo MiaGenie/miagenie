@@ -55,18 +55,18 @@ const {isCreate, isEdit} = usePageMode();
 const {onError} = useRouter();
 const confirmation = inject('confirmation');
 
-const form = useForm(isEdit.value ? cloneDeep(props.record) : {
-    name: '',
-    assistant_type: props.assistantType ?? '',
-    description: '',
-    instructions: '',
-    model: '',
-    vector_id: '',
-    response_format: '',
-    json_schema: '',
-    temperature: 1,
-    top_p: 1,
-    reasoning_effort: ''
+const form = useForm( {
+    name: isEdit.value ? props.record.name : '',
+    assistant_type: isEdit.value ? props.record.assistant_type : '',
+    description: isEdit.value ? props.record.description : '',
+    instructions: isEdit.value ? props.record.instructions : '',
+    model: isEdit.value ? props.record.model : '',
+    vector_id: isEdit.value ? props.record.vector_id ?? '' : '',
+    response_format: isEdit.value ? props.record.response_format ?? '' : '',
+    json_schema: isEdit.value ? props.record.json_schema ?? '' : '',
+    temperature: isEdit.value ? props.record.temperature ?? 1 : 1,
+    top_p: isEdit.value ? props.record.top_p ?? 1 : 1,
+    reasoning_effort: isEdit.value ? props.record.reasoning_effort ?? '' : '',
 });
 
 const filteredVectors = ref({});
