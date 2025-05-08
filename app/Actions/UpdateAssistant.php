@@ -64,17 +64,19 @@ class UpdateAssistant
 
         if ($assistant->temperature) {
             $assistantData['temperature'] = (float)$assistant->temperature;
+        } else {
+            $assistantData['temperature'] = null;
         }
 
         if ($assistant->top_p) {
             $assistantData['top_p'] = (float)$assistant->top_p;
+        } else {
+            $assistantData['top_p'] = null;
         }
 
         // if ($assistant->reasoning_effort) {
             $assistantData['reasoning_effort'] = $assistant->reasoning_effort;
         // }
-
-
 
         return $assistantData;
     }
