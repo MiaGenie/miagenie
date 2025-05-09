@@ -18,6 +18,8 @@ class UpdateAssistant
                 $this->assistantData($assistant)
             );
 
+            Log::info('OPENAI - update - ' . json_encode($upload, true));
+
             if ($upload->id && $upload->object === 'assistant') {
                 $assistantDb = Assistant::find($assistant->id);
                 $assistantDb->status = OpenAISyncStatus::UPDATED;
@@ -40,7 +42,7 @@ class UpdateAssistant
     {
         $assistantData = [
             'name' => $assistant->name,
-            'description' => $assistant->description,
+            'description' => $assistant->description ?? '',
             'model' => $assistant->model,
             'instructions' => $assistant->instructions
         ];
@@ -49,6 +51,9 @@ class UpdateAssistant
             $vectorStore = Vector::find($assistant->vector_id)?->vector_provider_id;
             $assistantData['tools'] = [['type' => 'file_search']];
             $assistantData['tool_resources'] = ['file_search' => ['vector_store_ids' => [$vectorStore]]];
+        } else {
+            $assistantData['tools'] = [];
+            $assistantData['tool_resources'] = ['file_search' => ['vector_store_ids' => []]];
         }
 
         $responseFormat['type'] = $assistant->response_format;
@@ -57,17 +62,21 @@ class UpdateAssistant
         }
         $assistantData['response_format'] = $responseFormat;
 
-        if ($assistant->temperature !== '1') {
+        if ($assistant->temperature) {
             $assistantData['temperature'] = (float)$assistant->temperature;
+        } else {
+            $assistantData['temperature'] = null;
         }
 
-        if ($assistant->top_p !== '1') {
+        if ($assistant->top_p) {
             $assistantData['top_p'] = (float)$assistant->top_p;
+        } else {
+            $assistantData['top_p'] = null;
         }
 
-        if ($assistant->top_p !== '1') {
-            $assistantData['top_p'] = (float)$assistant->top_p;
-        }
+        // if ($assistant->reasoning_effort) {
+            $assistantData['reasoning_effort'] = $assistant->reasoning_effort;
+        // }
 
         return $assistantData;
     }

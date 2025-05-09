@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Concerns\Requests\IngestAssistantFields;
 use App\Enums\OpenAISyncStatus;
 use App\Jobs\AssistantJob;
 use Illuminate\Foundation\Http\FormRequest;
@@ -11,6 +12,8 @@ use App\Models\Assistant;
 
 class UpdateAssistant extends FormRequest
 {
+    use IngestAssistantFields;
+
     /**
      * @return array
      */
@@ -45,7 +48,7 @@ class UpdateAssistant extends FormRequest
             'temperature' => $this->input('temperature'),
             'top_p' => $this->input('top_p'),
             'reasoning_effort' => $this->input('reasoning_effort'),
-            'assistant_provider_id' => $this->input('assistant_provider_id'),
+            'assistant_provider_id' => $record->assistant_provider_id,
             'status' => OpenAISyncStatus::UPDATING
         ]);
 
@@ -54,4 +57,11 @@ class UpdateAssistant extends FormRequest
         return $record;
     }
 
+    /**
+     * @return void
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->ingestParameters();
+    }
 }

@@ -246,7 +246,7 @@ const deleteStep = () => {
                         <Select
                             v-model="form.output"
                             :error="form.errors.output !== undefined"
-                            id="vector_id"
+                            id="output"
                             required
                         >
                             <template v-for="(output) in outputFields">
