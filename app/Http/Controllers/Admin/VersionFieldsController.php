@@ -35,7 +35,7 @@ class VersionFieldsController extends Controller
 
         $records = VersionGroupQuery::apply($request)
             ->oldest('position')
-            ->paginate(20)
+            ->paginate(100)
             ->onEachSide(1)
             ->withQueryString();
 

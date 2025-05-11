@@ -26,7 +26,7 @@ class BriefingsController extends Controller
 
         $records = Briefing::query()
             ->latest()
-            ->paginate(20)
+            ->paginate(100)
             ->onEachSide(1)
             ->withQueryString();
 

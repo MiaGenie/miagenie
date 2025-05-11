@@ -26,7 +26,7 @@ class RulesController extends Controller
 
         $records = RuleQuery::apply($request)
             ->latest()
-            ->paginate(20)
+            ->paginate(100)
             ->onEachSide(1)
             ->withQueryString();
 

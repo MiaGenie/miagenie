@@ -44,7 +44,7 @@ class RuleStepsController extends Controller
         $records = RuleStep::query()
             ->where('rule_id', $rule->id)
             ->oldest('position')
-            ->paginate(20)
+            ->paginate(100)
             ->onEachSide(1);
 
         return Inertia::render('Genie/Admin/Versions/Rules/Steps/Index', [

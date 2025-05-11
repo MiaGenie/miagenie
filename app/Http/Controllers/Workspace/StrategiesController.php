@@ -29,7 +29,7 @@ class StrategiesController extends Controller
 
         $records = Strategy::query()
             ->latest()
-            ->paginate(20)
+            ->paginate(100)
             ->onEachSide(1)
             ->withQueryString();
 
