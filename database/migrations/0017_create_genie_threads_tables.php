@@ -55,7 +55,7 @@ return new class extends Migration
             $table->id();
             $table->uuid()->unique();
             $table->foreignId('thread_id')->constrained('genie_threads')->onDelete('cascade');
-            $table->foreignId('run_id')->constrained('genie_runs')->onDelete('cascade');
+            $table->foreignId('run_id')->constrained('genie_thread_runs')->onDelete('cascade');
             $table->json('data')->nullable();
             $table->json('response')->nullable();
             $table->timestamps();
