@@ -46,7 +46,7 @@ return new class extends Migration
 
         Schema::create('genie_run_competitors', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('run_id')->constrained('genie_runs')->onDelete('cascade');
+            $table->foreignId('run_id')->constrained('genie_thread_runs')->onDelete('cascade');
             $table->foreignId('competitor_id')->constrained('genie_competitors')->onDelete('cascade');
             $table->timestamps();
         });
