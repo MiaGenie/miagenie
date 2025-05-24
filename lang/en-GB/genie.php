@@ -125,6 +125,15 @@ return [
     'version_group_type_competitors' => 'Competitors',
     'version_group_type_strategies' => 'Strategies',
 
+    'threads' => 'Threads',
+    'view_thread' => 'View Thread',
+    'rule_thread_type' => 'Type',
+    'rule_thread_type_analysis' => 'Analysis',
+    'rule_thread_type_channels' => 'Channels',
+    'rule_thread_type_schedule' => 'Schedule',
+    'rule_thread_type_ideas' => 'Ideas',
+    'rule_thread_type_content' => 'Content',
+
 
     'groups' => 'Groups',
 

@@ -6,16 +6,18 @@ use App\Enums\RuleType;
 use Illuminate\Database\Eloquent\Model;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 
-class Thread extends Model
+class ThreadRuns extends Model
 {
     use HasUuid;
 
-    public $table = 'genie_threads';
+    public $table = 'genie_threads_runs';
 
     protected $fillable = [
         'uuid',
-        'workspace_id',
-        'rule_id',
-        'thread_provider_id'
+        'thread_id',
+        'step_id',
+        'status',
+        'status_provider',
+        'message',
     ];
 }

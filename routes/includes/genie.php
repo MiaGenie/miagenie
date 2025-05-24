@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\FilesController;
 use App\Http\Controllers\Admin\ConfigsController;
 use App\Http\Controllers\Admin\RulesController;
 use App\Http\Controllers\Admin\RuleStepsController;
+use App\Http\Controllers\Admin\ThreadsController;
 use App\Http\Controllers\Admin\VectorsController;
 use App\Http\Controllers\Admin\VersionFieldsController;
 use App\Http\Controllers\Admin\VersionsController;
@@ -85,6 +86,11 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
         Route::post('upload', [FilesController::class, 'upload'])->name('upload');
         Route::get('{file}', [FilesController::class, 'download'])->name('download');
         Route::get('fetch/uploaded', [FilesController::class, 'fetchUploads'])->name('fetchUploads');
+    });
+
+    Route::prefix('threads')->name('threads.')->group(function () {
+        Route::get('/', [ThreadsController::class, 'index'])->name('index');
+        Route::get('{thread}', [ThreadsController::class, 'view'])->name('view');
     });
 
     Route::prefix('configs')->name('configs.')->group(function () {
