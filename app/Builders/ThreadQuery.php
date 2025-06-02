@@ -2,8 +2,9 @@
 
 namespace App\Builders;
 
-use App\Builders\Filters\RuleTypesFilter;
+use App\Builders\Filters\ThreadTypesFilter;
 use App\Contracts\Query;
+use App\Models\Rule;
 use App\Models\Thread;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -14,10 +15,9 @@ class ThreadQuery implements Query
     {
         $query = Thread::query();
 
-        // $rules = Rule::firstOrFailByUuid($query);
-
         if ($request->has('rule_type') && $request->get('rule_type') !== null) {
-            $query = RuleTypesFilter::apply($query, $request->get('rule_type'));
+            $rules = Rule::all()->where('rule_type', '=', $request->get('rule_type'));
+            $query = ThreadTypesFilter::apply($query, $rules->pluck('id'));
         }
 
         return $query;

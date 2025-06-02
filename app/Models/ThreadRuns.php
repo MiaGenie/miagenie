@@ -10,7 +10,7 @@ class ThreadRuns extends Model
 {
     use HasUuid;
 
-    public $table = 'genie_threads_runs';
+    public $table = 'genie_thread_runs';
 
     protected $fillable = [
         'uuid',
