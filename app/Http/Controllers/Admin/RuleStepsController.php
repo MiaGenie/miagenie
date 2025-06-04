@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\RuleSubType;
 use App\Enums\RuleType;
 use App\Enums\VersionGroupType;
 use App\Enums\VersionStatus;
@@ -50,6 +51,7 @@ class RuleStepsController extends Controller
         return Inertia::render('Genie/Admin/Versions/Rules/Steps/Index', [
             'rule' => new RuleResource($rule),
             'ruleTypes' => RuleType::withTitle(),
+            'ruleSubTypes' => RuleSubType::withTitle(),
             'version' => new VersionResource($version),
             'records' => RuleStepResource::collection($records),
             'versionStatusTypes' => VersionStatus::withTitle(),
@@ -78,7 +80,7 @@ class RuleStepsController extends Controller
         return Inertia::render('Genie/Admin/Versions/Rules/Steps/CreateEdit', [
             'mode' => 'create',
             'rule' => new RuleResource($rule),
-            'ruleTypes' => RuleType::withTitle(),
+            'ruleSubTypes' => RuleSubType::withTitle(),
             'record' => null,
             'version' => new VersionResource($version),
             'assistants' => $assistants,
@@ -131,7 +133,7 @@ class RuleStepsController extends Controller
         return Inertia::render('Genie/Admin/Versions/Rules/Steps/CreateEdit', [
             'mode' => 'edit',
             'rule' => new RuleResource($rule),
-            'ruleTypes' => RuleType::withTitle(),
+            'ruleSubTypes' => RuleSubType::withTitle(),
             'record' => new RuleStepResource($record),
             'version' => new VersionResource($version),
             'assistants' => $assistants,

@@ -155,7 +155,7 @@ class UpdateVersionField extends FormRequest
     /**
      * @return void
      */
-    protected function prepareForValidation(): void
+    protected function prepareFor1Validation(): void
     {
         $this->ingestParameters();
         $this->ingestOptions();

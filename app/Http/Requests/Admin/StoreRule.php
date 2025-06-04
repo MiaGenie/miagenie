@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\Enums\RuleSubType;
 use App\Enums\RuleType;
 use App\Models\Rule;
 use App\Models\Version;
@@ -19,7 +18,6 @@ class StoreRule extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'rule_type' => [ValidationRule::enum(RuleType::class)],
-            'rule_sub_type' => [ValidationRule::enum(RuleSubType::class)],
         ];
     }
 
@@ -30,16 +28,12 @@ class StoreRule extends FormRequest
     {
         $version = Version::firstOrFailByUuid($this->route('version'));
 
-        $position = Rule::where('version_id', $version->id)->max('position') + 1;
-
         return Rule::create([
             'version_id' => $version->id,
             'rule_type' => $this->input('rule_type'),
-            'rule_sub_type' => $this->input('rule_sub_type'),
             'name' => $this->input('name'),
             'description' => $this->input('description'),
             'status' => $this->input('status'),
-            'position' => $position
         ]);
     }
 }

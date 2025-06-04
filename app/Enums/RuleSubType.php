@@ -2,14 +2,16 @@
 
 namespace App\Enums;
 
+use App\Concerns\Enum\FromName;
 use App\Concerns\Enum\WithTitle;
 
 enum RuleSubType: int
 {
     use WithTitle;
+    use FromName;
 
-    case COMPETITORS = 1;
-    case STRATEGY = 2;
+    case COMPETITORS = 11;
+    case STRATEGY = 12;
 
     /**
      * @return string

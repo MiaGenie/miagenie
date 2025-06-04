@@ -21,6 +21,8 @@ import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import Trash from "@/Icons/Trash.vue";
 import X from "@/Icons/X.vue";
+import Label from "@/Components/Form/Label.vue";
+import Switch from "@/Components/Form/Switch.vue";
 
 defineOptions({layout: AdminLayout});
 
@@ -33,6 +35,10 @@ const props = defineProps({
         default: 'create',
     },
     rule: {
+        type: Object,
+        required: true
+    },
+    ruleSubTypes: {
         type: Object,
         required: true
     },
@@ -58,11 +64,13 @@ const {onError} = useRouter();
 const confirmation = inject('confirmation');
 
 const form = useForm(isEdit.value ? cloneDeep(props.record) : {
+    rule_sub_type: '',
     name: '',
     description: '',
     assistant_id: '',
     message: '',
     output: '',
+    optional: 0,
 });
 
 const store = () => {
@@ -158,6 +166,26 @@ const deleteStep = () => {
             <form method="post" @submit.prevent="submit">
                 <Panel>
                     <template #title>{{ $t("general.details") }}</template>
+
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="rule_sub_type">{{ $t("genie.rule_sub_type") }}</label>
+                            <LabelSuffix :danger="true">*</LabelSuffix>
+                        </template>
+
+                        <Select
+                            v-model="form.rule_sub_type"
+                            :disabled="isEdit"
+                            id="rule_sub_type"
+                            required
+                        >
+                            <option v-for="(option) in ruleSubTypes" :value="option.value">{{option.title}}</option>
+                        </Select>
+
+                        <template #footer>
+                            <Error :message="form.errors.rule_sub_type"/>
+                        </template>
+                    </VerticalGroup>
 
                     <VerticalGroup class="form-field mt-lg">
                         <template #title>
@@ -258,6 +286,21 @@ const deleteStep = () => {
 
                         <template #footer>
                             <Error :message="form.errors.output"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup class="form-field">
+                        <template #title>
+                            <label for="optional">{{ $t("genie.step_optional") }}</label>
+                        </template>
+
+                        <Switch
+                            v-model="form.optional"
+                            id="optional"
+                        />
+
+                        <template #footer>
+                            <Error :message="form.errors.optional"/>
                         </template>
                     </VerticalGroup>
 

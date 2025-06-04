@@ -8,7 +8,7 @@ use App\Models\RuleStep;
 class UpdateRuleStepPositions extends FormRequest
 {
     /**
-     * @return array[]
+     * @return array
      */
     public function rules(): array
     {

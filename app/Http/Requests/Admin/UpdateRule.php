@@ -17,7 +17,6 @@ class UpdateRule extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'rule_type' => [ValidationRule::enum(RuleType::class)],
-            'rule_sub_type' => [ValidationRule::enum(RuleSubType::class)],
         ];
     }
 
@@ -29,9 +28,6 @@ class UpdateRule extends FormRequest
         $record = Rule::firstOrFailByUuid($this->route('rule'));
 
         return $record->update([
-            'version_id' => $this->input('version_id'),
-            'rule_type' => $this->input('rule_type'),
-            'rule_sub_type' => $this->input('rule_sub_type'),
             'name' => $this->input('name'),
             'description' => $this->input('description'),
             'status' => $this->input('status')

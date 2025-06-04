@@ -39,10 +39,6 @@ const props = defineProps({
         type: Object,
         required: true
     },
-    ruleSubTypes: {
-        ty1pe: Object,
-        required: true
-    },
     version: {
         type: Object,
         required: true
@@ -66,7 +62,6 @@ const confirmation = inject('confirmation');
 const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     version_id: '',
     rule_type: props.ruleType ?? '',
-    rule_sub_type: '',
     name: '',
     description: '',
     status: '',
@@ -226,26 +221,6 @@ const statusEnabled = () => {
 
                         <template #footer>
                             <Error :message="form.errors.rule_type"/>
-                        </template>
-                    </VerticalGroup>
-
-                    <VerticalGroup class="form-field mt-lg">
-                        <template #title>
-                            <label for="rule_sub_type">{{ $t("genie.rule_sub_type") }}</label>
-                            <LabelSuffix :danger="true">*</LabelSuffix>
-                        </template>
-
-                        <Select
-                            v-model="form.rule_sub_type"
-                            :disabled="isEdit"
-                            id="rule_sub_type"
-                            required
-                        >
-                            <option v-for="(option) in ruleSubTypes" :value="option.value">{{option.title}}</option>
-                        </Select>
-
-                        <template #footer>
-                            <Error :message="form.errors.rule_sub_type"/>
                         </template>
                     </VerticalGroup>
 

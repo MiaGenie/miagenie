@@ -21,7 +21,6 @@ class RuleResource extends JsonResource
         return [
             'id' => $this->uuid,
             'rule_type' => $this->rule_type,
-            'rule_sub_type' => $this->rule_sub_type,
             'name' => $this->name,
             'description' => $this->description,
             'status' => $this->status,
