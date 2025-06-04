@@ -37,6 +37,20 @@ const statusBadge = () => {
     }
 }
 
+const messagePreview = () => {
+
+    if(props.item.message) {
+        if(props.item.message.text.value.length > 15) {
+            return props.item.message.text.value.replace(props.item.message.text.value.slice(12), '...');
+        }
+        else {
+            return props.item.message.text.value;
+        }
+    }
+
+    return '';
+}
+
 </script>
 <template>
     <TableRow :hoverable="true">
@@ -65,7 +79,7 @@ const statusBadge = () => {
         </TableCell>
 
         <TableCell>
-            {{ item.message ? item.message.text.value : '' }}
+            {{ messagePreview() }}
         </TableCell>
 
         <TableCell>

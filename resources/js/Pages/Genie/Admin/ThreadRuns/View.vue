@@ -8,6 +8,7 @@ import Panel from "@/Components/Surface/Panel.vue";
 import X from "@/Icons/X.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import Label from "mixpost-enterprise/resources/js/Components/Form/Label.vue";
+import ListItem from "mixpost-enterprise/resources/js/Components/DataDisplay/ListItem.vue";
 
 defineOptions({layout: AdminLayout});
 
@@ -43,18 +44,18 @@ const backToList = () => {
 
             <Panel :with-padding="true" class="mt-lg">
 
-                <Label class="mt-lg">
-                    {{ $t('genie.thread_uuid') }}: {{ threadRun.uuid }}
-                </Label>
-                <Label class="mt-lg">
-                    {{ $t('genie.rule_thread_step') }}: {{ threadRun.step_id }}
-                </Label>
-                <Label class="mt-lg">
-                    {{ $t('genie.status') }}: {{ threadRun.status }}
-                </Label>
-                <Label class="mt-lg">
-                    {{ $t('genie.thread_run_message') }}: {{ threadRun.message ? threadRun.message.text.value : '' }}
-                </Label>
+                <Label class="mt-lg">{{ $t('genie.thread_uuid') }}</Label>
+                <ListItem :active="true">{{ threadRun.uuid }}</ListItem>
+
+                <Label class="mt-lg">{{ $t('genie.rule_thread_step') }}</Label>
+                <ListItem :active="true">{{ threadRun.step_id }}</ListItem>
+
+                <Label class="mt-lg">{{ $t('genie.status') }}</Label>
+                <ListItem :active="true">{{ threadRun.status }}</ListItem>
+
+                <Label class="mt-lg">{{ $t('genie.thread_run_message') }}</Label>
+                <ListItem :active="true" :withClassesForLast="false">{{ threadRun.message ? threadRun.message.text.value : '' }}</ListItem>
+
             </Panel>
 
             <div class="flex flex-row items-center justify-between mt-lg">
