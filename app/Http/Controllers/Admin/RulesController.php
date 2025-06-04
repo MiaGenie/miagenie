@@ -37,7 +37,6 @@ class RulesController extends Controller
                 'rule_type' => $request->query('rule_type', ''),
             ],
             'ruleTypes' => RuleType::withTitle(),
-            'ruleSubTypes' => RuleSubType::withTitle(),
             'statusTypes' => RuleStatus::withTitle(),
             'records' => RuleResource::collection($records),
             'version' => new VersionResource($version),
@@ -51,7 +50,6 @@ class RulesController extends Controller
         return Inertia::render('Genie/Admin/Versions/Rules/CreateEdit', [
             'mode' => 'create',
             'ruleTypes' => RuleType::withTitle(),
-            'ruleSubTypes' => RuleSubType::withTitle(),
             'ruleType' => $request->input('rule_type'),
             'version' => new VersionResource($version),
             'statusTypes' => RuleStatus::withTitle(),
@@ -81,7 +79,6 @@ class RulesController extends Controller
         return Inertia::render('Genie/Admin/Versions/Rules/CreateEdit', [
             'mode' => 'edit',
             'ruleTypes' => RuleType::withTitle(),
-            'ruleSubTypes' => RuleSubType::withTitle(),
             'statusTypes' => RuleStatus::withTitle(),
             'version' => new VersionResource($version),
             'record' => new RuleResource($record)

@@ -18,7 +18,8 @@ return new class extends Migration
             $table->uuid()->unique();
             $table->foreignId('workspace_id')->constrained('mixpost_workspaces');
             $table->foreignId('rule_id')->constrained('genie_rules');
-            $table->string('thread_provider_id');
+            $table->string('thread_provider_id')->nullable();
+            $table->tinyInteger('status');
             $table->timestamps();
         });
 
@@ -27,12 +28,11 @@ return new class extends Migration
             $table->uuid()->unique();
             $table->foreignId('thread_id')->constrained('genie_threads')->onDelete('cascade');
             $table->foreignId('step_id')->constrained('genie_rule_steps')->onDelete('cascade');
-            $table->integer('max_completion_tokens');
-            $table->integer('max_prompt_tokens');
+            $table->string('run_provider_id')->nullable();
             $table->tinyInteger('status');
-            $table->tinyInteger('status_provider');
-            $table->tinyInteger('error_provider');
-            $table->tinyInteger('incomplete_details_provider');
+            $table->tinyInteger('error')->nullable();
+            $table->string('error_details')->nullable();
+            $table->string('incomplete_details')->nullable();
             $table->json('message')->nullable();
             $table->timestamps();
         });
@@ -54,9 +54,9 @@ return new class extends Migration
         Schema::create('genie_run_logs', function (Blueprint $table) {
             $table->id();
             $table->uuid()->unique();
-            $table->foreignId('thread_id')->constrained('genie_threads')->onDelete('cascade');
-            $table->foreignId('run_id')->constrained('genie_thread_runs')->onDelete('cascade');
-            $table->json('data')->nullable();
+            $table->string('type');
+            $table->string('action');
+            $table->json('request')->nullable();
             $table->json('response')->nullable();
             $table->timestamps();
         });

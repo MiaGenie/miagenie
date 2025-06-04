@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\RuleSubType;
 use App\Enums\RuleType;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 
 class Rule extends Model
@@ -17,7 +18,6 @@ class Rule extends Model
         'uuid',
         'version_id',
         'rule_type',
-        'rule_sub_type',
         'name',
         'description',
         'status',
@@ -26,6 +26,13 @@ class Rule extends Model
 
     protected $casts = [
         'rule_type' => RuleType::class,
-        'rule_sub_type' => RuleSubType::class,
     ];
+
+    /**
+     * @return HasMany
+     */
+    public function threads(): HasMany
+    {
+        return $this->hasMany(Thread::class, 'rule_id')->oldest('id');
+    }
 }

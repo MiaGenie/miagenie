@@ -18,11 +18,9 @@ return new class extends Migration
             $table->uuid()->unique();
             $table->foreignId('version_id')->constrained('genie_versions');
             $table->tinyInteger('rule_type');
-            $table->tinyInteger('rule_sub_type');
             $table->string('name');
             $table->text('description')->nullable();
             $table->tinyInteger('status');
-            $table->integer('position');
             $table->timestamps();
         });
 
@@ -31,11 +29,13 @@ return new class extends Migration
             $table->id();
             $table->uuid()->unique();
             $table->foreignId('rule_id')->constrained('genie_rules')->onDelete('cascade');
+            $table->tinyInteger('rule_sub_type')->nullable();
             $table->string('name');
             $table->text('description')->nullable();
             $table->foreignId('assistant_id')->constrained('genie_assistants');
             $table->text('message');
             $table->string('output');
+            $table->boolean('optional');
             $table->integer('position');
             $table->timestamps();
         });

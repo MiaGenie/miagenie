@@ -2,6 +2,7 @@
 
 return [
     App\Providers\AppServiceProvider::class,
+    App\Providers\GenieServiceProvider::class,
     App\Providers\HorizonServiceProvider::class,
     App\Providers\OpenAIServiceProvider::class
 ];

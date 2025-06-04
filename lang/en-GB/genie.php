@@ -59,6 +59,7 @@ return [
     'delete_step_confirm' => 'Are you sure you want to delete this step?',
     'step_message' => 'Message',
     'step_assistant_id' => 'Assistant ID',
+    'step_optional' => 'Is Optional',
     'step_output' => 'Output Field',
 
 
