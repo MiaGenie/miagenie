@@ -1,6 +1,6 @@
 <script setup>
 import {useI18n} from "vue-i18n";
-import {Head, Link} from '@inertiajs/vue3';
+import {Head} from '@inertiajs/vue3';
 import {router} from "@inertiajs/vue3";
 import AdminLayout from "@/Layouts/Admin.vue";
 import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
@@ -19,8 +19,8 @@ defineOptions({layout: AdminLayout});
 const {t: $t} = useI18n()
 
 const props = defineProps({
-    thread: {
-        type:Object,
+    threadUuid: {
+        type:String,
         require: true,
     },
     ruleType: {
@@ -53,7 +53,7 @@ const backToList = () => {
 
     <div class="w-full mx-auto row-py">
 
-        <PageHeader :title="$t('genie.thread_runs')">{{props.thread.uuid}}</PageHeader>
+        <PageHeader :title="$t('genie.thread_runs') + ' (' + props.threadUuid + ')'"/>
 
         <div class="w-full row-px">
 

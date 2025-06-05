@@ -7,8 +7,8 @@ import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
 import Panel from "@/Components/Surface/Panel.vue";
 import X from "@/Icons/X.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
-import Label from "mixpost-enterprise/resources/js/Components/Form/Label.vue";
-import ListItem from "mixpost-enterprise/resources/js/Components/DataDisplay/ListItem.vue";
+import TableCell from "@/Components/DataDisplay/TableCell.vue";
+
 
 defineOptions({layout: AdminLayout});
 
@@ -44,18 +44,37 @@ const backToList = () => {
 
             <Panel :with-padding="true" class="mt-lg">
 
-                <Label class="mt-lg">{{ $t('genie.thread_uuid') }}</Label>
-                <ListItem :active="true">{{ threadRun.uuid }}</ListItem>
+                <Table class="flex flex-col">
 
-                <Label class="mt-lg">{{ $t('genie.rule_thread_step') }}</Label>
-                <ListItem :active="true">{{ threadRun.step_id }}</ListItem>
+                    <TableCell :class="'pb-1'">
+                        {{ $t('genie.thread_uuid') }}
+                    </TableCell>
+                    <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
+                        {{ threadRun.uuid }}
+                    </TableCell>
 
-                <Label class="mt-lg">{{ $t('genie.status') }}</Label>
-                <ListItem :active="true">{{ threadRun.status }}</ListItem>
+                    <TableCell :class="'pb-1 pt-5'">
+                        {{ $t('genie.rule_thread_step') }}
+                    </TableCell>
+                    <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
+                        {{ threadRun.step_id }}
+                    </TableCell>
 
-                <Label class="mt-lg">{{ $t('genie.thread_run_message') }}</Label>
-                <ListItem :active="true" :withClassesForLast="false">{{ threadRun.message ? threadRun.message.text.value : '' }}</ListItem>
+                    <TableCell :class="'pb-1 pt-5'">
+                        {{ $t('genie.status') }}
+                    </TableCell>
+                    <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
+                        {{ threadRun.status }}
+                    </TableCell>
 
+                    <table-cell :class="'pb-1 pt-5'">
+                        {{ $t('genie.thread_run_message') }}
+                    </table-cell>
+                    <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
+                        {{ threadRun.message ? threadRun.message.text.value : '----------' }}
+                    </TableCell>
+
+                </Table>
             </Panel>
 
             <div class="flex flex-row items-center justify-between mt-lg">

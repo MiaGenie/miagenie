@@ -1,7 +1,7 @@
 <script setup>
 import {useI18n} from "vue-i18n";
 import PureButtonLink from "@/Components/Button/PureButtonLink.vue";
-import Eye from "mixpost-enterprise/resources/js/Icons/Eye.vue";
+import Eye from "@/Icons/Eye.vue";
 
 const {t: $t} = useI18n()
 

@@ -1,7 +1,7 @@
 <script setup>
-import {find, pickBy, throttle} from "lodash";
+import {find} from "lodash";
 import {useI18n} from "vue-i18n";
-import {router, usePage} from "@inertiajs/vue3";
+import {usePage} from "@inertiajs/vue3";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import ThreadItemAction from "@/Components/Genie/Threads/ThreadItemAction.vue";
@@ -40,11 +40,11 @@ const getRuleSubType = () => {
             {{ item.id }}
         </TableCell>
 
-        <TableCell class="hidden md:table-cell">
+        <TableCell >
             {{ getRuleType() }}
         </TableCell>
 
-        <TableCell class="hidden md:table-cell">
+        <TableCell>
             {{ getRuleSubType() }}
         </TableCell>
 

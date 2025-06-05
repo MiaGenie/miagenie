@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Builders\ThreadRunsQuery;
 use App\Enums\RuleStatus;
+use App\Enums\RuleSubType;
 use App\Http\Resources\Admin\ThreadRunsResource;
 use App\Models\Rule;
 use App\Models\Thread;
@@ -26,11 +27,12 @@ class ThreadRunsController extends Controller
 
         $thread = Thread::firstOrFailByUuid($request->route('thread'));
         $rule = Rule::find($thread->rule_id);
+        $ruleSubType = RuleSubType::from($rule->rule_sub_type);
 
         return Inertia::render('Genie/Admin/ThreadRuns/Index', [
-            'thread' => $thread->uuid,
+            'threadUuid' => $thread->uuid,
             'ruleType' => $rule->rule_type->name,
-            'ruleSubType' => $rule->rule_sub_type->name,
+            'ruleSubType' => $ruleSubType->name,
             'statusTypes' => RuleStatus::withTitle(),
             'records' => ThreadRunsResource::collection($threadRunsRecords),
         ]);

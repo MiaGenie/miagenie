@@ -138,6 +138,7 @@ return [
     'rule_thread_type_content' => 'Content',
     'thread_runs' => 'Thread Runs',
     'thread_run_uuid' => 'UUID',
+    'thread' => 'Thread',
     'thread_run_message' => 'Message',
 
 
