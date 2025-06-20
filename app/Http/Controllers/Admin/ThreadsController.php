@@ -8,6 +8,7 @@ use App\Enums\RuleSubType;
 use App\Enums\RuleType;
 use App\Http\Resources\Admin\ThreadResource;
 use App\Models\Rule;
+use App\Models\RuleStep;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Routing\Controller;
@@ -31,6 +32,7 @@ class ThreadsController extends Controller
             'ruleTypes' => RuleType::withTitle(),
             'ruleSubTypes' => RuleSubType::withTitle(),
             'rules' => Rule::all(),
+            'ruleSteps' => RuleStep::all(),
             'statusTypes' => RuleStatus::withTitle(),
             'records' => ThreadResource::collection($threadsRecords),
         ]);

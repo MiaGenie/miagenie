@@ -7,6 +7,7 @@ use App\Enums\RuleStatus;
 use App\Enums\RuleSubType;
 use App\Http\Resources\Admin\ThreadRunsResource;
 use App\Models\Rule;
+use App\Models\RuleStep;
 use App\Models\Thread;
 use App\Models\ThreadRuns;
 use Illuminate\Http\Request;
@@ -27,12 +28,12 @@ class ThreadRunsController extends Controller
 
         $thread = Thread::firstOrFailByUuid($request->route('thread'));
         $rule = Rule::find($thread->rule_id);
-        $ruleSubType = RuleSubType::from($rule->rule_sub_type);
+        $ruleSubType = RuleStep::where('rule_id', '=', $rule->id)->firstOrFail();
 
         return Inertia::render('Genie/Admin/ThreadRuns/Index', [
             'threadUuid' => $thread->uuid,
             'ruleType' => $rule->rule_type->name,
-            'ruleSubType' => $ruleSubType->name,
+            'ruleSubType' => $ruleSubType->rule_sub_type->name,
             'statusTypes' => RuleStatus::withTitle(),
             'records' => ThreadRunsResource::collection($threadRunsRecords),
         ]);
