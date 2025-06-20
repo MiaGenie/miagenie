@@ -7,10 +7,8 @@ use App\Concerns\GenieLogger;
 use App\Contracts\GenieOutputContract;
 use App\Contracts\ThreadAction;
 use App\Models\Rule;
-use App\Models\ThreadRun;
 use App\Models\Thread;
 use Illuminate\Support\Facades\App;
-use Inovector\Mixpost\Models\Workspace;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -81,13 +79,10 @@ class ThreadJob implements ShouldQueue
 
         $data = $genieOutput->handle($data);
 
-        $this->logRun('thread', $this->action, $data);
-
         $nextAction = $data->nextAction();
         if ($nextAction) {
             ThreadJob::dispatch($this->thread, $nextAction);
         }
-
     }
 
     /**
