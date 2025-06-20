@@ -29,6 +29,10 @@ const props = defineProps({
         type:Object,
         require: true,
     },
+    ruleSteps: {
+        type:Object,
+        require: true,
+    },
     ruleTypes: {
         type: Object,
         required: true

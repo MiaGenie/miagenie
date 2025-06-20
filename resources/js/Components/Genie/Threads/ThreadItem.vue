@@ -19,6 +19,7 @@ const props = defineProps({
 })
 
 const rules = usePage().props.rules;
+const ruleSteps = usePage().props.ruleSteps;
 const ruleTypes = usePage().props.ruleTypes;
 const ruleSubTypes = usePage().props.ruleSubTypes;
 
@@ -28,7 +29,7 @@ const getRuleType = () => {
 }
 
 const getRuleSubType = () => {
-    let ruleSubType = find(rules, ['id', Number(props.item.rule_id)]).rule_sub_type;
+    let ruleSubType = find(ruleSteps, ['rule_id', Number(props.item.rule_id)]).rule_sub_type
     return find(ruleSubTypes, ['value', Number(ruleSubType)]).name;
 }
 
