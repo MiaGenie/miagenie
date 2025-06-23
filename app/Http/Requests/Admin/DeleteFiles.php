@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\GenieSyncAction;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Jobs\FileJob;
 use App\Models\File;
@@ -31,8 +32,9 @@ class DeleteFiles extends FormRequest
                 continue;
             }
 
-            $result = FileJob::dispatch($file, 'delete');
-            $foo = $result;
+            $file->delete();
+
+            $result = FileJob::dispatch($file, GenieSyncAction::DELETE);
         }
     }
 }

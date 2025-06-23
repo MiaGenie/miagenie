@@ -2,7 +2,7 @@
 
 namespace App\Actions;
 
-use App\Enums\OpenAISyncStatus;
+use App\Enums\GenieSyncStatus;
 use App\Models\Assistant;
 use App\Models\Vector;
 use App\Support\Facades\OpenAI;
@@ -20,7 +20,7 @@ class UploadAssistant
             if ($upload->id && $upload->object === 'assistant') {
                 $assistantDb = Assistant::find($assistant->id);
                 $assistantDb->assistant_provider_id = $upload->id;
-                $assistantDb->status = OpenAISyncStatus::UPLOADED;
+                $assistantDb->status = GenieSyncStatus::CREATED;
                 $assistantDb->save();
 
                 return true;

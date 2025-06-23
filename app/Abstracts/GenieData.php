@@ -3,18 +3,16 @@
 namespace App\Abstracts;
 
 use App\Contracts\GenieDataContract;
+use App\Enums\GenieSyncAction;
+use App\Enums\GenieType;
 
 abstract class GenieData implements GenieDataContract
 {
-    /**
-     * @var string
-     */
-    protected string $type;
 
     /**
-     * @var string
+     * @var GenieSyncAction
      */
-    protected string $action;
+    protected GenieSyncAction $action;
 
     /**
      * @var \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Thread
@@ -42,17 +40,15 @@ abstract class GenieData implements GenieDataContract
     protected string $nextAction;
 
     /**
-     * @param string $type
-     * @param string $action
+     * @param \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Thread $model,
+     * @param GenieSyncAction $action
      */
     public function __construct(
-        string $type,
-        string $action,
-        \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Thread $model
+        \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Thread $model,
+        GenieSyncAction $action,
     ) {
-        $this->type = $type;
-        $this->action = $action;
         $this->model = $model;
+        $this->action = $action;
         $this->data = [];
         $this->request = [];
         $this->response = [];
@@ -60,19 +56,44 @@ abstract class GenieData implements GenieDataContract
     }
 
     /**
-     * @return string
+     * @return GenieSyncAction
      */
-    public function getType(): string
+    public function getAction(): GenieSyncAction
     {
-        return $this->type;
+        return $this->action;
+    }
+
+    /**
+     * @return GenieType
+     */
+    public function getType(): GenieType
+    {
+        return GenieType::fromName(class_basename($this->model));
+    }
+
+    /**
+     * @return \App\Models\File | \App\Models\Vector | \App\Models\Assistant | \App\Models\Thread
+     */
+    public function getModel(): \App\Models\File | \App\Models\Vector | \App\Models\Assistant | \App\Models\Thread
+    {
+        return $this->model;
     }
 
     /**
      * @return string
      */
-    public function getAction(): string
+    public function getProviderIdField(): string
     {
-        return $this->action;
+        return mb_strtolower($this->getType()->title() . '_provider_id');
+    }
+
+    /**
+     * @return ?string
+     */
+    public function getModelProviderId(): ?string
+    {
+        $providerIdField = mb_strtolower($this->getType()->title() . '_provider_id');
+        return $this->model->$providerIdField;
     }
 
     /**
@@ -90,6 +111,14 @@ abstract class GenieData implements GenieDataContract
     public function getResponse(): array
     {
         return $this->response;
+    }
+
+    /**
+     * @return string
+     */
+    public function getResponseProviderId(): string
+    {
+        return $this->response['id'];
     }
 
     public function nextAction(): string

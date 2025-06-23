@@ -2,17 +2,20 @@
 
 namespace App\Contracts;
 
+use App\Enums\GenieSyncAction;
+use App\Enums\GenieType;
+
 interface GenieDataContract
 {
     /**
-     * @return string
+     * @return GenieType
      */
-    public function getType(): string;
+    public function getType(): GenieType;
 
     /**
-     * @return string
+     * @return GenieSyncAction
      */
-    public function getAction(): string;
+    public function getAction(): GenieSyncAction;
 
     /**
      * @return \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Thread
@@ -20,9 +23,14 @@ interface GenieDataContract
     public function getModel(): \App\Models\File | \App\Models\Vector | \App\Models\Assistant | \App\Models\Thread;
 
     /**
+     * @return ?string
+     */
+    public function getModelProviderId(): ?string;
+
+    /**
      * @return string
      */
-    public function getModelProviderId(): string;
+    public function getProviderIdField(): string;
 
     /**
      * @return array
@@ -44,6 +52,11 @@ interface GenieDataContract
      * @return array
      */
     public function getResponse(): array;
+
+    /**
+     * @return string
+     */
+    public function getResponseProviderId(): string;
 
     /**
      * @return string

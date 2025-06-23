@@ -3,7 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Concerns\Requests\IngestAssistantFields;
-use App\Enums\OpenAISyncStatus;
+use App\Enums\GenieSyncStatus;
 use App\Jobs\AssistantJob;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -49,7 +49,7 @@ class UpdateAssistant extends FormRequest
             'top_p' => $this->input('top_p'),
             'reasoning_effort' => $this->input('reasoning_effort'),
             'assistant_provider_id' => $record->assistant_provider_id,
-            'status' => OpenAISyncStatus::UPDATING
+            'status' => GenieSyncStatus::UPDATING
         ]);
 
         AssistantJob::dispatch($record, 'update');

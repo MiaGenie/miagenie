@@ -3,23 +3,25 @@
 namespace App\Concerns;
 
 use App\Abstracts\GenieData;
-use App\Models\RunLog;
+use App\Enums\GenieSyncAction;
+use App\Enums\GenieType;
+use App\Models\Log;
 
 trait GenieLogger
 {
     /**
-     * @param string $type
-     * @param string $action
+     * @param GenieType $type
+     * @param GenieSyncAction $action
      * @param GenieData $data
-     * @return RunLog
+     * @return Log
      */
-    protected function logRun(string $type, string $action, GenieData $data): RunLog
+    protected function logRun(GenieType $type, GenieSyncAction $action, GenieData $data): Log
     {
-        return RunLog::create([
+        return Log::create([
             'type' => $type,
             'action' => $action,
-            'data' => $data->request,
-            'response' => $data->response,
+            'data' => $data->getRequest(),
+            'response' => $data->getResponse(),
         ]);
 
     }

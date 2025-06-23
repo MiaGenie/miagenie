@@ -3,8 +3,9 @@
 namespace App\Configs;
 
 use App\Abstracts\Config;
+use App\Contracts\Config as ConfigContract;
 
-class OpenAIConfig extends Config
+class OpenAIConfig extends Config implements ConfigContract
 {
     /**
      * @return string

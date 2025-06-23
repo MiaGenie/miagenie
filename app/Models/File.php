@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 use League\Flysystem\FilesystemAdapter;
@@ -13,6 +14,7 @@ class File extends Model
 {
 
     use HasUuid;
+    use SoftDeletes;
 
     /**
      * @var string

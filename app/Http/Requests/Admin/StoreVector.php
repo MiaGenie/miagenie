@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\Enums\OpenAISyncStatus;
+use App\Enums\GenieSyncStatus;
 use App\Enums\VectorType;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Jobs\VectorJob;
@@ -35,7 +35,7 @@ class StoreVector extends FormRequest
             'description' => $this->input('description'),
             'files' => $this->input('files'),
             'vector_type' => $this->input('vector_type'),
-            'status' => OpenAISyncStatus::UPLOADING,
+            'status' => GenieSyncStatus::CREATING,
         ]);
 
         VectorJob::dispatch($vector, 'upload');

@@ -2,9 +2,6 @@
 
 namespace App\Concerns\Requests;
 
-use App\Constants\FormTypeDefaults;
-use App\Enums\FormFieldType;
-use App\Enums\FormInputType;
 use App\Models\AIModel;
 use Illuminate\Support\Collection;
 
@@ -23,45 +20,18 @@ trait IngestAssistantFields
     /**
      * @return void
      */
-    protected function ingestOptions(): void
-    {
-        $this->fieldType ??= FormFieldType::withFieldOptions($this->input('field_type'), true);
-
-        $processedOptions = [[]];
-
-        if ($this->fieldType->get('hasOptions')) {
-            if ($this->fieldType->get('hasGroups')) {
-                $processedOptions = $this->input('options');
-            } else {
-                $processedOptions = array_slice($this->input('options'), 0, 1);
-            }
-        }
-
-        $this->merge(['options' => array_merge(...$processedOptions)]);
-    }
-
-    /**
-     * @return void
-     */
     protected function ingestParameters(): void
     {
-        $fieldParams = $this->filterFieldParams();
-        $inputParams = $this->filterInputParams();
-
-        $this->merge(array_merge($fieldParams, $inputParams));
+        $fields = $this->filterFields();
+        $this->merge($fields);
     }
 
     /**
      * @return array
      */
-    private function filterFieldParams(): array
+    private function filterFields(): array
     {
-        $allModels = AIModel::all();
-
-        $fieldModel = $allModels->firstOrFail(function ($model) {
-            return ($model->model === $this->input('model'));
-        });
-
+        $fieldModel = AIModel::where('model', $this->input('model'))->firstOrFail();
         $params = [];
 
         if (!$fieldModel->file_search) {
@@ -83,14 +53,5 @@ trait IngestAssistantFields
         }
 
         return $params;
-    }
-
-
-    /**
-     * @return array
-     */
-    private function filterInputParams(): array
-    {
-        return [];
     }
 }

@@ -24,6 +24,7 @@ return new class extends Migration {
             $table->tinyInteger('status');
             $table->unsignedBigInteger('size');
             $table->string('file_provider_id')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
 

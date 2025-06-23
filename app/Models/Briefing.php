@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 use Inovector\Mixpost\Concerns\OwnedByWorkspace;
 
@@ -10,6 +11,7 @@ class Briefing extends Model
 {
     use HasUuid;
     use OwnedByWorkspace;
+    use SoftDeletes;
 
     /**
      * @var string

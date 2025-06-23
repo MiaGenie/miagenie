@@ -30,6 +30,7 @@ return new class extends Migration {
             $table->string('reasoning_effort')->nullable();
             $table->tinyInteger('status');
             $table->string('assistant_provider_id')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
 

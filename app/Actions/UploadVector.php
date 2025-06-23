@@ -2,7 +2,7 @@
 
 namespace App\Actions;
 
-use App\Enums\OpenAISyncStatus;
+use App\Enums\GenieSyncStatus;
 use App\Models\Vector;
 use App\Support\Facades\OpenAI;
 use Illuminate\Support\Facades\Log;
@@ -28,7 +28,7 @@ class UploadVector
             if ($upload->id && 'vector_store' === $upload->object) {
                 $vectorDb = Vector::find($vector->id);
                 $vectorDb->vector_provider_id = $upload->id;
-                $vectorDb->status = OpenAISyncStatus::UPLOADED;
+                $vectorDb->status = GenieSyncStatus::CREATED;
                 $vectorDb->save();
                 return true;
             }

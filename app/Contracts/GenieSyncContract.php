@@ -6,7 +6,7 @@ use App\Abstracts\GenieData;
 use App\Models\Thread;
 use OpenAI\Responses\Threads\ThreadResponse;
 
-interface ThreadAction
+interface GenieSyncContract
 {
 
     /**
