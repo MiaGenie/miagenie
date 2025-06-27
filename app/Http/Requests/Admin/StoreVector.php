@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\GenieSyncAction;
 use App\Enums\GenieSyncStatus;
 use App\Enums\VectorType;
 use Illuminate\Foundation\Http\FormRequest;
@@ -38,7 +39,7 @@ class StoreVector extends FormRequest
             'status' => GenieSyncStatus::CREATING,
         ]);
 
-        VectorJob::dispatch($vector, 'upload');
+        VectorJob::dispatch($vector, GenieSyncAction::CREATE);
 
         return $vector;
     }

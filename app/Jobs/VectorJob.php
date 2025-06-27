@@ -2,19 +2,18 @@
 
 namespace App\Jobs;
 
-use App\Actions\DeleteVector;
-use App\Actions\UploadVector;
-use App\Enums\GenieSyncStatus;
+use App\Abstracts\GenieJob;
+use App\Enums\GenieSyncAction;
 use App\Models\Vector;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class VectorJob implements ShouldQueue
+class VectorJob extends GenieJob implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -34,55 +33,48 @@ class VectorJob implements ShouldQueue
     /**
      * @var Vector
      */
-    private Vector $vector;
+    protected Vector $vector;
 
     /**
-     * @var string
+     * @var GenieSyncAction
      */
-    private string $action;
+    protected GenieSyncAction $action;
 
     /**
      * @param Vector $vector
-     * @param string $action
+     * @param GenieSyncAction $action
      */
-    public function __construct(Vector $vector, string $action)
+    public function __construct(Vector $vector, GenieSyncAction $action)
     {
+        parent::__construct($vector, $action);
         $this->vector = $vector;
         $this->action = $action;
     }
 
     /**
-     * @param UploadVector $uploadVector
-     * @param DeleteVector $deleteVector
      * @return void
+     * @throws BindingResolutionException
      */
-    public function handle(UploadVector $uploadVector, DeleteVector $deleteVector): void
+    public function handle(): void
     {
-        if ($this->action === 'upload') {
+        $data = $this->getGenieData();
 
-            $response = $uploadVector($this->vector);
+        $state = $this->getGenieState();
+        $state->handle($this->model, $this->action, 'init');
 
-            if (! $response) {
+        $action = $this->getGenieAction();
+        $data = $action->handle($data);
 
-                $this->release(30);
+        if (!$data) {
+            $this->release(30);
+            return;
+        }
 
-                return;
-            }
-        } elseif ($this->action === 'delete') {
+        $state->handle($this->model, $this->action, 'end');
 
-            $vectorDb = Vector::find($this->vector->id);
-            $vectorDb->status = GenieSyncStatus::DELETING;
-            $vectorDb->save();
-
-            $response = $deleteVector($this->vector);
-
-            if (! $response) {
-                $this->release(30);
-
-                return;
-            }
-
-            $this->vector->delete();
+        if ($this->action !== GenieSyncAction::UPDATE) {
+            $genieOutput = $this->getGenieOutput($data);
+            $data = $genieOutput->handle($data);
         }
     }
 
@@ -92,13 +84,7 @@ class VectorJob implements ShouldQueue
      */
     public function failed(?Throwable $exception): void
     {
-        $vectorDb = Vector::find($this->vector->id);
-        // do failed stuff
-        if ($this->action === 'upload') {
-            $vectorDb->status = GenieSyncStatus::FAILED_CREATION;
-        } elseif ($this->action === 'delete') {
-            $vectorDb->status = GenieSyncStatus::FAILED_DELETION;
-        }
-        $vectorDb->save();
+        $state = $this->getGenieState();
+        $state->handle($this->model, $this->action, 'fail');
     }
 }

@@ -38,7 +38,15 @@ class GenieDataVectors extends GenieData implements GenieDataContract
      */
     public function getData(): array
     {
-        $data = [];
+        $fileIds = array_column($this->vector->files, "file_provider_id");
+
+        $data = match ($this->action) {
+            GenieSyncAction::CREATE => [
+                'file_ids' => $fileIds,
+                'name' => $this->vector->name,
+            ],
+            GenieSyncAction::DELETE => [$this->vector->vector_provider_id]
+        };
 
         return $data;
     }
@@ -46,7 +54,10 @@ class GenieDataVectors extends GenieData implements GenieDataContract
 
     public function getRequest(): array
     {
-        $request = [];
+        $request = match ($this->action) {
+            GenieSyncAction::CREATE => $this->getData(),
+            GenieSyncAction::DELETE => [$this->getModelProviderId()]
+        };
 
         return $request;
     }

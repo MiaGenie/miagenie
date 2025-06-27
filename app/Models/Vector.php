@@ -27,7 +27,7 @@ class Vector extends Model
         'description',
         'files',
         'vector_type',
-        'vector_id',
+        'vector_provider_id',
         'status',
     ];
 

@@ -8,6 +8,8 @@ use App\Actions\GenieOutput;
 use App\Actions\GenieOutput\ThreadOutput;
 use App\Actions\GenieSync\CreateFile;
 use App\Actions\GenieSync\DeleteFile;
+use App\Actions\GenieSync\DeleteVector;
+use App\Actions\GenieSync\UploadVector;
 use App\Actions\StatusThread;
 use App\Actions\UpdateThread;
 use App\Contracts\GenieOutputContract;
@@ -44,6 +46,11 @@ class GenieServiceProvider extends ServiceProvider
                     return match($action) {
                         GenieSyncAction::CREATE => new CreateFile(),
                         GenieSyncAction::DELETE => new DeleteFile()
+                    };
+                case GenieType::VECTOR:
+                    return match($action) {
+                        GenieSyncAction::CREATE => new UploadVector(),
+                        GenieSyncAction::DELETE => new DeleteVector()
                     };
             }
         });

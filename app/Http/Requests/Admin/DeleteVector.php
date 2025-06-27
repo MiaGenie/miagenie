@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\GenieSyncAction;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Jobs\VectorJob;
 use App\Models\Vector;
+use Illuminate\Support\Facades\Log;
 
 class DeleteVector extends FormRequest
 {
@@ -15,6 +17,8 @@ class DeleteVector extends FormRequest
     {
         $vector = Vector::firstOrFailByUuid($this->route('vector'));
 
-        VectorJob::dispatch($vector, 'delete');
+        $vector->delete();
+
+        VectorJob::dispatch($vector, GenieSyncAction::DELETE);
     }
 }
