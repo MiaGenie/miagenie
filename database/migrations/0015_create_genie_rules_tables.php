@@ -35,6 +35,7 @@ return new class extends Migration
             $table->foreignId('assistant_id')->constrained('genie_assistants');
             $table->text('message');
             $table->string('output');
+            $table->boolean('requires_review');
             $table->boolean('optional');
             $table->integer('position');
             $table->timestamps();

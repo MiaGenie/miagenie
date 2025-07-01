@@ -2,11 +2,13 @@
 
 namespace App\Enums;
 
+use App\Concerns\Enum\HasState;
 use App\Concerns\Enum\WithTitle;
 
 enum GenieSyncStatus: int
 {
     use WithTitle;
+    use HasState;
 
     case CREATING = 1;
     case CREATED = 2;
@@ -33,6 +35,36 @@ enum GenieSyncStatus: int
             self::DELETING => 'deleting',
             self::DELETED => 'deleted',
             self::FAILED_DELETION => 'failed-deletion'
+        };
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasError(): bool
+    {
+        return match ($this) {
+            self::FAILED_CREATION, self::FAILED_UPDATE, self::FAILED_DELETION => true,
+            default => false,
+        };
+    }
+
+    /**
+     * @return bool
+     */
+    public function requiresUpdate(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isComplete(): bool
+    {
+        return match ($this) {
+            self::CREATED, self::UPDATED, self::DELETED => true,
+            default => false,
         };
     }
 }

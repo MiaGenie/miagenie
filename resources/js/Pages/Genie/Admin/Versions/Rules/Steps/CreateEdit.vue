@@ -70,6 +70,7 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     assistant_id: '',
     message: '',
     output: '',
+    requires_review: 0,
     optional: 0,
 });
 
@@ -286,6 +287,21 @@ const deleteStep = () => {
 
                         <template #footer>
                             <Error :message="form.errors.output"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup class="form-field">
+                        <template #title>
+                            <label for="requires_review">{{ $t("genie.step_requires_review") }}</label>
+                        </template>
+
+                        <Switch
+                            v-model="form.requires_review"
+                            id="requires_review"
+                        />
+
+                        <template #footer>
+                            <Error :message="form.errors.requires_review"/>
                         </template>
                     </VerticalGroup>
 

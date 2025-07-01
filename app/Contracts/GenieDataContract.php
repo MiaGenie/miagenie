@@ -18,9 +18,9 @@ interface GenieDataContract
     public function getAction(): GenieSyncAction;
 
     /**
-     * @return \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Thread
+     * @return \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Run|\App\Models\RunResponse
      */
-    public function getModel(): \App\Models\File | \App\Models\Vector | \App\Models\Assistant | \App\Models\Thread;
+    public function getModel(): \App\Models\File | \App\Models\Vector | \App\Models\Assistant | \App\Models\Run | \App\Models\RunResponse;
 
     /**
      * @return ?string
@@ -59,8 +59,8 @@ interface GenieDataContract
     public function getResponseProviderId(): string;
 
     /**
-     * @return string
+     * @return ?GenieSyncAction
      */
-    public function nextAction(): string;
+    public function nextAction(): ?GenieSyncAction;
 
 }

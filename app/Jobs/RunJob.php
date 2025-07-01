@@ -3,20 +3,27 @@
 namespace App\Jobs;
 
 use App\Abstracts\GenieData;
+use App\Abstracts\GenieJob;
 use App\Concerns\GenieLogger;
 use App\Contracts\GenieOutputContract;
-use App\Contracts\GenieSyncContract;
+use App\Enums\GenieSyncAction;
+use App\Enums\GenieSyncStatus;
+use App\Enums\RuleSubType;
+use App\Enums\RunResponseStatus;
+use App\Enums\RunStatus;
+use App\Genie\Data\GenieRunData;
 use App\Models\Rule;
-use App\Models\Thread;
-use Illuminate\Support\Facades\App;
+use App\Models\Run;
+use App\Models\RunResponse;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\App;
 use Throwable;
 
-class ThreadJob implements ShouldQueue
+class RunJob extends GenieJob implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -40,28 +47,24 @@ class ThreadJob implements ShouldQueue
     private Rule $rule;
 
     /**
-     * @var Thread
+     * @var Run
      */
-    private Thread $thread;
+    private Run $run;
 
     /**
-     * @var GenieSyncContract
+     * @var GenieSyncAction
      */
-    private GenieSyncContract $threadAction;
+    protected GenieSyncAction $action;
 
     /**
-     * @var string
+     * @param GenieSyncAction $action
+     * @param Run $run
      */
-    private string $action;
-
-    /**
-     * @param string $action
-     * @param Thread $thread
-     */
-    public function __construct(Thread $thread, string $action)
+    public function __construct(Run $run, GenieSyncAction $action)
     {
+        parent::__construct($run, $action);
         $this->action = $action;
-        $this->thread = $thread;
+        $this->run = $run;
     }
 
     /**
@@ -70,25 +73,22 @@ class ThreadJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $data = $this->getGenieData();
-        $action = $this->getGenieAction();
+        $data = $this->getGenieRunData();
+        $nextStep = $data->nextStep();
 
-        $data = $action->handle($data);
+        if ($nextStep) {
+            $runResponse = $this->run->runResponses()->create([
+                'step_id' => $nextStep->id,
+                'status' => GenieSyncStatus::CREATING
+            ]);
+            if ($nextStep?->rule_sub_type === RuleSubType::COMPETITORS) {
+                $runResponse->runCompetitor()->create([
+                    'competitor_id' => $data->getNextCompetitor()->id,
+                ]);
+            }
+            RunResponseJob::dispatch($runResponse, GenieSyncAction::CREATE);
+        } else {
 
-        if (!$data) {
-            $this->release(30);
-            return;
-        }
-
-        $genieOutput = $this->getGenieOutput($data);
-
-        $data = $genieOutput->handle($data);
-
-        $this->logRun('thread', $this->action, $data);
-
-        $nextAction = $data->nextAction();
-        if ($nextAction) {
-            ThreadJob::dispatch($this->thread, $nextAction);
         }
 
     }
@@ -103,36 +103,19 @@ class ThreadJob implements ShouldQueue
     }
 
     /**
-     * @return GenieData|mixed|object
+     * @return GenieRunData
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function getGenieData(): mixed
+    public function getGenieRunData(): GenieRunData
     {
         return App::make(
-            GenieData::class,
+            GenieRunData::class,
             [
+                'model' => $this->run,
                 'action' => $this->action,
-                'model' => $this->thread,
-                'rule_type' => $this->thread->rule->rule_type->name,
             ]
         );
     }
-
-    /**
-     * @return GenieSyncContract|mixed|object
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
-     */
-    public function getGenieAction(): mixed
-    {
-        return App::make(
-            GenieSyncContract::class,
-            [
-                'thread' => $this->thread,
-                'action' => $this->action
-            ]
-        );
-    }
-
 
     /**
      * @return GenieOutputContract|mixed|object

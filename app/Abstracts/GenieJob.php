@@ -14,9 +14,9 @@ abstract class GenieJob
     use GenieLogger;
 
     /**
-     * @var \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Run
+     * @var \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Run|\App\Models\RunResponse
      */
-    protected \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Run $model;
+    protected \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Run|\App\Models\RunResponse $model;
 
     /**
      * @var GenieSyncAction
@@ -24,11 +24,11 @@ abstract class GenieJob
     protected GenieSyncAction $action;
 
     /**
-     * @param \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Run $model
+     * @param \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Run|\App\Models\RunResponse $model
      * @param GenieSyncAction $action
      */
     public function __construct(
-        \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Run $model,
+        \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Run|\App\Models\RunResponse $model,
         GenieSyncAction $action,
     ) {
         $this->model = $model;

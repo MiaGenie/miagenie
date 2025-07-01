@@ -2,10 +2,12 @@
 
 namespace App\Console\Commands;
 
-use App\Enums\ThreadStatus;
-use App\Jobs\ThreadJob;
+use App\Abstracts\GenieJob;
+use App\Enums\GenieSyncAction;
+use App\Enums\RunStatus;
+use App\Jobs\RunJob;
 use App\Models\Rule;
-use App\Models\Thread;
+use App\Models\Run;
 use App\Models\WorkspaceVersion;
 use Illuminate\Console\Command;
 use Inovector\Mixpost\Facades\WorkspaceManager;
@@ -17,7 +19,7 @@ class RunStrategy extends Command
     /**
      * @var string
      */
-    protected $signature = 'genie:strategy-analysis {--workspace=}';
+    protected $signature = 'genie:run-strategy {--workspace=}';
 
     /**
      * @var string
@@ -50,13 +52,17 @@ class RunStrategy extends Command
             return;
         }
 
-        $thread = Thread::create([
+        $run = Run::create([
             'workspace_id' => $workspace->id,
             'rule_id' => $rule->id,
-            'status' => ThreadStatus::fromName('OPEN'),
+            'status' => RunStatus::OPEN,
         ]);
 
-        ThreadJob::dispatch($thread, 'create');
+        $run->strategy()->create([
+            'workspace_id' => $workspace->id
+        ]);
+
+        RunJob::dispatch($run, GenieSyncAction::CREATE);
 
         $this->info('All assistants without sync have been added to Assistant Sync Job');
     }

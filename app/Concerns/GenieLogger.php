@@ -22,6 +22,7 @@ trait GenieLogger
             'action' => $action,
             'data' => $data->getRequest(),
             'response' => $data->getResponse(),
+            'duration' => $data->getDuration(),
         ]);
 
     }

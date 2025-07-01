@@ -1,22 +1,22 @@
 <?php
 
-namespace App\GenieData\Thread;
+namespace App\Genie\Data;
 
-use App\Enums\VersionGroupType;
-use App\Models\VersionField;
-use App\Models\VersionFieldOption;
-use Arr;
 use App\Abstracts\GenieData as AbstractThreadActionData;
 use App\Concerns\GenieParser;
 use App\Contracts\GenieDataContract;
+use App\Enums\VersionGroupType;
 use App\Models\Assistant;
 use App\Models\Briefing;
 use App\Models\Competitor;
 use App\Models\RuleStep;
-use App\Models\ThreadRun;
 use App\Models\RunCompetitor;
 use App\Models\Strategy;
 use App\Models\Thread;
+use App\Models\ThreadRun;
+use App\Models\VersionField;
+use App\Models\VersionFieldOption;
+use Arr;
 use Illuminate\Database\Eloquent\Collection;
 use Inovector\Mixpost\Facades\WorkspaceManager;
 
@@ -51,6 +51,7 @@ class Analysis extends AbstractThreadActionData implements GenieDataContract
     ) {
         parent::__construct(self::TYPE, $action, $model);
         $this->thread = $model;
+        WorkspaceManager::setCurrent($this->thread->workspace);
         $this->lastStep = $this->lastStep();
         $this->currentStep = $this->nextStep($this->lastStep);
         $this->data = $this->getData();
@@ -61,6 +62,9 @@ class Analysis extends AbstractThreadActionData implements GenieDataContract
      */
     public function getModel(): Thread
     {
+        $model = match ($this->action) {
+            'status' => $this
+        }
         return $this->thread;
     }
 
@@ -85,16 +89,16 @@ class Analysis extends AbstractThreadActionData implements GenieDataContract
             ]],
         ];
 
-        $this->request['thread_id'] = $this->thread->thread_provider_id;
-        $this->request = array_merge($this->request, $data);
-
         return $data;
     }
 
 
     public function getRequest(): array
     {
-        // TODO: Implement getRequest() method.
+        $this->request['thread_id'] = $this->thread->thread_provider_id;
+        $this->request = array_merge($this->request, $this->data);
+
+        return $this->request;
     }
 
 
@@ -183,7 +187,7 @@ class Analysis extends AbstractThreadActionData implements GenieDataContract
     /**
      * @return ?ThreadRun
      */
-    private function lastRun(): ?ThreadRun
+    public function lastRun(): ?ThreadRun
     {
         return ThreadRun::where(['thread_id' => $this->thread->id])->latest('id')->first();
     }
@@ -298,8 +302,6 @@ class Analysis extends AbstractThreadActionData implements GenieDataContract
      */
     private function getReplacements(): array
     {
-        WorkspaceManager::setCurrent($this->thread->workspace);
-
         $briefings = $this->getBriefingReplacements();
         $competitors = $this->currentStep->rule_sub_type->name === 'COMPETITORS' ? $this->getCompetitorReplacements() : [];
         $strategy = $this->getStrategyReplacements();

@@ -3,7 +3,10 @@
 namespace App\Actions\GenieOutput;
 
 use App\Abstracts\GenieData;
+use App\Actions\GenieOutput;
 use App\Contracts\GenieOutputContract;
+use App\Enums\RuleSubType;
+use App\Enums\RunResponseStatus;
 use App\Enums\ThreadRunErrors;
 use App\Enums\ThreadRunStatus;
 use App\Enums\RunStatus;
@@ -11,7 +14,7 @@ use App\Models\Thread;
 use App\Models\ThreadRun;
 use Illuminate\Support\Facades\Log;
 
-class ThreadOutput implements GenieOutputContract
+class GenieOutputStrategy extends GenieOutput implements GenieOutputContract
 {
     /**
      * @param GenieData $data
@@ -19,25 +22,41 @@ class ThreadOutput implements GenieOutputContract
      */
     public function handle(GenieData $data): ?GenieData
     {
-        $action = $data->getAction();
-        $thread = $data->getModel();
-        $response = $data->getResponse();
         try {
-            switch ($action) {
-                case 'create':
-                    $this->createOutput($thread, $response);
+            $data = parent::handle($data);
+            $model = $data->getModel();
+            $response = $data->getResponse();
+
+            $model->update([
+                'provider_status' => RunResponseStatus::fromName($response['status']),
+                'output' => $response['output'],
+                'output_text' => $response['output_text'],
+                'error' => $response['error'] ? strtoupper($response['error']['code']) : null,
+                'error_details' => $response['error'] ? $response['error']['message'] : null,
+                'incomplete_details' => $response['incomplete_details'] ? $response['incomplete_details']['reason'] : null,
+            ]);
+
+            $strategy = $model->run->strategy;
+            $content = $strategy->content ?? [];
+            switch ($model->step->rule_sub_type) {
+                default:
+                case RuleSubType::BRIEFINGS:
+                    switch ($model->step->assistant->response_format) {
+                        default:
+                        case 'text':
+                            $content[$model->step->output] = $response['output_text'];
+                            break;
+                        case 'json_schema':
+                            $content[$model->step->output] = json_decode($response['output_text']);
+                            break;
+                    }
                     break;
-                case 'update':
-                    $this->UpdateOutput($thread, $response, $data);
-                    break;
-                case 'status':
-                    $this->statusOutput($thread, $response);
-                    break;
-                case 'message':
-                    $this->messageOutput($response);
+                case RuleSubType::COMPETITORS:
+                    $content[$model->step->output][$model->runCompetitor->competitor_id] = $response['output_text'];
                     break;
             }
-
+            $strategy->content = $content;
+            $strategy->save();
             return $data;
 
         } catch (\Exception $exception) {
@@ -86,7 +105,7 @@ class ThreadOutput implements GenieOutputContract
     public function createOutput(Thread $thread, array $response): void
     {
         $thread->update([
-            'thread_provider_id' => $response['id'],7
+            'thread_provider_id' => $response['id'],
             'status' => RunStatus::fromName('RUNNING'),
         ]);
     }
@@ -117,9 +136,9 @@ class ThreadOutput implements GenieOutputContract
     {
         ThreadRun::find($response['id'])->update([
             'status' => strtoupper($response['status']),
-            'error' => strtoupper($response['last_error']['code']),
-            'error_details' => $response['last_error']['message'],
-            'incomplete_details' => $response['incomplete_details'],
+            'error' => $response['error'] ? strtoupper($response['error']['code']) : null,
+            'error_details' => $response['error'] ? $response['error']['message'] : null,
+            'incomplete_details' => $response['incomplete_details'] ? $response['incomplete_details']['reason'] : null,
         ]);
     }
 

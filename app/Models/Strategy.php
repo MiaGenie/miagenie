@@ -19,9 +19,9 @@ class Strategy extends Model
     /**
      * @var string[]
      */
-    protected $fillable = [
-        'content',
-        'version_id',
+    protected $guarded = [
+        'workspace_id',
+        'run_id',
     ];
 
     /**

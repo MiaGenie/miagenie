@@ -13,7 +13,8 @@ enum GenieType: int
     case FILE = 1;
     case VECTOR = 2;
     case ASSISTANT = 3;
-    case THREAD = 4;
+    case RUN = 4;
+    case RUN_RESPONSE = 5;
 
     /**
      * @return string
@@ -24,7 +25,8 @@ enum GenieType: int
             self::FILE => 'file',
             self::VECTOR => 'vector',
             self::ASSISTANT => 'assistant',
-            self::THREAD => 'thread'
+            self::RUN => 'run',
+            self::RUN_RESPONSE => 'run-response',
         };
     }
 }

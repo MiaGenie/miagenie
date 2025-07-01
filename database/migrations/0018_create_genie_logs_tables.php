@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('action');
             $table->json('request')->nullable();
             $table->json('response')->nullable();
+            $table->smallInteger('duration')->nullable();
             $table->timestamps();
         });
     }

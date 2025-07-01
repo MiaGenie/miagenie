@@ -41,7 +41,7 @@ return [
     'delete_rule_confirm' => 'Are you sure you want to delete this rule?',
     'rule_type' => 'Type',
     'rule_sub_type' => 'Sub Type',
-    'rule_type_analysis' => 'Analysis',
+    'rule_type_strategy' => 'Strategy',
     'rule_type_channels' => 'Channels',
     'rule_type_schedule' => 'Schedule',
     'rule_type_ideas' => 'Ideas',
@@ -59,6 +59,7 @@ return [
     'delete_step_confirm' => 'Are you sure you want to delete this step?',
     'step_message' => 'Message',
     'step_assistant_id' => 'Assistant ID',
+    'step_requires_review' => 'Requires Review',
     'step_optional' => 'Is Optional',
     'step_output' => 'Output Field',
 

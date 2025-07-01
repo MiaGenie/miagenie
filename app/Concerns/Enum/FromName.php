@@ -2,7 +2,7 @@
 
 namespace App\Concerns\Enum;
 
-use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 trait FromName
 {
@@ -12,7 +12,7 @@ trait FromName
      */
     public static function fromName(string $name): mixed
     {
-        $name = strtoupper($name);
+        $name = Str::upper($name);
         return constant("self::$name");
     }
 }

@@ -3,12 +3,12 @@
 namespace App\Actions;
 
 use App\Abstracts\GenieData;
-use App\Contracts\ThreadAction;
+use App\Contracts\GenieSyncContract;
 use App\Support\Facades\OpenAI;
 use Illuminate\Support\Facades\Log;
 
 
-class UpdateThread implements ThreadAction
+class UpdateThread implements GenieSyncContract
 {
 
     /**

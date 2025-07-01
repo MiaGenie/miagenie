@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Actions;
+namespace App\Actions\GenieRun;
 
 use App\Abstracts\GenieData;
 use App\Contracts\GenieSyncContract;
 use App\Support\Facades\OpenAI;
 use Illuminate\Support\Facades\Log;
 
-class CreateThread implements GenieSyncContract
+
+class CreateResponse implements GenieSyncContract
 {
 
     /**
@@ -17,7 +18,13 @@ class CreateThread implements GenieSyncContract
     public function handle(GenieData $data): ?GenieData
     {
         try {
-            $response = OpenAI::threads()->create([]);
+            $startTime = time();
+            $response = OpenAI::responses()->create(
+                $data->getData(),
+            );
+            $endTime = time();
+
+            $data->setDuration($endTime - $startTime);
 
             $data->setResponse($response->toArray());
             return $data;

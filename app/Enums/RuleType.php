@@ -8,7 +8,7 @@ enum RuleType: int
 {
     use WithTitle;
 
-    case ANALYSIS = 1;
+    case STRATEGY = 1;
     case CHANNELS = 2;
     case IDEAS = 3;
     case CONTENT = 4;
@@ -20,7 +20,7 @@ enum RuleType: int
     public function title(): string
     {
         return match ($this) {
-            self::ANALYSIS => 'analysis',
+            self::STRATEGY => 'strategy',
             self::CHANNELS => 'channels',
             self::IDEAS => 'ideas',
             self::CONTENT => 'content',

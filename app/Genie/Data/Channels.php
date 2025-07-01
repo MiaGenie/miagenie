@@ -1,6 +1,6 @@
 <?php
 
-namespace App\GenieData\Thread;
+namespace App\Genie\Data;
 
 use App\Abstracts\GenieData;
 use App\Contracts\GenieDataContract;

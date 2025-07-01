@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Genie\ThreadActionsData;
+namespace App\Genie\Data;
 
 use App\Contracts\GenieDataContract;
 use App\Models\Thread;
 
-class Ideas implements GenieDataContract
+class Schedule implements GenieDataContract
 {
     /**
      * @return array

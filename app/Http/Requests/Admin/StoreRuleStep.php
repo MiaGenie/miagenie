@@ -22,6 +22,7 @@ class StoreRuleStep extends FormRequest
             'assistant_id' => ['required', 'integer'],
             'message' => ['required', 'string'],
             'output' => ['required', 'string'],
+            'requires_review' => ['required', 'boolean'],
             'optional' => ['required', 'boolean'],
         ];
     }
@@ -33,7 +34,7 @@ class StoreRuleStep extends FormRequest
     {
         $rule = Rule::firstOrFailByUuid($this->route('rule'));
 
-        $position = RuleStep::where('rule_id', $this->input('rule_id'))->max('position') + 1;
+        $position = RuleStep::where('rule_id', $rule->id)->max('position') + 1;
 
         return RuleStep::create([
             'rule_id' => $rule->id,
@@ -43,6 +44,7 @@ class StoreRuleStep extends FormRequest
             'assistant_id' => $this->input('assistant_id'),
             'message' => $this->input('message'),
             'output' => $this->input('output'),
+            'requires_review' => $this->input('requires_review'),
             'optional' => $this->input('optional'),
             'position' => $position
         ]);

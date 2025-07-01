@@ -19,7 +19,8 @@ class Log extends Model
         'type',
         'action',
         'request',
-        'response'
+        'response',
+        'duration',
     ];
 
     protected $casts = [

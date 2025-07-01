@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\GenieSyncStatus;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Enums\AssistantType;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
@@ -34,5 +36,14 @@ class Assistant extends Model
 
     protected $casts = [
         'assistant_type' => AssistantType::class,
+        'status' => GenieSyncStatus::class,
     ];
+
+    /**
+     * @return HasMany
+     */
+    public function steps(): HasMany
+    {
+        return $this->hasMany(RuleStep::class, 'assistant_id');
+    }
 }

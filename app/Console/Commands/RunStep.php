@@ -2,12 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\ThreadJob;
-use App\Models\Rule;
-use App\Models\Thread;
-use App\Models\WorkspaceVersion;
+use App\Enums\GenieSyncAction;
+use App\Jobs\RunJob;
+use App\Models\Run;
 use Illuminate\Console\Command;
-use Inovector\Mixpost\Models\Workspace;
 
 
 class RunStep extends Command
@@ -15,7 +13,7 @@ class RunStep extends Command
     /**
      * @var string
      */
-    protected $signature = 'genie:step {--thread=}';
+    protected $signature = 'genie:step {--run=}';
 
     /**
      * @var string
@@ -27,14 +25,14 @@ class RunStep extends Command
      */
     public function handle(): void
     {
-        if (!$this->option('thread')) {
-            $this->info('thread ID is required to run strategy analysis');
+        if (!$this->option('run')) {
+            $this->info('run ID is required to run strategy analysis');
             return;
         }
 
-        $thread = Thread::find($this->option('thread'));
+        $run = Run::find($this->option('run'));
 
-        ThreadJob::dispatch($thread, 'status');
+        RunJob::dispatch($run, GenieSyncAction::UPDATE);
 
         $this->info('All assistants without sync have been added to Assistant Sync Job');
     }

@@ -11,7 +11,7 @@ enum RuleSubType: int
     use FromName;
 
     case COMPETITORS = 11;
-    case STRATEGY = 12;
+    case BRIEFINGS = 12;
 
     /**
      * @return string
@@ -20,7 +20,7 @@ enum RuleSubType: int
     {
         return match ($this) {
             self::COMPETITORS => 'competitors',
-            self::STRATEGY => 'strategy',
+            self::BRIEFINGS => 'briefings',
         };
     }
 }

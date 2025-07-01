@@ -16,8 +16,8 @@ import RulesIcon from "@/Icons/Genie/Rules.vue";
     </MenuGroupHeader>
     <MenuGroupBody>
 
-    <MenuItem :url="route('genie.admin.rules.index')"
-              :active="$page.component === 'Genie/Admin/Rules/Index'">
+    <MenuItem :url="route('genie.admin.versions.rules.index')"
+              :active="$page.component === 'Genie/Admin/Versions/Rules/Index'">
         <template #icon>
             <RulesIcon/>
         </template>

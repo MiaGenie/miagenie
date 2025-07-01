@@ -5,7 +5,7 @@ namespace App\Enums;
 use App\Concerns\Enum\FromName;
 use App\Concerns\Enum\WithTitle;
 
-enum ThreadStatus: int
+enum RunStatus: int
 {
     use WithTitle;
     use FromName;
@@ -15,7 +15,7 @@ enum ThreadStatus: int
     case ERROR = 3;
     case PENDING_REVIEW = 4;
     case REVIEWED = 5;
-    case COMPLETE = 7;
+    case COMPLETE = 6;
 
 
 

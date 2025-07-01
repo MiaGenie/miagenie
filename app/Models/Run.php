@@ -6,20 +6,20 @@ use App\Enums\RunStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 use Inovector\Mixpost\Models\Workspace;
 
-class Thread extends Model
+class Run extends Model
 {
     use HasUuid;
 
-    public $table = 'genie_threads';
+    public $table = 'genie_runs';
 
     protected $fillable = [
         'uuid',
         'workspace_id',
         'rule_id',
-        'thread_provider_id',
         'status',
     ];
 
@@ -46,8 +46,24 @@ class Thread extends Model
     /**
      * @return HasMany
      */
-    public function runs(): HasMany
+    public function runResponses(): HasMany
     {
-        return $this->hasMany(ThreadRun::class, 'thread_id');
+        return $this->hasMany(RunResponse::class, 'run_id');
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function strategy(): HasOne
+    {
+        return $this->HasOne(Strategy::class, 'run_id');
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function briefing(): HasOne
+    {
+        return $this->HasOne(Briefing::class, 'run_id');
     }
 }

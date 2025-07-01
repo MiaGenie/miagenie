@@ -2,12 +2,7 @@
 
 namespace App\Actions;
 
-use App\Enums\RuleType;
-use App\Contracts\GenieDataContract;
-use App\Models\Rule;
-use App\Models\Thread;
-use Illuminate\Support\Facades\App;
-use Inovector\Mixpost\Models\Workspace;
+use App\Abstracts\GenieData;
 use App\Support\Facades\OpenAI;
 use Illuminate\Support\Facades\Log;
 
@@ -15,36 +10,24 @@ class StatusThread
 {
 
     /**
-     * @param Workspace $workspace
-     * @param Rule $rule
-     * @return mixed
+     * @param GenieData $data
+     * @return ?GenieData
      */
-    public function handle(Thread $thread)
+    public function handle(GenieData $data): ?GenieData
     {
         try {
-
-            $data = App::make(GenieDataContract::class, [$thread->rule->rule_type->name]);
-
-            $response = OpenAI::threads()->runs()->create(
-                $thread->id,
-                $this->actionData->get($thread),
+            $response = OpenAI::threads()->runs()->retrieve(
+                $data->getModelProviderId(),
+                $data->lastRun()->run_provider_id,
             );
 
-            Log::info('OPENAI - update thread - ' . $thread->id);
-            Log::info('Rule ID - ' . $rule->rule_type->value);
+            $data->setResponse($response->toArray());
+            return $data;
 
-            if ($thread->id && $thread->object === 'thread') {
-                return Thread::create([
-                    'thread_provider_id' => $thread->id,
-                    'workspace_id' => $workspace->id,
-                    'rule_type' => $rule->rule_type->value,
-                ]);
-            }
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
+            return null;
         }
-
-        return [];
     }
 
 }

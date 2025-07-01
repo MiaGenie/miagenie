@@ -21,6 +21,7 @@ class UpdateRuleStep extends FormRequest
             'assistant_id' => ['required', 'integer'],
             'message' => ['required', 'string'],
             'output' => ['required', 'string'],
+            'requires_review' => ['required', 'boolean'],
             'optional' => ['required', 'boolean'],
         ];
     }
@@ -38,6 +39,7 @@ class UpdateRuleStep extends FormRequest
             'assistant_id' => $this->input('assistant_id'),
             'message' => $this->input('message'),
             'output' => $this->input('output'),
+            'requires_review' => $this->input('requires_review'),
             'optional' => $this->input('optional')
         ]);
     }

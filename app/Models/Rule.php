@@ -28,11 +28,20 @@ class Rule extends Model
         'rule_type' => RuleType::class,
     ];
 
+
     /**
      * @return HasMany
      */
-    public function threads(): HasMany
+    public function ruleSteps(): HasMany
     {
-        return $this->hasMany(Thread::class, 'rule_id')->oldest('id');
+        return $this->hasMany(RuleStep::class, 'rule_id');
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function runs(): HasMany
+    {
+        return $this->hasMany(Run::class, 'rule_id');
     }
 }
