@@ -15,8 +15,8 @@ const props = defineProps({
 const getRoute = (name) => {
     switch (name) {
         case 'view':
-            return route('genie.admin.thread_runs.index', {
-                thread: props.itemId,
+            return route('genie.admin.run_responses.index', {
+                run: props.itemId,
             });
         default:
             return '';

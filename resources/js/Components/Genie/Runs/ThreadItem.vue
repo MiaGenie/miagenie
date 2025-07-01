@@ -4,7 +4,7 @@ import {useI18n} from "vue-i18n";
 import {usePage} from "@inertiajs/vue3";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
-import ThreadItemAction from "@/Components/Genie/Threads/ThreadItemAction.vue";
+import ThreadItemAction from "@/Components/Genie/Runs/ThreadItemAction.vue";
 const {t: $t} = useI18n();
 
 const props = defineProps({

@@ -6,7 +6,7 @@ use App\Enums\RuleType;
 use Illuminate\Database\Eloquent\Model;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 
-class ThreadRuns extends Model
+class RunResponses extends Model
 {
     use HasUuid;
 

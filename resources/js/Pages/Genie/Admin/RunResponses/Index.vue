@@ -7,7 +7,7 @@ import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
 import Table from "@/Components/DataDisplay/Table.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
-import ThreadRunItem from "@/Components/Genie/Threads/ThreadRunItem.vue";
+import ThreadRunItem from "@/Components/Genie/Runs/ThreadRunItem.vue";
 import Pagination from "@/Components/Navigation/Pagination.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import NoResult from "@/Components/Util/NoResult.vue";

@@ -6,8 +6,8 @@ use App\Http\Controllers\Admin\FilesController;
 use App\Http\Controllers\Admin\ConfigsController;
 use App\Http\Controllers\Admin\RulesController;
 use App\Http\Controllers\Admin\RuleStepsController;
-use App\Http\Controllers\Admin\ThreadRunsController;
-use App\Http\Controllers\Admin\ThreadsController;
+use App\Http\Controllers\Admin\RunResponsesController;
+use App\Http\Controllers\Admin\RunsController;
 use App\Http\Controllers\Admin\VectorsController;
 use App\Http\Controllers\Admin\VersionFieldsController;
 use App\Http\Controllers\Admin\VersionsController;
@@ -89,13 +89,13 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
         Route::get('fetch/uploaded', [FilesController::class, 'fetchUploads'])->name('fetchUploads');
     });
 
-    Route::prefix('threads')->name('threads.')->group(function () {
-        Route::get('/', [ThreadsController::class, 'index'])->name('index');
+    Route::prefix('runs')->name('runs.')->group(function () {
+        Route::get('/', [RunsController::class, 'index'])->name('index');
     });
 
-    Route::prefix('thread_runs')->name('thread_runs.')->group(function () {
-        Route::get('{thread}', [ThreadRunsController::class, 'index'])->name('index');
-        Route::get('run/{thread_run}', [ThreadRunsController::class, 'view'])->name('view');
+    Route::prefix('run_responses')->name('run_responses.')->group(function () {
+        Route::get('{run}', [RunResponsesController::class, 'index'])->name('index');
+        Route::get('run/{run_responses}', [RunResponsesController::class, 'view'])->name('view');
     });
 
     Route::prefix('configs')->name('configs.')->group(function () {

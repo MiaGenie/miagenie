@@ -4,7 +4,7 @@ namespace App\Http\Resources\Admin;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ThreadRunsResource extends JsonResource
+class RunResponsesResource extends JsonResource
 {
     /**
      * @var string|null

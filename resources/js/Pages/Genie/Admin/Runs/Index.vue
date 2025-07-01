@@ -9,7 +9,7 @@ import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
 import Table from "@/Components/DataDisplay/Table.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
-import ThreadItem from "@/Components/Genie/Threads/ThreadItem.vue";
+import ThreadItem from "@/Components/Genie/Runs/ThreadItem.vue";
 import Tabs from "@/Components/Navigation/Tabs.vue"
 import Tab from "@/Components/Navigation/Tab.vue"
 import Pagination from "@/Components/Navigation/Pagination.vue";
@@ -60,7 +60,7 @@ const isFiltered = ref(false);
 const isLoading = ref(false);
 
 watch(() => cloneDeep(filter.value), throttle(() => {
-    router.get(route('genie.admin.threads.index'), pickBy(filter.value), {
+    router.get(route('genie.admin.runs.index'), pickBy(filter.value), {
         preserveState: true,
         only: ['records', 'filter']
     });
@@ -70,7 +70,7 @@ watch(() => currentFilter.value.rule_type, throttle(() => {
     isLoading.value = true;
 
     router.get(route(
-        'genie.admin.threads.index',
+        'genie.admin.runs.index',
         {
 
         }

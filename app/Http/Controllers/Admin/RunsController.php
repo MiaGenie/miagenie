@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Builders\ThreadQuery;
+use App\Builders\RunQuery;
 use App\Enums\RuleStatus;
 use App\Enums\RuleSubType;
 use App\Enums\RuleType;
-use App\Http\Resources\Admin\ThreadResource;
+use App\Http\Resources\Admin\RunResource;
 use App\Models\Rule;
 use App\Models\RuleStep;
 use Illuminate\Http\Request;
@@ -15,17 +15,17 @@ use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class ThreadsController extends Controller
+class RunsController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection|Response
     {
-        $threadsRecords = ThreadQuery::apply($request)
+        $runsRecords = RunQuery::apply($request)
             ->latest()
             ->paginate(100)
             ->onEachSide(1)
             ->withQueryString();
 
-        return Inertia::render('Genie/Admin/Threads/Index', [
+        return Inertia::render('Genie/Admin/Runs/Index', [
             'filter' => [
                 'rule_type' => $request->query('rule_type', ''),
             ],
@@ -34,7 +34,7 @@ class ThreadsController extends Controller
             'rules' => Rule::all(),
             'ruleSteps' => RuleStep::all(),
             'statusTypes' => RuleStatus::withTitle(),
-            'records' => ThreadResource::collection($threadsRecords),
+            'records' => RunResource::collection($runsRecords),
         ]);
     }
 }

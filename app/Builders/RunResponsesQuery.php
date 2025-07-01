@@ -5,15 +5,15 @@ namespace App\Builders;
 use App\Builders\Filters\ThreadIdFilter;
 use App\Contracts\Query;
 use App\Models\Thread;
-use App\Models\ThreadRuns;
+use App\Models\RunResponses;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
-class ThreadRunsQuery implements Query
+class RunResponsesQuery implements Query
 {
     public static function apply(Request $request): Builder
     {
-        $query = ThreadRuns::query();
+        $query = RunResponses::query();
 
         $thread = Thread::firstOrFailByUuid($request->route('thread'));
 

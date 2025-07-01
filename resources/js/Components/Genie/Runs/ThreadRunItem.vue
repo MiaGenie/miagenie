@@ -5,7 +5,7 @@ import {usePage} from "@inertiajs/vue3";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import Badge from "@/Components/DataDisplay/Badge.vue";
-import ThreadRunItemAction from "@/Components/Genie/Threads/ThreadRunItemAction.vue";
+import ThreadRunItemAction from "@/Components/Genie/Runs/ThreadRunItemAction.vue";
 const {t: $t} = useI18n();
 
 const props = defineProps({
