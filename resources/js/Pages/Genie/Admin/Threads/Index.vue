@@ -1,23 +1,20 @@
 <script setup>
 import {ref, watch} from "vue";
 import {useI18n} from "vue-i18n";
-import {Head} from '@inertiajs/vue3';
+import {Head, Link} from '@inertiajs/vue3';
 import {router} from "@inertiajs/vue3";
-import {cloneDeep, pickBy, throttle} from "lodash";
+import {cloneDeep, find, pickBy, throttle} from "lodash";
 import AdminLayout from "@/Layouts/Admin.vue";
-import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
 import Table from "@/Components/DataDisplay/Table.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
-import RuleItem from "@/Components/Genie/Rules/RuleItem.vue";
+import ThreadItem from "@/Components/Genie/Threads/ThreadItem.vue";
 import Tabs from "@/Components/Navigation/Tabs.vue"
 import Tab from "@/Components/Navigation/Tab.vue"
 import Pagination from "@/Components/Navigation/Pagination.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import NoResult from "@/Components/Util/NoResult.vue";
-import Plus from "@/Icons/Plus.vue";
-import VersionHeader from "@/Components/DataDisplay/Genie/VersionHeader.vue";
 
 defineOptions({layout: AdminLayout});
 
@@ -28,13 +25,21 @@ const props = defineProps({
         type: Object,
         default: {}
     },
-    version: {
-        type: Object,
-        required: true
+    rules: {
+        type:Object,
+        require: true,
+    },
+    ruleSteps: {
+        type:Object,
+        require: true,
     },
     ruleTypes: {
         type: Object,
         required: true
+    },
+    ruleSubTypes: {
+        type: Object,
+        require: true
     },
     statusTypes: {
         type: Object,
@@ -54,9 +59,8 @@ const currentFilter = ref(cloneDeep(props.filter));
 const isFiltered = ref(false);
 const isLoading = ref(false);
 
-
 watch(() => cloneDeep(filter.value), throttle(() => {
-    router.get(route('genie.admin.versions.rules.index'), pickBy(filter.value), {
+    router.get(route('genie.admin.threads.index'), pickBy(filter.value), {
         preserveState: true,
         only: ['records', 'filter']
     });
@@ -66,9 +70,9 @@ watch(() => currentFilter.value.rule_type, throttle(() => {
     isLoading.value = true;
 
     router.get(route(
-        'genie.admin.versions.rules.index',
+        'genie.admin.threads.index',
         {
-            version: props.version.id
+
         }
     ), pickBy(
         { 'rule_type': currentFilter.value.rule_type }
@@ -82,42 +86,13 @@ watch(() => currentFilter.value.rule_type, throttle(() => {
 
 }, 300))
 
-const createRule = () => {
-    router.get(
-        route(
-            'genie.admin.versions.rules.create', {
-                version: props.version.id
-            }
-        ),
-        {rule_type: Number(currentFilter.value.rule_type)}
-    );
-}
 </script>
 <template>
     <Head :title="$t('genie.rules')"/>
 
     <div class="w-full mx-auto row-py">
 
-        <PageHeader :title="$t('genie.rules')" />
-
-        <VersionHeader />
-
-
-        <div class="w-full row-px row-mb mt-lg">
-            <PrimaryButton
-                @click="createRule"
-                :hiddenTextOnSmallScreen="true"
-                :disabled="isLoading"
-                :isLoading="isLoading"
-                size="sm"
-            >
-
-                <template #icon>
-                    <Plus/>
-                </template>
-                {{ $t('genie.create_rule') }}
-            </PrimaryButton>
-        </div>
+        <PageHeader :title="$t('genie.threads')" />
 
         <div class="w-full row-px">
             <Tabs>
@@ -152,40 +127,21 @@ const createRule = () => {
                                 component="th"
                                 scope="col"
                             >
-                                {{ $t('general.name') }}
+                                {{ $t('genie.thread_uuid') }}
                             </TableCell>
 
                             <TableCell
                                 component="th"
                                 scope="col"
-                                class="hidden lg:table-cell"
                             >
-                                {{ $t('genie.rule_version_id') }}
+                                {{ $t('genie.rule_thread_type') }}
                             </TableCell>
 
                             <TableCell
                                 component="th"
                                 scope="col"
-                                class="hidden"
-                                :class="[isFiltered ? 'hidden' : 'lg:table-cell']"
                             >
-                                {{ $t('genie.rule_type') }}
-                            </TableCell>
-
-                            <TableCell
-                                component="th"
-                                scope="col"
-                                class="hidden sm:table-cell"
-                            >
-                                {{ $t('general.status') }}
-                            </TableCell>
-
-                            <TableCell
-                                component="th"
-                                scope="col"
-                                class="hidden md:table-cell"
-                            >
-                                {{ $t('genie.is_default') }}
+                                {{ $t('genie.rule_thread_sub_type') }}
                             </TableCell>
 
                             <TableCell
@@ -202,7 +158,7 @@ const createRule = () => {
                             v-for="item in records.data"
                             :key="item.id"
                         >
-                            <RuleItem
+                            <ThreadItem
                                 :item="item"
                                 :is-filtered="isFiltered"
                             />

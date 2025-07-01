@@ -57,6 +57,14 @@ import AIModelIcon from "@/Icons/Genie/AIModel.vue";
             {{ $t('genie.versions') }}
         </MenuItem>
 
+        <MenuItem :url="route('genie.admin.threads.index')"
+                  :active="$page.component === 'Genie/Admin/Threads/Index'">
+            <template #icon>
+                <DocumentIcon/>
+            </template>
+            {{ $t('genie.threads') }}
+        </MenuItem>
+
         <MenuDelimiter/>
 
         <MenuItem :url="route('genie.admin.configs.form')"

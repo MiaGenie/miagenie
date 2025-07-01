@@ -84,13 +84,10 @@ class ThreadJob implements ShouldQueue
 
         $data = $genieOutput->handle($data);
 
-        $this->logRun('thread', $this->action, $data);
-
         $nextAction = $data->nextAction();
         if ($nextAction) {
             ThreadJob::dispatch($this->thread, $nextAction);
         }
-
     }
 
     /**

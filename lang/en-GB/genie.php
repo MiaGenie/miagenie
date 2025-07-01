@@ -127,6 +127,21 @@ return [
     'version_group_type_competitors' => 'Competitors',
     'version_group_type_strategies' => 'Strategies',
 
+    'threads' => 'Threads',
+    'thread_uuid' => 'UUID',
+    'rule_thread_type' => 'Type',
+    'rule_thread_step' => 'Step',
+    'rule_thread_sub_type' => 'Sub Type',
+    'rule_thread_type_analysis' => 'Analysis',
+    'rule_thread_type_channels' => 'Channels',
+    'rule_thread_type_schedule' => 'Schedule',
+    'rule_thread_type_ideas' => 'Ideas',
+    'rule_thread_type_content' => 'Content',
+    'thread_runs' => 'Thread Runs',
+    'thread_run_uuid' => 'UUID',
+    'thread' => 'Thread',
+    'thread_run_message' => 'Message',
+
 
     'groups' => 'Groups',
 
