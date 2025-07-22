@@ -9,7 +9,7 @@ import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
 import Table from "@/Components/DataDisplay/Table.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
-import ThreadItem from "@/Components/Genie/Runs/ThreadItem.vue";
+import RunItem from "@/Components/Genie/Runs/RunItem.vue";
 import Tabs from "@/Components/Navigation/Tabs.vue"
 import Tab from "@/Components/Navigation/Tab.vue"
 import Pagination from "@/Components/Navigation/Pagination.vue";
@@ -29,19 +29,7 @@ const props = defineProps({
         type:Object,
         require: true,
     },
-    ruleSteps: {
-        type:Object,
-        require: true,
-    },
     ruleTypes: {
-        type: Object,
-        required: true
-    },
-    ruleSubTypes: {
-        type: Object,
-        require: true
-    },
-    statusTypes: {
         type: Object,
         required: true
     },
@@ -140,13 +128,6 @@ watch(() => currentFilter.value.rule_type, throttle(() => {
                             <TableCell
                                 component="th"
                                 scope="col"
-                            >
-                                {{ $t('genie.rule_thread_sub_type') }}
-                            </TableCell>
-
-                            <TableCell
-                                component="th"
-                                scope="col"
                             />
 
                         </TableRow>
@@ -158,7 +139,7 @@ watch(() => currentFilter.value.rule_type, throttle(() => {
                             v-for="item in records.data"
                             :key="item.id"
                         >
-                            <ThreadItem
+                            <RunItem
                                 :item="item"
                                 :is-filtered="isFiltered"
                             />

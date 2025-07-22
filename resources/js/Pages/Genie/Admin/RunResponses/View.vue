@@ -8,6 +8,7 @@ import Panel from "@/Components/Surface/Panel.vue";
 import X from "@/Icons/X.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
+import {find} from "lodash";
 
 
 defineOptions({layout: AdminLayout});
@@ -15,20 +16,40 @@ defineOptions({layout: AdminLayout});
 const {t: $t} = useI18n()
 
 const props = defineProps({
-    threadRun: {
+    runResponse: {
         type: Object,
         default: {}
     },
-    threadUuid: {
+    ruleType: {
+        type: String,
+        required: true
+    },
+    ruleSteps: {
+        type: Object,
+        default: {}
+    },
+    ruleSubTypes: {
+        type: Object,
+        required: true
+    },
+    statusTypes: {
+        type: Object,
+        required: true
+    },
+    runUuid: {
         type: String,
         require: true
     }
 });
 
+const ruleSubType = (ruleSubTypeId) => {
+    return find(props.ruleSubTypes, ['value', Number(ruleSubTypeId)]);
+}
+
 const backToList = () => {
     router.get(route(
-        'genie.admin.thread_runs.index', {
-            thread: props.threadUuid,
+        'genie.admin.run_responses.index', {
+            run: props.runUuid,
         }));
 }
 
@@ -50,28 +71,42 @@ const backToList = () => {
                         {{ $t('genie.thread_uuid') }}
                     </TableCell>
                     <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
-                        {{ threadRun.uuid }}
+                        {{ runResponse.uuid }}
                     </TableCell>
 
                     <TableCell :class="'pb-1 pt-5'">
                         {{ $t('genie.rule_thread_step') }}
                     </TableCell>
                     <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
-                        {{ threadRun.step_id }}
+                        {{ runResponse.step_id }}
+                    </TableCell>
+
+                    <TableCell :class="'pb-1 pt-5'">
+                        {{ $t('genie.rule_thread_type') }}
+                    </TableCell>
+                    <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
+                        {{ ruleType }}
+                    </TableCell>
+
+                    <TableCell :class="'pb-1 pt-5'">
+                        {{ $t('genie.rule_thread_sub_type') }}
+                    </TableCell>
+                    <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
+                        {{ ruleSubType(ruleSteps.rule_sub_type).title }}
                     </TableCell>
 
                     <TableCell :class="'pb-1 pt-5'">
                         {{ $t('genie.status') }}
                     </TableCell>
                     <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
-                        {{ threadRun.status }}
+                        {{ runResponse.status }}
                     </TableCell>
 
                     <table-cell :class="'pb-1 pt-5'">
                         {{ $t('genie.thread_run_message') }}
                     </table-cell>
                     <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
-                        {{ threadRun.message ? threadRun.message.text.value : '----------' }}
+                        {{ ruleSteps.message ? ruleSteps.message: '----------' }}
                     </TableCell>
 
                 </Table>

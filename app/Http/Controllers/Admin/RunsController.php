@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Builders\RunQuery;
 use App\Enums\RuleStatus;
-use App\Enums\RuleSubType;
 use App\Enums\RuleType;
 use App\Http\Resources\Admin\RunResource;
 use App\Models\Rule;
-use App\Models\RuleStep;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Routing\Controller;
@@ -30,9 +28,7 @@ class RunsController extends Controller
                 'rule_type' => $request->query('rule_type', ''),
             ],
             'ruleTypes' => RuleType::withTitle(),
-            'ruleSubTypes' => RuleSubType::withTitle(),
             'rules' => Rule::all(),
-            'ruleSteps' => RuleStep::all(),
             'statusTypes' => RuleStatus::withTitle(),
             'records' => RunResource::collection($runsRecords),
         ]);

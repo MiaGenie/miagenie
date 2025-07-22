@@ -2,10 +2,10 @@
 
 namespace App\Builders;
 
-use App\Builders\Filters\ThreadIdFilter;
+use App\Builders\Filters\RunIdFilter;
 use App\Contracts\Query;
-use App\Models\Thread;
-use App\Models\RunResponses;
+use App\Models\Run;
+use App\Models\RunResponse;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
@@ -13,11 +13,11 @@ class RunResponsesQuery implements Query
 {
     public static function apply(Request $request): Builder
     {
-        $query = RunResponses::query();
+        $query = RunResponse::query();
 
-        $thread = Thread::firstOrFailByUuid($request->route('thread'));
+        $run = Run::firstOrFailByUuid($request->route('run'));
 
-        $query = ThreadIdFilter::apply($query, $thread->id);
+        $query = RunIdFilter::apply($query, $run->id);
 
         return $query;
     }

@@ -5,10 +5,10 @@ namespace App\Builders\Filters;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use App\Contracts\Filter;
 
-class ThreadIdFilter implements Filter
+class RunIdFilter implements Filter
 {
     public static function apply(Builder $builder, $value): Builder
     {
-        return $builder->where('thread_id', $value);
+        return $builder->where('run_id', $value);
     }
 }

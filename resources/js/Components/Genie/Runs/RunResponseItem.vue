@@ -5,7 +5,7 @@ import {usePage} from "@inertiajs/vue3";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import Badge from "@/Components/DataDisplay/Badge.vue";
-import ThreadRunItemAction from "@/Components/Genie/Runs/ThreadRunItemAction.vue";
+import RunResponseItemAction from "@/Components/Genie/Runs/RunResponseItemAction.vue";
 const {t: $t} = useI18n();
 
 const props = defineProps({
@@ -16,8 +16,14 @@ const props = defineProps({
 })
 
 const ruleType = usePage().props.ruleType;
-const ruleSubType = usePage().props.ruleSubType;
+const ruleSteps = usePage().props.ruleSteps;
+const ruleSubTypes = usePage().props.ruleSubTypes;
 const statusTypes = usePage().props.statusTypes;
+
+const ruleSubType = (ruleSubTypeId) => {
+    return find(ruleSubTypes, ['value', Number(ruleSubTypeId)]);
+}
+
 const versionStatus = () => {
     return find(statusTypes, ['value', Number(props.item.status)]);
 }
@@ -37,14 +43,14 @@ const statusBadge = () => {
     }
 }
 
-const messagePreview = () => {
+const messagePreview = (message) => {
 
-    if(props.item.message) {
-        if(props.item.message.text.value.length > 15) {
-            return props.item.message.text.value.replace(props.item.message.text.value.slice(12), '...');
+    if(message) {
+        if(message.length > 15) {
+            return message.replace(message.slice(12), '...');
         }
         else {
-            return props.item.message.text.value;
+            return message;
         }
     }
 
@@ -68,7 +74,7 @@ const messagePreview = () => {
         </TableCell>
 
         <TableCell>
-            {{ ruleSubType }}
+            {{ ruleSubType(ruleSteps.find(({id}) => id === item.step_id).rule_sub_type).title }}
         </TableCell>
 
         <TableCell>
@@ -79,11 +85,11 @@ const messagePreview = () => {
         </TableCell>
 
         <TableCell>
-            {{ messagePreview() }}
+            {{ messagePreview(ruleSteps.find(({id}) => id === item.step_id).message) }}
         </TableCell>
 
         <TableCell>
-            <ThreadRunItemAction
+            <RunResponseItemAction
                 :itemId="item.uuid"
             />
         </TableCell>

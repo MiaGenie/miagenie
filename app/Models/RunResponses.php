@@ -10,11 +10,11 @@ class RunResponses extends Model
 {
     use HasUuid;
 
-    public $table = 'genie_thread_runs';
+    public $table = 'genie_run_responses';
 
     protected $fillable = [
         'uuid',
-        'thread_id',
+        'run_id',
         'step_id',
         'status',
         'status_provider',

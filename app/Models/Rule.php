@@ -21,7 +21,6 @@ class Rule extends Model
         'name',
         'description',
         'status',
-        'position',
     ];
 
     protected $casts = [

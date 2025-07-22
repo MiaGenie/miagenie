@@ -7,7 +7,7 @@ import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
 import Table from "@/Components/DataDisplay/Table.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
-import ThreadRunItem from "@/Components/Genie/Runs/ThreadRunItem.vue";
+import RunResponseItem from "@/Components/Genie/Runs/RunResponseItem.vue";
 import Pagination from "@/Components/Navigation/Pagination.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import NoResult from "@/Components/Util/NoResult.vue";
@@ -19,7 +19,7 @@ defineOptions({layout: AdminLayout});
 const {t: $t} = useI18n()
 
 const props = defineProps({
-    threadUuid: {
+    runUuid: {
         type:String,
         require: true,
     },
@@ -27,9 +27,13 @@ const props = defineProps({
         type: String,
         required: true
     },
-    ruleSubType: {
-        type: String,
-        require: true
+    ruleSteps: {
+        type: Object,
+        default: {}
+    },
+    ruleSubTypes: {
+        type: Object,
+        required: true
     },
     statusTypes: {
         type: Object,
@@ -43,7 +47,7 @@ const props = defineProps({
 
 const backToList = () => {
     router.get(route(
-        'genie.admin.threads.index',
+        'genie.admin.runs.index',
     ));
 }
 
@@ -53,7 +57,7 @@ const backToList = () => {
 
     <div class="w-full mx-auto row-py">
 
-        <PageHeader :title="$t('genie.thread_runs') + ' (' + props.threadUuid + ')'"/>
+        <PageHeader :title="$t('genie.thread_runs') + ' (' + props.runUuid + ')'"/>
 
         <div class="w-full row-px">
 
@@ -119,7 +123,7 @@ const backToList = () => {
                             v-for="item in records.data"
                             :key="item.id"
                         >
-                            <ThreadRunItem
+                            <RunResponseItem
                                 :item="item"
                             />
                         </template>

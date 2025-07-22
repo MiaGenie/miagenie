@@ -2,6 +2,7 @@
 import {useI18n} from "vue-i18n";
 import PureButtonLink from "@/Components/Button/PureButtonLink.vue";
 import Eye from "@/Icons/Eye.vue";
+import {usePage} from "@inertiajs/vue3";
 
 const {t: $t} = useI18n()
 
@@ -12,11 +13,14 @@ const props = defineProps({
     }
 })
 
+const runId = usePage().props.runUuid;
+
 const getRoute = (name) => {
     switch (name) {
         case 'view':
-            return route('genie.admin.thread_runs.view', {
-                thread_run: props.itemId,
+            return route('genie.admin.run_responses.view', {
+                run_response: props.itemId,
+                run_id: runId
             });
         default:
             return '';

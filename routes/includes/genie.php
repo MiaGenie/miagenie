@@ -95,7 +95,7 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
 
     Route::prefix('run_responses')->name('run_responses.')->group(function () {
         Route::get('{run}', [RunResponsesController::class, 'index'])->name('index');
-        Route::get('run/{run_responses}', [RunResponsesController::class, 'view'])->name('view');
+        Route::get('run/{run_response}', [RunResponsesController::class, 'view'])->name('view');
     });
 
     Route::prefix('configs')->name('configs.')->group(function () {
