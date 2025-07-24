@@ -55,11 +55,11 @@ const backToList = () => {
 
 </script>
 <template>
-    <Head :title="$t('genie.thread_run_message')"/>
+    <Head :title="$t('genie.run_response_data')"/>
 
     <div class="w-full mx-auto row-py">
 
-        <PageHeader :title="$t('genie.thread_run_message')"/>
+        <PageHeader :title="$t('genie.run_response_data')"/>
 
         <div class="row-px">
 
@@ -68,28 +68,28 @@ const backToList = () => {
                 <Table class="flex flex-col">
 
                     <TableCell :class="'pb-1'">
-                        {{ $t('genie.thread_uuid') }}
+                        {{ $t('genie.run_uuid') }}
                     </TableCell>
                     <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
                         {{ runResponse.uuid }}
                     </TableCell>
 
                     <TableCell :class="'pb-1 pt-5'">
-                        {{ $t('genie.rule_thread_step') }}
+                        {{ $t('genie.rule_run_step') }}
                     </TableCell>
                     <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
                         {{ runResponse.step_id }}
                     </TableCell>
 
                     <TableCell :class="'pb-1 pt-5'">
-                        {{ $t('genie.rule_thread_type') }}
+                        {{ $t('genie.rule_run_type') }}
                     </TableCell>
                     <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
                         {{ ruleType }}
                     </TableCell>
 
                     <TableCell :class="'pb-1 pt-5'">
-                        {{ $t('genie.rule_thread_sub_type') }}
+                        {{ $t('genie.rule_run_sub_type') }}
                     </TableCell>
                     <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
                         {{ ruleSubType(ruleSteps.rule_sub_type).title }}
@@ -103,7 +103,7 @@ const backToList = () => {
                     </TableCell>
 
                     <table-cell :class="'pb-1 pt-5'">
-                        {{ $t('genie.thread_run_message') }}
+                        {{ $t('genie.run_response_message') }}
                     </table-cell>
                     <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
                         {{ ruleSteps.message ? ruleSteps.message: '----------' }}

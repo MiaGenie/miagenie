@@ -62,7 +62,7 @@ import AIModelIcon from "@/Icons/Genie/AIModel.vue";
             <template #icon>
                 <DocumentIcon/>
             </template>
-            {{ $t('genie.threads') }}
+            {{ $t('genie.runs') }}
         </MenuItem>
 
         <MenuDelimiter/>

@@ -53,11 +53,11 @@ const backToList = () => {
 
 </script>
 <template>
-    <Head :title="$t('genie.thread_runs')"/>
+    <Head :title="$t('genie.run_responses')"/>
 
     <div class="w-full mx-auto row-py">
 
-        <PageHeader :title="$t('genie.thread_runs') + ' (' + props.runUuid + ')'"/>
+        <PageHeader :title="$t('genie.run_responses') + ' (' + props.runUuid + ')'"/>
 
         <div class="w-full row-px">
 
@@ -71,28 +71,28 @@ const backToList = () => {
                                 component="th"
                                 scope="col"
                             >
-                                {{ $t('genie.thread_uuid') }}
+                                {{ $t('genie.run_uuid') }}
                             </TableCell>
 
                             <TableCell
                                 component="th"
                                 scope="col"
                             >
-                                {{ $t('genie.rule_thread_step') }}
+                                {{ $t('genie.rule_run_step') }}
                             </TableCell>
 
                             <TableCell
                                 component="th"
                                 scope="col"
                             >
-                                {{ $t('genie.rule_thread_type') }}
+                                {{ $t('genie.rule_run_type') }}
                             </TableCell>
 
                             <TableCell
                                 component="th"
                                 scope="col"
                             >
-                                {{ $t('genie.rule_thread_sub_type') }}
+                                {{ $t('genie.rule_run_sub_type') }}
                             </TableCell>
 
                             <TableCell
@@ -106,7 +106,7 @@ const backToList = () => {
                                 component="th"
                                 scope="col"
                             >
-                                {{ $t('genie.thread_run_message') }}
+                                {{ $t('genie.run_response_message') }}
                             </TableCell>
 
                             <TableCell

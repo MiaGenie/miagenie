@@ -80,7 +80,7 @@ watch(() => currentFilter.value.rule_type, throttle(() => {
 
     <div class="w-full mx-auto row-py">
 
-        <PageHeader :title="$t('genie.threads')" />
+        <PageHeader :title="$t('genie.runs')" />
 
         <div class="w-full row-px">
             <Tabs>
@@ -115,14 +115,14 @@ watch(() => currentFilter.value.rule_type, throttle(() => {
                                 component="th"
                                 scope="col"
                             >
-                                {{ $t('genie.thread_uuid') }}
+                                {{ $t('genie.run_uuid') }}
                             </TableCell>
 
                             <TableCell
                                 component="th"
                                 scope="col"
                             >
-                                {{ $t('genie.rule_thread_type') }}
+                                {{ $t('genie.rule_run_type') }}
                             </TableCell>
 
                             <TableCell
