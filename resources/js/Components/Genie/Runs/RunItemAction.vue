@@ -7,7 +7,7 @@ const {t: $t} = useI18n()
 
 const props = defineProps({
     itemId: {
-        type: String,
+        type: Number,
         required: true,
     }
 })
