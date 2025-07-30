@@ -17,6 +17,7 @@ class RunResponse extends Model
     public $table = 'genie_run_responses';
 
     protected $fillable = [
+        'id',
         'uuid',
         'run_id',
         'step_id',
@@ -28,6 +29,8 @@ class RunResponse extends Model
         'output',
         'output_text',
         'status',
+        'created_at',
+        'updated_at',
     ];
 
     protected $casts = [

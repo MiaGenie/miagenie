@@ -17,6 +17,7 @@ class Run extends Model
     public $table = 'genie_runs';
 
     protected $fillable = [
+        'id',
         'uuid',
         'workspace_id',
         'rule_id',

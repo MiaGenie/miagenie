@@ -15,7 +15,7 @@ class RunResponsesQuery implements Query
     {
         $query = RunResponse::query();
 
-        $run = Run::firstOrFailByUuid($request->route('run'));
+        $run = Run::all()->find($request->route('run'));
 
         $query = RunIdFilter::apply($query, $run->id);
 

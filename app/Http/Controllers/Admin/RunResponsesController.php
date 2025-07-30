@@ -3,18 +3,18 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Builders\RunResponsesQuery;
-use App\Enums\RuleStatus;
+use App\Enums\RunResponseStatus;
 use App\Enums\RuleSubType;
 use App\Http\Resources\Admin\RunResponseResource;
-use App\Models\Rule;
 use App\Models\RuleStep;
-use App\Models\Run;
 use App\Models\RunResponse;
+use App\Models\Version;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
+use Inovector\MixpostEnterprise\Models\Workspace;
 
 class RunResponsesController extends Controller
 {
@@ -26,35 +26,36 @@ class RunResponsesController extends Controller
             ->onEachSide(1)
             ->withQueryString();
 
-        $run = Run::firstOrFailByUuid($request->route('run'));
-        $rule = Rule::find($run->rule_id);
-        $ruleSteps = RuleStep::where('rule_id', '=', $rule->id)->get();
+        $ruleSteps = RuleStep::where('rule_id', '=', $runResponsesRecords[0]->step->rule->id)->get();
 
         return Inertia::render('Genie/Admin/RunResponses/Index', [
-            'runUuid' => $run->uuid,
-            'ruleType' => $rule->rule_type->name,
+            'versionName' => Version::find($runResponsesRecords[0]->step->rule->version_id)->name,
+            'workspaceName' => Workspace::find($runResponsesRecords[0]->run->workspace_id)->name,
+            'ruleName' => $runResponsesRecords[0]->step->rule->name,
+            'ruleType' => $runResponsesRecords[0]->step->rule->rule_type->name,
             'ruleSteps' => $ruleSteps,
             'ruleSubTypes' => RuleSubType::withTitle(),
-            'statusTypes' => RuleStatus::withTitle(),
+            'statusTypes' => RunResponseStatus::withTitle(),
             'records' => RunResponseResource::collection($runResponsesRecords),
         ]);
     }
 
     public function view(Request $request): Response
     {
-        $runResponsesRecords = RunResponse::firstOrFailByUuid($request->route('run_response'));
+        $runResponse = RunResponse::all()->find($request->route('run_response'));
 
-        $run = Run::where('id', '=', $runResponsesRecords->run_id)->firstOrFail();
-        $rule = Rule::find($run->rule_id);
-        $ruleSteps = RuleStep::where('rule_id', '=', $rule->id)->where('id', '=',$runResponsesRecords->step_id)->firstOrFail();
+        $ruleStep = RuleStep::where('rule_id', '=', $runResponse->all()[0]->step->rule->id)
+            ->where('id', '=', $runResponse->step_id)->firstOrFail();
 
         return Inertia::render('Genie/Admin/RunResponses/View', [
-            'runUuid' => $run->uuid,
-            'ruleType' => $rule->rule_type->name,
-            'ruleSteps' => $ruleSteps,
+            'versionName' => Version::find($runResponse->all()[0]->step->rule->version_id)->name,
+            'workspaceName' => Workspace::find($runResponse->all()[0]->run->workspace_id)->name,
+            'ruleName' => $runResponse->all()[0]->step->rule->name,
+            'ruleType' => $runResponse->all()[0]->step->rule->rule_type->name,
+            'ruleStep' => $ruleStep,
             'ruleSubTypes' => RuleSubType::withTitle(),
-            'statusTypes' => RuleStatus::withTitle(),
-            'runResponse' => new RunResponseResource($runResponsesRecords),
+            'statusTypes' => RunResponseStatus::withTitle(),
+            'runResponse' => new RunResponseResource($runResponse),
         ]);
     }
 }

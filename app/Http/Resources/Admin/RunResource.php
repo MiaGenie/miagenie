@@ -19,10 +19,13 @@ class RunResource extends JsonResource
     {
 
         return [
-            'id' => $this->uuid,
+            'id' => $this->id,
+            'uuid' => $this->uuid,
             'workspace_id' => $this->workspace_id,
             'rule_id' => $this->rule_id,
-            'thread_provider_id' => $this->thread_provider_id,
+            'status' => $this->status,
+            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at
         ];
 
     }

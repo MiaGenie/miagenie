@@ -13,15 +13,24 @@ import Panel from "@/Components/Surface/Panel.vue";
 import NoResult from "@/Components/Util/NoResult.vue";
 import X from "@/Icons/X.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
+import RunResponseHeader from '@/Components/DataDisplay/Genie/RunResponseHeader.vue';
 
 defineOptions({layout: AdminLayout});
 
 const {t: $t} = useI18n()
 
 const props = defineProps({
-    runUuid: {
-        type:String,
-        require: true,
+    versionName: {
+        type: String,
+        require: true
+    },
+    workspaceName: {
+        type: String,
+        require: true
+    },
+    ruleName: {
+        type: String,
+        require: true
     },
     ruleType: {
         type: String,
@@ -57,7 +66,9 @@ const backToList = () => {
 
     <div class="w-full mx-auto row-py">
 
-        <PageHeader :title="$t('genie.run_responses') + ' (' + props.runUuid + ')'"/>
+        <PageHeader :title="$t('genie.run_responses')"/>
+
+        <RunResponseHeader />
 
         <div class="w-full row-px">
 
@@ -71,21 +82,7 @@ const backToList = () => {
                                 component="th"
                                 scope="col"
                             >
-                                {{ $t('genie.run_uuid') }}
-                            </TableCell>
-
-                            <TableCell
-                                component="th"
-                                scope="col"
-                            >
                                 {{ $t('genie.rule_run_step') }}
-                            </TableCell>
-
-                            <TableCell
-                                component="th"
-                                scope="col"
-                            >
-                                {{ $t('genie.rule_run_type') }}
                             </TableCell>
 
                             <TableCell
@@ -99,14 +96,14 @@ const backToList = () => {
                                 component="th"
                                 scope="col"
                             >
-                                {{ $t('genie.status') }}
+                                {{ $t('genie.created_at') }}
                             </TableCell>
 
                             <TableCell
                                 component="th"
                                 scope="col"
                             >
-                                {{ $t('genie.run_response_message') }}
+                                {{ $t('genie.status') }}
                             </TableCell>
 
                             <TableCell

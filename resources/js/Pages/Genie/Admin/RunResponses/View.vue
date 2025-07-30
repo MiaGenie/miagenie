@@ -7,15 +7,26 @@ import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
 import Panel from "@/Components/Surface/Panel.vue";
 import X from "@/Icons/X.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
-import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import {find} from "lodash";
-
+import RunResponseHeader from "@/Components/DataDisplay/Genie/RunResponseHeader.vue";
 
 defineOptions({layout: AdminLayout});
 
 const {t: $t} = useI18n()
 
 const props = defineProps({
+    versionName: {
+        type: String,
+        require: true
+    },
+    workspaceName: {
+        type: String,
+        require: true
+    },
+    ruleName: {
+        type: String,
+        require: true
+    },
     runResponse: {
         type: Object,
         default: {}
@@ -24,7 +35,7 @@ const props = defineProps({
         type: String,
         required: true
     },
-    ruleSteps: {
+    ruleStep: {
         type: Object,
         default: {}
     },
@@ -36,20 +47,20 @@ const props = defineProps({
         type: Object,
         required: true
     },
-    runUuid: {
-        type: String,
-        require: true
-    }
 });
 
-const ruleSubType = (ruleSubTypeId) => {
-    return find(props.ruleSubTypes, ['value', Number(ruleSubTypeId)]);
+const getRuleSubType = () => {
+    return find(props.ruleSubTypes, ['value', props.ruleStep.rule_sub_type]).name;
+}
+
+const versionStatus = () => {
+    return find(props.statusTypes, ['value', Number(props.runResponse.status)]).name;
 }
 
 const backToList = () => {
     router.get(route(
         'genie.admin.run_responses.index', {
-            run: props.runUuid,
+            run: props.runResponse.run_id,
         }));
 }
 
@@ -61,55 +72,88 @@ const backToList = () => {
 
         <PageHeader :title="$t('genie.run_response_data')"/>
 
+        <RunResponseHeader />
+
         <div class="row-px">
 
             <Panel :with-padding="true" class="mt-lg">
 
-                <Table class="flex flex-col">
+                <div :class="'pb-2 pl-2'">
+                    {{ $t('genie.rule_run_step') }}
+                </div>
+                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words '">
+                    {{ ruleStep.name }}
+                </div>
 
-                    <TableCell :class="'pb-1'">
-                        {{ $t('genie.run_uuid') }}
-                    </TableCell>
-                    <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
-                        {{ runResponse.uuid }}
-                    </TableCell>
+                <div :class="'pb-2 pl-2 pt-5'">
+                    {{ $t('genie.rule_run_sub_type') }}
+                </div>
+                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                    {{  getRuleSubType()}}
+                </div>
 
-                    <TableCell :class="'pb-1 pt-5'">
-                        {{ $t('genie.rule_run_step') }}
-                    </TableCell>
-                    <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
-                        {{ runResponse.step_id }}
-                    </TableCell>
+                <div :class="'pb-2 pl-2 pt-5'">
+                    {{ $t('genie.created_at') }}
+                </div>
+                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                    {{ runResponse.created_at }}
+                </div>
 
-                    <TableCell :class="'pb-1 pt-5'">
-                        {{ $t('genie.rule_run_type') }}
-                    </TableCell>
-                    <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
-                        {{ ruleType }}
-                    </TableCell>
+                <div :class="'pb-2 pl-2 pt-5'">
+                    {{ $t('genie.status') }}
+                </div>
+                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                    {{ versionStatus(runResponse.status) }}
+                </div>
 
-                    <TableCell :class="'pb-1 pt-5'">
-                        {{ $t('genie.rule_run_sub_type') }}
-                    </TableCell>
-                    <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
-                        {{ ruleSubType(ruleSteps.rule_sub_type).title }}
-                    </TableCell>
+                <div :class="'pb-2 pl-2 pt-5'">
+                    {{ $t('genie.run_response_message') }}
+                </div>
+                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                    {{ ruleStep.message ? ruleStep.message : '----------' }}
+                </div>
 
-                    <TableCell :class="'pb-1 pt-5'">
-                        {{ $t('genie.status') }}
-                    </TableCell>
-                    <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
-                        {{ runResponse.status }}
-                    </TableCell>
+                <div :class="'pb-2 pl-2 pt-5'">
+                    {{ $t('genie.response_provider_id') }}
+                </div>
+                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                    {{ runResponse.response_provider_id }}
+                </div>
 
-                    <table-cell :class="'pb-1 pt-5'">
-                        {{ $t('genie.run_response_message') }}
-                    </table-cell>
-                    <TableCell :class="'bg-primary-50 rounded-lg pb-1 pt-1 w-full'">
-                        {{ ruleSteps.message ? ruleSteps.message: '----------' }}
-                    </TableCell>
+                <div :class="'pb-2 pl-2 pt-5'">
+                    {{ $t('genie.response_provider_status') }}
+                </div>
+                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                    {{ runResponse.status_provider ? runResponse.status_provider : '----------'  }}
+                </div>
 
-                </Table>
+                <div :class="'pb-2 pl-2 pt-5'">
+                    {{ $t('genie.run_response_error') }}
+                </div>
+                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                    {{ runResponse.error ? runResponse.error : '----------' }}
+                </div>
+
+                <div :class="'pb-2 pl-2 pt-5'">
+                    {{ $t('genie.run_response_error_details') }}
+                </div>
+                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                    {{ runResponse.error_details ? runResponse.error_details : '----------' }}
+                </div>
+
+                <div :class="'pb-2 pl-2 pt-5'">
+                    {{ $t('genie.run_response_output') }}
+                </div>
+                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words '">
+                    {{ JSON.stringify(runResponse.output) }}
+                </div>
+
+                <div :class="'pb-2 pl-2 pt-5'">
+                    {{ $t('genie.run_response_output_text') }}
+                </div>
+                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                    {{ runResponse.output_text ? JSON.stringify(runResponse.output_text) : '----------' }}
+                </div>
             </Panel>
 
             <div class="flex flex-row items-center justify-between mt-lg">

@@ -8,7 +8,7 @@ const {t: $t} = useI18n()
 
 const props = defineProps({
     itemId: {
-        type: String,
+        type: Number,
         required: true,
     }
 })
@@ -20,7 +20,6 @@ const getRoute = (name) => {
         case 'view':
             return route('genie.admin.run_responses.view', {
                 run_response: props.itemId,
-                run_id: runId
             });
         default:
             return '';

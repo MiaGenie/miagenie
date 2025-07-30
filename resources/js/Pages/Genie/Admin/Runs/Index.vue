@@ -1,9 +1,9 @@
 <script setup>
 import {ref, watch} from "vue";
 import {useI18n} from "vue-i18n";
-import {Head, Link} from '@inertiajs/vue3';
+import {Head} from '@inertiajs/vue3';
 import {router} from "@inertiajs/vue3";
-import {cloneDeep, find, pickBy, throttle} from "lodash";
+import {cloneDeep, pickBy, throttle} from "lodash";
 import AdminLayout from "@/Layouts/Admin.vue";
 import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
 import Table from "@/Components/DataDisplay/Table.vue";
@@ -25,13 +25,25 @@ const props = defineProps({
         type: Object,
         default: {}
     },
+    workspaces: {
+        type:Object,
+        require: true
+    },
     rules: {
+        type:Object,
+        require: true,
+    },
+    versions: {
         type:Object,
         require: true,
     },
     ruleTypes: {
         type: Object,
         required: true
+    },
+    statusRun: {
+        type: Object,
+        require: true
     },
     filter: {
         type: Object,
@@ -115,7 +127,14 @@ watch(() => currentFilter.value.rule_type, throttle(() => {
                                 component="th"
                                 scope="col"
                             >
-                                {{ $t('genie.run_uuid') }}
+                                {{ $t('genie.run_workspace') }}
+                            </TableCell>
+
+                            <TableCell
+                                component="th"
+                                scope="col"
+                            >
+                                {{ $t('genie.run_version') }}
                             </TableCell>
 
                             <TableCell
@@ -123,6 +142,20 @@ watch(() => currentFilter.value.rule_type, throttle(() => {
                                 scope="col"
                             >
                                 {{ $t('genie.rule_run_type') }}
+                            </TableCell>
+
+                            <TableCell
+                                component="th"
+                                scope="col"
+                            >
+                                {{ $t('genie.created_at') }}
+                            </TableCell>
+
+                            <TableCell
+                                component="th"
+                                scope="col"
+                            >
+                                {{ $t('genie.status') }}
                             </TableCell>
 
                             <TableCell

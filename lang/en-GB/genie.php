@@ -129,9 +129,10 @@ return [
 
     'runs' => 'Runs',
     'run_uuid' => 'UUID',
-    'rule_run_type' => 'Type',
     'rule_run_step' => 'Step',
+    'rule_run_type' => 'Type',
     'rule_run_sub_type' => 'Sub Type',
+    'created_at' => 'Created At',
     'rule_run_type_analysis' => 'Analysis',
     'rule_run_type_channels' => 'Channels',
     'rule_run_type_schedule' => 'Schedule',
@@ -142,6 +143,14 @@ return [
     'run' => 'Run',
     'run_response_data' => 'Run Response Data',
     'run_response_message' => 'Message',
+    'response_provider_id' => 'Provider ID',
+    'response_provider_status' => 'Provider Status',
+    'run_response_error' => 'Error',
+    'run_response_error_details' => 'Error Details',
+    'run_response_output' => 'Output',
+    'run_response_output_text' => 'Output Text',
+    'run_workspace' => 'Workspace',
+    'run_version' => 'Version',
 
 
     'groups' => 'Groups',
