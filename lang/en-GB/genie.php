@@ -128,11 +128,15 @@ return [
     'version_group_type_strategies' => 'Strategies',
 
     'runs' => 'Runs',
+    'run' => 'Run',
     'run_uuid' => 'UUID',
     'rule_run_step' => 'Step',
     'rule_run_type' => 'Type',
     'rule_run_sub_type' => 'Sub Type',
-    'created_at' => 'Created At',
+    'run_workspace' => 'Workspace',
+    'run_version' => 'Version',
+    'response_provider_id' => 'Provider ID',
+    'response_provider_status' => 'Provider Status',
     'rule_run_type_analysis' => 'Analysis',
     'rule_run_type_channels' => 'Channels',
     'rule_run_type_schedule' => 'Schedule',
@@ -140,18 +144,22 @@ return [
     'rule_run_type_content' => 'Content',
     'run_responses' => 'Run Responses',
     'run_response_uuid' => 'UUID',
-    'run' => 'Run',
     'run_response_data' => 'Run Response Data',
     'run_response_message' => 'Message',
-    'response_provider_id' => 'Provider ID',
-    'response_provider_status' => 'Provider Status',
     'run_response_error' => 'Error',
     'run_response_error_details' => 'Error Details',
     'run_response_output' => 'Output',
     'run_response_output_text' => 'Output Text',
-    'run_workspace' => 'Workspace',
-    'run_version' => 'Version',
 
+    'created_at' => 'Created At',
+
+    'logs' => 'Logs',
+    'log_data' => 'Log Data',
+    'log_id' => 'ID',
+    'log_type' => 'Type',
+    'log_action' => 'Action',
+    'log_request' => 'Request',
+    'log_duration' => 'Duration',
 
     'groups' => 'Groups',
 
@@ -200,8 +208,6 @@ return [
     'field_is_identifier_invalid' => 'Invalid Identifier',
     'field_rows' => 'Rows',
     'field_name_invalid' => 'Field name is not snake case (field_name)',
-
-
 
     'files' => 'Files',
     'file_library' => 'Genie Files',

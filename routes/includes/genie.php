@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AssistantsController;
 use App\Http\Controllers\Admin\AIModelsController;
 use App\Http\Controllers\Admin\FilesController;
 use App\Http\Controllers\Admin\ConfigsController;
+use App\Http\Controllers\Admin\LogsController;
 use App\Http\Controllers\Admin\RulesController;
 use App\Http\Controllers\Admin\RuleStepsController;
 use App\Http\Controllers\Admin\RunResponsesController;
@@ -96,6 +97,11 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
     Route::prefix('run_responses')->name('run_responses.')->group(function () {
         Route::get('{run}', [RunResponsesController::class, 'index'])->name('index');
         Route::get('run/{run_response}', [RunResponsesController::class, 'view'])->name('view');
+    });
+
+    Route::prefix('logs')->name('logs.')->group(function () {
+        Route::get('/', [LogsController::class, 'index'])->name('index');
+        Route::get('/{log}', [LogsController::class, 'view'])->name('view');
     });
 
     Route::prefix('configs')->name('configs.')->group(function () {

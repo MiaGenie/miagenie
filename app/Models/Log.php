@@ -15,12 +15,15 @@ class Log extends Model
     public $table = 'genie_logs';
 
     protected $fillable = [
+        'id',
         'uuid',
         'type',
         'action',
         'request',
         'response',
         'duration',
+        'created_at',
+        'updated_at'
     ];
 
     protected $casts = [
