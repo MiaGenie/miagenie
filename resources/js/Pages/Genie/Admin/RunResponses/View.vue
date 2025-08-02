@@ -43,7 +43,11 @@ const props = defineProps({
         type: Object,
         required: true
     },
-    statusTypes: {
+    runResponseStatusTypes: {
+        type: Object,
+        required: true
+    },
+    genieSyncStatusTypes: {
         type: Object,
         required: true
     },
@@ -53,8 +57,12 @@ const getRuleSubType = () => {
     return find(props.ruleSubTypes, ['value', props.ruleStep.rule_sub_type]).name;
 }
 
-const versionStatus = () => {
-    return find(props.statusTypes, ['value', Number(props.runResponse.status)]).name;
+const status = () => {
+    return find(props.genieSyncStatusTypes, ['value', Number(props.runResponse.status)]).name;
+}
+
+const providerStatus = () => {
+    return find(props.runResponseStatusTypes, ['value', Number(props.runResponse.provider_status)]).name;
 }
 
 const backToList = () => {
@@ -78,81 +86,81 @@ const backToList = () => {
 
             <Panel :with-padding="true" class="mt-lg">
 
-                <div :class="'pb-2 pl-2'">
+                <div class="pb-2 pl-2">
                     {{ $t('genie.rule_run_step') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words '">
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words ">
                     {{ ruleStep.name }}
                 </div>
 
-                <div :class="'pb-2 pl-2 pt-5'">
+                <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.rule_run_sub_type') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
                     {{  getRuleSubType()}}
                 </div>
 
-                <div :class="'pb-2 pl-2 pt-5'">
+                <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.created_at') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
                     {{ runResponse.created_at }}
                 </div>
 
-                <div :class="'pb-2 pl-2 pt-5'">
+                <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.status') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
-                    {{ versionStatus(runResponse.status) }}
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
+                    {{ status() }}
                 </div>
 
-                <div :class="'pb-2 pl-2 pt-5'">
+                <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.run_response_message') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
                     {{ ruleStep.message ? ruleStep.message : '----------' }}
                 </div>
 
-                <div :class="'pb-2 pl-2 pt-5'">
+                <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.response_provider_id') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
                     {{ runResponse.response_provider_id }}
                 </div>
 
-                <div :class="'pb-2 pl-2 pt-5'">
+                <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.response_provider_status') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
-                    {{ runResponse.status_provider ? runResponse.status_provider : '----------'  }}
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
+                    {{ providerStatus() }}
                 </div>
 
-                <div :class="'pb-2 pl-2 pt-5'">
+                <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.run_response_error') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
                     {{ runResponse.error ? runResponse.error : '----------' }}
                 </div>
 
-                <div :class="'pb-2 pl-2 pt-5'">
+                <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.run_response_error_details') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
                     {{ runResponse.error_details ? runResponse.error_details : '----------' }}
                 </div>
 
-                <div :class="'pb-2 pl-2 pt-5'">
+                <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.run_response_output') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words '">
-                    {{ JSON.stringify(runResponse.output) }}
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
+                    <pre class="wrap-anywhere text-wrap">{{ JSON.stringify(runResponse.output, null, 4) }}</pre>
                 </div>
 
-                <div :class="'pb-2 pl-2 pt-5'">
+                <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.run_response_output_text') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
-                    {{ runResponse.output_text ? JSON.stringify(runResponse.output_text) : '----------' }}
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
+                    {{ runResponse.output_text }}
                 </div>
             </Panel>
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Builders\RunResponsesQuery;
+use App\Enums\GenieSyncStatus;
 use App\Enums\RunResponseStatus;
 use App\Enums\RuleSubType;
 use App\Http\Resources\Admin\RunResponseResource;
@@ -54,7 +55,8 @@ class RunResponsesController extends Controller
             'ruleType' => $runResponse->all()[0]->step->rule->rule_type->name,
             'ruleStep' => $ruleStep,
             'ruleSubTypes' => RuleSubType::withTitle(),
-            'statusTypes' => RunResponseStatus::withTitle(),
+            'runResponseStatusTypes' => RunResponseStatus::withTitle(),
+            'genieSyncStatusTypes' => GenieSyncStatus::withTitle(),
             'runResponse' => new RunResponseResource($runResponse),
         ]);
     }

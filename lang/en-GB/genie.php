@@ -145,7 +145,7 @@ return [
     'run_responses' => 'Run Responses',
     'run_response_uuid' => 'UUID',
     'run_response_data' => 'Run Response Data',
-    'run_response_message' => 'Message',
+    'run_response_message' => 'Step Message',
     'run_response_error' => 'Error',
     'run_response_error_details' => 'Error Details',
     'run_response_output' => 'Output',
@@ -159,7 +159,8 @@ return [
     'log_type' => 'Type',
     'log_action' => 'Action',
     'log_request' => 'Request',
-    'log_duration' => 'Duration',
+    'log_response' => 'Response',
+    'log_duration' => 'Duration (seconds)',
 
     'groups' => 'Groups',
 

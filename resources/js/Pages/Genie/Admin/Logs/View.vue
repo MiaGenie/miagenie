@@ -46,45 +46,52 @@ const backToList = () => {
 
             <Panel :with-padding="true" class="mt-lg">
 
-                <div :class="'pb-2 pl-2'">
+                <div class="pb-2 pl-2">
                     {{ $t('genie.log_id') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words '">
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words ">
                     {{ log.id }}
                 </div>
 
-                <div :class="'pb-2 pl-2 pt-5'">
+                <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.log_type') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
                     {{ logType }}
                 </div>
 
-                <div :class="'pb-2 pl-2 pt-5'">
+                <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.log_action') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
                     {{ logAction }}
                 </div>
 
-                <div :class="'pb-2 pl-2 pt-5'">
+                <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.log_request') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
-                    {{ log.request ? log.request : '----------' }}
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
+                    <pre class="wrap-anywhere text-wrap">{{ log.request ? log.request : '----------' }}</pre>
                 </div>
 
-                <div :class="'pb-2 pl-2 pt-5'">
+                <div class="pb-2 pl-2 pt-5">
+                    {{ $t('genie.log_response') }}
+                </div>
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
+                    <pre class="wrap-anywhere text-wrap">{{ log.response ? log.response : '----------' }}</pre>
+                </div>
+
+                <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.log_duration') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
                     {{ log.duration }}
                 </div>
 
-                <div :class="'pb-2 pl-2 pt-5'">
+                <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.created_at') }}
                 </div>
-                <div :class="'bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words'">
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
                     {{ log.created_at }}
                 </div>
 
