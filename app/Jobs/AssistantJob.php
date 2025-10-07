@@ -5,7 +5,7 @@ namespace App\Jobs;
 use App\Actions\DeleteAssistant;
 use App\Actions\UploadAssistant;
 use App\Actions\UpdateAssistant;
-use App\Enums\OpenAISyncStatus;
+use App\Enums\GenieSyncStatus;
 use App\Models\Assistant;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -24,7 +24,7 @@ class AssistantJob implements ShouldQueue
     /**
      * @var int
      */
-    public int $tries = 3;
+    public int $tries = 1;
 
     /**
      * @var int
@@ -80,10 +80,6 @@ class AssistantJob implements ShouldQueue
             }
         } elseif ($this->action === 'delete') {
 
-            $assistantDb = Assistant::find($this->assistant->id);
-            $assistantDb->status = OpenAISyncStatus::DELETING;
-            $assistantDb->save();
-
             $response = $deleteAssistant($this->assistant);
 
             if (! $response) {
@@ -105,9 +101,11 @@ class AssistantJob implements ShouldQueue
         $assistantDb = Assistant::find($this->assistant->id);
         // do failed stuff
         if ($this->action === 'upload') {
-            $assistantDb->status = OpenAISyncStatus::FAILED_UPLOAD;
+            $assistantDb->status = GenieSyncStatus::FAILED_CREATION;
+        } elseif ($this->action === 'update') {
+            $assistantDb->status = GenieSyncStatus::FAILED_UPDATE;
         } elseif ($this->action === 'delete') {
-            $assistantDb->status = OpenAISyncStatus::FAILED_DELETE;
+            $assistantDb->status = GenieSyncStatus::FAILED_DELETION;
         }
         $assistantDb->save();
     }

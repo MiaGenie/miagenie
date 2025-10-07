@@ -6,7 +6,6 @@ use App\Enums\FormFieldType;
 use App\Enums\FormInputType;
 use App\Models\VersionField;
 use Illuminate\Support\Collection;
-use Inovector\Mixpost\Enums\Genie\GenieVersionFieldType;
 use App\Models\Version;
 
 trait IngestVersionsContent

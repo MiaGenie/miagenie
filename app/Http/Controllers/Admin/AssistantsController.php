@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Requests\Admin\DeleteAssistants;
+use App\Http\Requests\Admin\DeleteAssistant;
 use App\Builders\AssistantQuery;
 use App\Enums\AssistantType;
 use App\Http\Requests\Admin\StoreAssistant;
 use App\Http\Requests\Admin\UpdateAssistant;
 use App\Http\Resources\Admin\AssistantResource;
+use App\Models\AIModel;
 use App\Models\Assistant;
 use App\Models\Vector;
-use App\Support\Facades\OpenAI;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -25,7 +25,7 @@ class AssistantsController extends Controller
 
         $records = AssistantQuery::apply($request)
             ->latest()
-            ->paginate(20)
+            ->paginate(100)
             ->onEachSide(1)
             ->withQueryString();
 
@@ -40,11 +40,12 @@ class AssistantsController extends Controller
 
     public function create(Request $request): Response
     {
+
         return Inertia::render('Genie/Admin/Assistants/CreateEdit', [
             'mode' => 'create',
             'assistantTypes' => AssistantType::withTitle(),
             'assistantType' => $request->input('assistant_type'),
-            'models' => OpenAI::models()->list()->data,
+            'models' => AIModel::all(),
             'vectorIds' => Vector::all('id', 'name', 'vector_type'),
             'record' => null
         ]);
@@ -63,14 +64,10 @@ class AssistantsController extends Controller
     {
         $record = Assistant::firstOrFailByUuid($request->route('assistant'));
 
-        $vectors = Vector::all()->mapWithKeys(function ($item) {
-            return [$item['id'] => $item['name']];
-        });
-
         return Inertia::render('Genie/Admin/Assistants/CreateEdit', [
             'mode' => 'edit',
             'assistantTypes' => AssistantType::withTitle(),
-            'models' => OpenAI::models()->list()->data,
+            'models' => AIModel::all(),
             'vectorIds' => Vector::all('id', 'name', 'vector_type'),
             'record' => new AssistantResource($record)
         ]);
@@ -86,10 +83,10 @@ class AssistantsController extends Controller
     }
 
     /**
-     * @param DeleteAssistants $deleteAssistants
+     * @param DeleteAssistant $deleteAssistants
      * @return RedirectResponse
      */
-    public function destroy(DeleteAssistants $deleteAssistants): RedirectResponse
+    public function destroy(DeleteAssistant $deleteAssistants): RedirectResponse
     {
         $deleteAssistants->handle();
 

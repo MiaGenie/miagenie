@@ -48,7 +48,7 @@ const statusBadge = () => {
                 <Badge
                     :variant="statusBadge()"
                     class="sm:hidden">
-                    {{ item.status }}
+                    {{ versionStatus().title }}
                 </Badge>
 
                 <Badge

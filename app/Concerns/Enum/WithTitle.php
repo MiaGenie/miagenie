@@ -11,7 +11,7 @@ trait WithTitle
      * @param bool $first
      * @return Collection
      */
-    public static function withTitle(string $name = '', bool $first = false): Collection
+    public static function withTitle(string $name = ''): Collection
     {
         $withTitle = collect(self::cases())
             ->map(function ($enum) use ($name) {
@@ -24,7 +24,7 @@ trait WithTitle
                 return ($name === '' || $name === $item['name']);
             });
 
-        return $first ? $withTitle->first() : $withTitle;
+        return $withTitle;
     }
 
     /**

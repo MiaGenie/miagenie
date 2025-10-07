@@ -43,8 +43,9 @@ Route::middleware(array_merge([
             Route::get('/', [StrategiesController::class, 'index'])->name('index')->withoutMiddleware($editorMiddleware);
             Route::get('create', [StrategiesController::class, 'create'])->name('create');
             Route::post('store', [StrategiesController::class, 'store'])->name('store');
-            Route::get('{strategy}', [StrategiesController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
-            Route::put('{strategy}', [StrategiesController::class, 'update'])->name('update');
+            Route::get('edit/{strategy}', [StrategiesController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
+            Route::get('review/{strategy}', [StrategiesController::class, 'review'])->name('review')->withoutMiddleware($editorMiddleware);
+            Route::put('{strategy}', [StrategiesController::class, 'review_update'])->name('review_update');
             Route::delete('{strategy}', [StrategiesController::class, 'destroy'])->name('delete');
         });
     });

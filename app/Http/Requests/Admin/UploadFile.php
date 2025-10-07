@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\GenieSyncAction;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\File as FileRules;
 use App\Jobs\FileJob;
@@ -31,7 +32,7 @@ class UploadFile extends FormRequest
             ->path('genie')
             ->uploadAndInsert();
 
-        FileJob::dispatch($file, 'upload');
+        FileJob::dispatch($file, GenieSyncAction::CREATE);
 
         return $file;
 

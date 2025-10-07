@@ -1,9 +1,9 @@
 <script setup>
 import {Head, router, useForm} from '@inertiajs/vue3';
-import {inject, onMounted, ref, watch} from "vue";
+import {computed, inject, onMounted, ref, watch} from "vue";
 import {useI18n} from "vue-i18n";
 import useRouter from "@/Composables/useRouter";
-import {cloneDeep} from "lodash";
+import {cloneDeep, find} from "lodash";
 import usePageMode from "@/Composables/usePageMode";
 import AdminLayout from "@/Layouts/Admin.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
@@ -15,7 +15,6 @@ import Input from "@/Components/Form/Input.vue";
 import LabelSuffix from "@/Components/Form/LabelSuffix.vue";
 import Select from "@/Components/Form/Select.vue";
 import Textarea from "@/Components/Form/Textarea.vue";
-import AssistantAction from "@/Components/Genie/Assistants/AssistantAction.vue";
 import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
@@ -56,17 +55,18 @@ const {isCreate, isEdit} = usePageMode();
 const {onError} = useRouter();
 const confirmation = inject('confirmation');
 
-const form = useForm(isEdit.value ? cloneDeep(props.record) : {
-    name: '',
-    assistant_type: props.assistantType ?? '',
-    description: '',
-    instructions: '',
-    model: '',
-    vector_id: '',
-    response_format: '',
-    json_schema: '',
-    temperature: 1,
-    top_p: 1,
+const form = useForm( {
+    name: isEdit.value ? props.record.name : '',
+    assistant_type: isEdit.value ? props.record.assistant_type : '',
+    description: isEdit.value ? props.record.description : '',
+    instructions: isEdit.value ? props.record.instructions : '',
+    model: isEdit.value ? props.record.model : '',
+    vector_id: isEdit.value ? props.record.vector_id ?? '' : '',
+    response_format: isEdit.value ? props.record.response_format ?? '' : '',
+    json_schema: isEdit.value ? props.record.json_schema ?? '' : '',
+    temperature: isEdit.value ? props.record.temperature ?? 1 : 1,
+    top_p: isEdit.value ? props.record.top_p ?? 1 : 1,
+    reasoning_effort: isEdit.value ? props.record.reasoning_effort ?? '' : '',
 });
 
 const filteredVectors = ref({});
@@ -158,6 +158,10 @@ const deleteAssistant = () => {
             );
         }).show();
 }
+
+const modelHas = computed(() => {
+    return find(props.models, ['model', form.model]) ?? [];
+});
 
 </script>
 <template>
@@ -255,9 +259,9 @@ const deleteAssistant = () => {
                         >
                             <option
                                 v-for="(option) in props.models"
-                                :value="option.id"
+                                :value="option.model"
                             >
-                                {{option.id}}
+                                {{option.model}}
                             </option>
                         </Select>
 
@@ -266,7 +270,7 @@ const deleteAssistant = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup class="form-field mt-lg">
+                    <VerticalGroup v-if="modelHas['file_search'] ?? true" class="form-field mt-lg">
                         <template #title>
                             <label for="vector_id">{{ $t("genie.assistant_vector_id") }}</label>
                         </template>
@@ -302,7 +306,7 @@ const deleteAssistant = () => {
                         >
                             <option value="text">text</option>
                             <option value="json_object">json_object</option>
-                            <option value="json_schema">json_schema</option>
+                            <option v-if="modelHas['file_search'] ?? true" value="json_schema">json_schema</option>
                         </Select>
 
                         <template #footer>
@@ -310,7 +314,10 @@ const deleteAssistant = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup v-if="form.response_format==='json_schema'" class="form-field mt-lg">
+                    <VerticalGroup
+                        v-if="form.response_format==='json_schema' && (modelHas['file_search'] ?? true)"
+                        class="form-field mt-lg"
+                    >
                         <template #title>
                             <label for="json_schema">{{ $t("genie.assistant_json_schema") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
@@ -328,7 +335,7 @@ const deleteAssistant = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup class="form-field mt-lg">
+                    <VerticalGroup v-if="modelHas['temperature_top_p'] ?? true"  class="form-field mt-lg">
                         <template #title>
                             <label for="temperature">{{ $t("genie.assistant_temperature") }}
                             </label>
@@ -352,7 +359,7 @@ const deleteAssistant = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup class="form-field mt-lg">
+                    <VerticalGroup v-if="modelHas['temperature_top_p'] ?? true" class="form-field mt-lg">
                         <template #title>
                             <label for="top_p">{{ $t("genie.assistant_top_p") }}
                             </label>
@@ -373,6 +380,26 @@ const deleteAssistant = () => {
 
                         <template #footer>
                             <Error :message="form.errors.top_p"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup v-if="modelHas['reasoning_effort'] ?? true" class="form-field mt-lg">
+                        <template #title>
+                            <label for="reasoning_effort">{{ $t("genie.assistant_reasoning_effort") }}</label>
+                        </template>
+
+                        <Select
+                            v-model="form.reasoning_effort"
+                            :error="form.errors.reasoning_effort !== undefined"
+                            id="reasoning_effort"
+                        >
+                            <option value="low">low</option>
+                            <option value="medium">medium</option>
+                            <option value="high">high</option>
+                        </Select>
+
+                        <template #footer>
+                            <Error :message="form.errors.reasoning_effort"/>
                         </template>
                     </VerticalGroup>
 

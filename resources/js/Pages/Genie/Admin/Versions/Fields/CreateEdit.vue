@@ -86,6 +86,7 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     max_value: '',
     step: '',
     rows: '',
+    is_multiple: false,
     required: false,
     genie_required: true,
     is_identifier: false,
@@ -563,6 +564,22 @@ const deleteField = () => {
                         :responsive="false"
                         class="form-field mt-lg"
                     >
+
+                        <VerticalGroup class="form-field basis-1/3">
+                            <template #title>
+                                <label for="is_multiple">{{ $t("genie.field_is_multiple") }}</label>
+                            </template>
+
+                            <Switch
+                                v-model="form.is_multiple"
+                                id="is_multiple"
+                                :disabled="form.is_identifier"
+                            />
+
+                            <template #footer>
+                                <Error :message="form.errors.is_multiple"/>
+                            </template>
+                        </VerticalGroup>
 
                         <VerticalGroup class="form-field basis-1/3">
                             <template #title>

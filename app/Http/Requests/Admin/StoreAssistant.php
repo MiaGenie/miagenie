@@ -2,7 +2,8 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\Enums\OpenAISyncStatus;
+use App\Concerns\Requests\IngestAssistantFields;
+use App\Enums\GenieSyncStatus;
 use App\Jobs\AssistantJob;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -11,6 +12,11 @@ use App\Models\Assistant;
 
 class StoreAssistant extends FormRequest
 {
+    use IngestAssistantFields;
+
+    /**
+     * @return array
+     */
     public function rules(): array
     {
         return [
@@ -23,6 +29,9 @@ class StoreAssistant extends FormRequest
         ];
     }
 
+    /**
+     * @return Assistant
+     */
     public function handle(): Assistant
     {
         $assistant = Assistant::create([
@@ -36,11 +45,21 @@ class StoreAssistant extends FormRequest
             'json_schema' => $this->input('response_format') === 'json_schema' ? $this->input('json_schema') : '',
             'temperature' => $this->input('temperature'),
             'top_p' => $this->input('top_p'),
-            'status' => OpenAISyncStatus::UPLOADING
+            'reasoning_effort' => $this->input('reasoning_effort'),
+            'assistant_provider_id' => $this->input('assistant_provider_id'),
+            'status' => GenieSyncStatus::CREATING
         ]);
 
         AssistantJob::dispatch($assistant, 'upload');
 
         return $assistant;
+    }
+
+    /**
+     * @return void
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->ingestParameters();
     }
 }

@@ -2,7 +2,8 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\Enums\OpenAISyncStatus;
+use App\Concerns\Requests\IngestAssistantFields;
+use App\Enums\GenieSyncStatus;
 use App\Jobs\AssistantJob;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -11,6 +12,11 @@ use App\Models\Assistant;
 
 class UpdateAssistant extends FormRequest
 {
+    use IngestAssistantFields;
+
+    /**
+     * @return array
+     */
     public function rules(): array
     {
         return [
@@ -23,6 +29,9 @@ class UpdateAssistant extends FormRequest
         ];
     }
 
+    /**
+     * @return Assistant
+     */
     public function handle(): Assistant
     {
         $record = Assistant::firstOrFailByUuid($this->route('assistant'));
@@ -38,8 +47,9 @@ class UpdateAssistant extends FormRequest
             'json_schema' => $this->input('response_format') === 'json_schema' ? $this->input('json_schema') : '',
             'temperature' => $this->input('temperature'),
             'top_p' => $this->input('top_p'),
-            'assistant_provider_id' => $this->input('assistant_provider_id'),
-            'status' => OpenAISyncStatus::UPDATING
+            'reasoning_effort' => $this->input('reasoning_effort'),
+            'assistant_provider_id' => $record->assistant_provider_id,
+            'status' => GenieSyncStatus::UPDATING
         ]);
 
         AssistantJob::dispatch($record, 'update');
@@ -47,4 +57,11 @@ class UpdateAssistant extends FormRequest
         return $record;
     }
 
+    /**
+     * @return void
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->ingestParameters();
+    }
 }

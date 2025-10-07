@@ -7,7 +7,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use App\Models\File;
-use App\Enums\OpenAISyncStatus;
+use App\Enums\GenieSyncStatus;
 
 class FileUploader
 {
@@ -106,7 +106,7 @@ class FileUploader
             'mime_type' => $this->file->getMimeType(),
             'disk' => $this->disk,
             'path' => $path,
-            'status' => OpenAISyncStatus::UPLOADING,
+            'status' => GenieSyncStatus::CREATING,
             'size' => $this->file->getSize(),
         ];
     }

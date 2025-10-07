@@ -28,7 +28,7 @@ class FilesController extends Controller
 
         $records = File::query()
             ->latest()
-            ->paginate(20)
+            ->paginate(100)
             ->onEachSide(1)
             ->withQueryString();
 

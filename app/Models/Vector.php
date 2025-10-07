@@ -4,12 +4,14 @@ namespace App\Models;
 
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 
 class Vector extends Model
 {
 
     use HasUuid;
+    use SoftDeletes;
 
     /**
      * @var string
@@ -25,7 +27,7 @@ class Vector extends Model
         'description',
         'files',
         'vector_type',
-        'vector_id',
+        'vector_provider_id',
         'status',
     ];
 

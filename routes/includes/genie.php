@@ -1,8 +1,14 @@
 <?php
 
 use App\Http\Controllers\Admin\AssistantsController;
+use App\Http\Controllers\Admin\AIModelsController;
 use App\Http\Controllers\Admin\FilesController;
 use App\Http\Controllers\Admin\ConfigsController;
+use App\Http\Controllers\Admin\LogsController;
+use App\Http\Controllers\Admin\RulesController;
+use App\Http\Controllers\Admin\RuleStepsController;
+use App\Http\Controllers\Admin\RunResponsesController;
+use App\Http\Controllers\Admin\RunsController;
 use App\Http\Controllers\Admin\VectorsController;
 use App\Http\Controllers\Admin\VersionFieldsController;
 use App\Http\Controllers\Admin\VersionsController;
@@ -28,6 +34,25 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
             Route::post('positions', [VersionFieldsController::class, 'updatePositions'])->name('positions');
             Route::delete('{field}', [VersionFieldsController::class, 'destroy'])->name('delete');
         });
+
+        Route::prefix('{version}/rules')->name('rules.')->group(function () {
+            Route::get('/', [RulesController::class, 'index'])->name('index');
+            Route::get('create', [RulesController::class, 'create'])->name('create');
+            Route::post('store', [RulesController::class, 'store'])->name('store');
+            Route::get('{rule}', [RulesController::class, 'edit'])->name('edit');
+            Route::put('{rule}', [RulesController::class, 'update'])->name('update');
+            Route::delete('{rule}', [RulesController::class, 'destroy'])->name('delete');
+
+            Route::prefix('{rule}/steps')->name('steps.')->group(function () {
+                Route::get('/', [RuleStepsController::class, 'index'])->name('index');
+                Route::get('create', [RuleStepsController::class, 'create'])->name('create');
+                Route::post('store', [RuleStepsController::class, 'store'])->name('store');
+                Route::get('{step}', [RuleStepsController::class, 'edit'])->name('edit');
+                Route::put('{step}', [RuleStepsController::class, 'update'])->name('update');
+                Route::post('positions', [RuleStepsController::class, 'updatePositions'])->name('positions');
+                Route::delete('{step}', [RuleStepsController::class, 'destroy'])->name('delete');
+            });
+        });
     });
 
     Route::prefix('vectors')->name('vectors.')->group(function () {
@@ -37,6 +62,15 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
         Route::get('{vector}', [VectorsController::class, 'edit'])->name('edit');
         Route::put('{vector}', [VectorsController::class, 'update'])->name('update');
         Route::delete('{vector}', [VectorsController::class, 'destroy'])->name('delete');
+    });
+
+    Route::prefix('ai_models')->name('ai_models.')->group(function () {
+        Route::get('/', [AIModelsController::class, 'index'])->name('index');
+        Route::get('create', [AIModelsController::class, 'create'])->name('create');
+        Route::post('store', [AIModelsController::class, 'store'])->name('store');
+        Route::get('{ai_model}', [AIModelsController::class, 'edit'])->name('edit');
+        Route::put('{ai_model}', [AIModelsController::class, 'update'])->name('update');
+        Route::delete('{ai_model}', [AIModelsController::class, 'destroy'])->name('delete');
     });
 
     Route::prefix('assistants')->name('assistants.')->group(function () {
@@ -56,8 +90,25 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
         Route::get('fetch/uploaded', [FilesController::class, 'fetchUploads'])->name('fetchUploads');
     });
 
+    Route::prefix('runs')->name('runs.')->group(function () {
+        Route::get('/', [RunsController::class, 'index'])->name('index');
+        Route::put('{run}', [RunsController::class, 'resume'])->name('resume');
+
+        Route::prefix('{run}/run_responses')->name('run_responses.')->group(function () {
+            Route::get('/', [RunResponsesController::class, 'index'])->name('index');
+            Route::get('{run_response}', [RunResponsesController::class, 'view'])->name('view');
+            Route::delete('{run_response}', [RunResponsesController::class, 'destroy'])->name('delete');
+        });
+    });
+
+    Route::prefix('logs')->name('logs.')->group(function () {
+        Route::get('/', [LogsController::class, 'index'])->name('index');
+        Route::get('/{log}', [LogsController::class, 'view'])->name('view');
+    });
+
     Route::prefix('configs')->name('configs.')->group(function () {
         Route::get('/', [ConfigsController::class, 'form'])->name('form');
         Route::put('/', [ConfigsController::class, 'update'])->name('update');
     });
+
 });

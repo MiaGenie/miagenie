@@ -8,6 +8,7 @@ import CogIcon from "@/Icons/Cog.vue";
 import DocumentIcon from "@/Icons/Document.vue";
 import VectorIcon from "@/Icons/Genie/Vector.vue";
 import AssistantIcon from "@/Icons/Genie/Assistant.vue";
+import AIModelIcon from "@/Icons/Genie/AIModel.vue";
 </script>
 <template>
     <MenuGroupHeader>
@@ -22,6 +23,14 @@ import AssistantIcon from "@/Icons/Genie/Assistant.vue";
                 <AssistantIcon/>
             </template>
             {{ $t('genie.assistants') }}
+        </MenuItem>
+
+        <MenuItem :url="route('genie.admin.ai_models.index')"
+                  :active="$page.component === 'Genie/Admin/AIModels/Index'">
+            <template #icon>
+                <AIModelIcon/>
+            </template>
+            {{ $t('genie.ai_models') }}
         </MenuItem>
 
         <MenuItem :url="route('genie.admin.vectors.index')"
@@ -46,6 +55,22 @@ import AssistantIcon from "@/Icons/Genie/Assistant.vue";
                 <VersionIcon/>
             </template>
             {{ $t('genie.versions') }}
+        </MenuItem>
+
+        <MenuItem :url="route('genie.admin.runs.index')"
+                  :active="$page.component === 'Genie/Admin/Runs/Index'">
+            <template #icon>
+                <DocumentIcon/>
+            </template>
+            {{ $t('genie.runs') }}
+        </MenuItem>
+
+        <MenuItem :url="route('genie.admin.logs.index')"
+                  :active="$page.component === 'Genie/Admin/Logs/Index'">
+            <template #icon>
+                <DocumentIcon/>
+            </template>
+            {{ $t('genie.logs') }}
         </MenuItem>
 
         <MenuDelimiter/>

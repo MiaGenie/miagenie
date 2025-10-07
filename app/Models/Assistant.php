@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Database\Eloquent\Builder;
+use App\Enums\GenieSyncStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Enums\AssistantType;
@@ -28,10 +28,12 @@ class Assistant extends Model
         'json_schema',
         'temperature',
         'top_p',
+        'reasoning_effort',
         'status'
     ];
 
     protected $casts = [
         'assistant_type' => AssistantType::class,
+        'status' => GenieSyncStatus::class,
     ];
 }

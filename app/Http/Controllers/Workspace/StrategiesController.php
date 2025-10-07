@@ -4,10 +4,18 @@ namespace App\Http\Controllers\Workspace;
 
 use App\Concerns\Controller\HasFieldOptions;
 use App\Enums\FormFieldType;
+use App\Enums\GenieSyncAction;
+use App\Enums\RuleType;
+use App\Enums\RunStatus;
 use App\Http\Requests\Workspace\Strategy\StoreStrategy;
-use App\Http\Requests\Workspace\Strategy\UpdateStrategy;
+use App\Http\Requests\Workspace\Strategy\ReviewUpdateStrategy;
 use App\Http\Resources\StrategyResource;
+use App\Jobs\RunJob;
+use App\Models\Rule;
+use App\Models\Run;
+use App\Models\RunResponse;
 use App\Models\Strategy;
+use App\Models\VersionField;
 use App\Models\WorkspaceVersion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,7 +29,6 @@ class StrategiesController extends Controller
     use HasFieldOptions;
 
     /**
-     * @param Request $request
      * @return Response
      */
     public function index(Request $request)
@@ -29,7 +36,7 @@ class StrategiesController extends Controller
 
         $records = Strategy::query()
             ->latest()
-            ->paginate(20)
+            ->paginate(100)
             ->onEachSide(1)
             ->withQueryString();
 
@@ -40,38 +47,69 @@ class StrategiesController extends Controller
             ->strategies
             ->toArray();
 
-        return Inertia::render('Genie/Workspace/Strategies/Index', [
-            'filter' => [
-                'keyword' => $request->query('keyword', ''),
-            ],
-            'records' => fn () => StrategyResource::collection($records),
-            'fieldList' => $fieldList,
-        ]);
+        return Inertia::render(
+            'Genie/Workspace/Strategies/Index',
+            [
+                'filter' => [
+                    'keyword' => $request->query('keyword', ''),
+                ],
+                'records' => StrategyResource::collection($records),
+                'fieldList' => $fieldList,
+                'runStatus' => RunStatus::withState('', true),
+            ]
+        );
     }
 
     /**
      * @return Response
      */
-    public function create()
+    public function review(Request $request)
     {
-        $fieldList = WorkspaceVersion::byWorkspace(WorkspaceManager::current())
-            ->with(['version' => ['strategies' => ['options']]])
-            ->firstOrFail()
-            ->version
-            ->toArray();
+        $strategy = Strategy::firstOrFailByUuid($request->strategy);
+        $step = $strategy->run->runResponses->last()->step;
+        $fieldName = $step->output[0];
+        $field = VersionField::where('code_name', $fieldName)->firstOrFail();
 
-        $fieldList['strategies'] = $this->groupFieldOptions($fieldList['strategies']);
+        $record = $strategy->content[$fieldName];
 
-        return Inertia::render('Genie/Workspace/Strategies/CreateEdit', [
-            'mode' => 'create',
-            'fieldList' => $fieldList,
-            'fieldTypes' => FormFieldType::withFieldOptions(),
-            'record' => null,
-        ]);
+        return Inertia::render(
+            'Genie/Workspace/Strategies/Review',
+            [
+                'field' => $field,
+                'fieldTypes' => FormFieldType::withFieldOptions(),
+                'step' => $step,
+                'record' => $record
+            ]
+        );
     }
 
     /**
-     * @param StoreStrategy $storeStrategy
+     * @return RedirectResponse
+     */
+    public function create()
+    {
+        $workspace = WorkspaceManager::current();
+        $workspaceVersion = WorkspaceVersion::where('workspace_id', $workspace->id)->first();
+
+        $rule = Rule::where('version_id', $workspaceVersion->version_id)->where('rule_type', RuleType::STRATEGY)->first();
+
+        $run = Run::create([
+            'workspace_id' => $workspace->id,
+            'rule_id' => $rule->id,
+            'status' => RunStatus::OPEN,
+        ]);
+
+        $run->strategy()->create([
+            'workspace_id' => $workspace->id,
+            'run_id' => $run->id,
+        ]);
+
+        RunJob::dispatch($run, GenieSyncAction::CREATE);
+
+        return redirect()->back()->with('success', __('genie.generating_strategy'));
+    }
+
+    /**
      * @return RedirectResponse
      */
     public function store(StoreStrategy $storeStrategy)
@@ -88,7 +126,6 @@ class StrategiesController extends Controller
     }
 
     /**
-     * @param Request $request
      * @return Response
      */
     public function edit(Request $request)
@@ -104,7 +141,6 @@ class StrategiesController extends Controller
         $fieldList['strategies'] = $this->groupFieldOptions($fieldList['strategies']);
 
         return Inertia::render('Genie/Workspace/Strategies/CreateEdit', [
-            'mode' => 'edit',
             'fieldList' => $fieldList,
             'fieldTypes' => FormFieldType::withFieldOptions(),
             'record' => new StrategyResource($record),
@@ -112,18 +148,17 @@ class StrategiesController extends Controller
     }
 
     /**
-     * @param UpdateStrategy $updateStrategy
      * @return RedirectResponse
      */
-    public function update(UpdateStrategy $updateStrategy)
+    public function review_update(Request $request, ReviewUpdateStrategy $updateStrategy)
     {
         $updateStrategy->handle();
 
-        return redirect()->back()->with('success', __('genie.strategy_updated'));
+        return redirect()->route('genie.strategies.index', ['workspace' => $request->route('workspace')])
+            ->with('success', __('genie.strategy_updated'));
     }
 
     /**
-     * @param Request $request
      * @return RedirectResponse
      */
     public function destroy(Request $request)

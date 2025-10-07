@@ -4,6 +4,7 @@ import {useI18n} from "vue-i18n";
 import PureButtonLink from "@/Components/Button/PureButtonLink.vue";
 import PencilSquare from "@/Icons/PencilSquare.vue";
 import QueueList from "@/Icons/QueueList.vue";
+import RulesIcon from "@/Icons/Genie/Rules.vue";
 
 const {t: $t} = useI18n()
 const routePrefix = inject('routePrefix');
@@ -18,6 +19,10 @@ const getRoute = (name) => {
     switch (name) {
         case 'edit':
             return route('genie.admin.versions.edit', {
+                version: props.itemId,
+            });
+            case 'rules':
+            return route('genie.admin.versions.rules.index', {
                 version: props.itemId,
             });
         case 'fields':
@@ -38,6 +43,13 @@ const getRoute = (name) => {
                 v-tooltip="$t('genie.fields')"
             >
                 <QueueList/>
+            </PureButtonLink>
+
+            <PureButtonLink
+                :href="getRoute('rules')"
+                v-tooltip="$t('genie.rules')"
+            >
+                <RulesIcon/>
             </PureButtonLink>
 
             <PureButtonLink

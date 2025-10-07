@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use Inovector\Mixpost\Mixpost;
 
 
+
+
 Route::name('genie.')
     ->prefix('genie')
     ->middleware(array_merge(Mixpost::getWebAppMiddlewares(), Mixpost::getGlobalMiddlewares()))

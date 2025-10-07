@@ -24,6 +24,9 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    runStatus: {
+        type: Object,
+    },
     records: {
         type: Object,
     }
@@ -36,6 +39,7 @@ const confirmation = inject('confirmation');
 const identifier = props.fieldList.find( field => field.is_identifier === 1);
 provide('identifier', identifier);
 provide('fieldList', props.fieldList);
+provide('runStatus', props.runStatus);
 
 </script>
 <template>
@@ -62,10 +66,14 @@ provide('fieldList', props.fieldList);
                     <template #head>
                         <TableRow>
 
-                            <TableCell component="th" scope="col">{{ identifier?.name }}</TableCell>
+                            <TableCell component="th" scope="col">{{ $t('genie.created') }}</TableCell>
 
                             <TableCell component="th" scope="col" class="hidden md:table-cell">
-                                {{ $t('general.status') }}
+                                {{ $t('general.progression') }}
+                            </TableCell>
+
+                            <TableCell component="th" scope="col" class="hidden md:table-cell">
+                                {{ $t('genie.status') }}
                             </TableCell>
 
                             <TableCell component="th" scope="col"/>

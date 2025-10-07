@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\RunStatus;
+use App\Http\Resources\Admin\RunResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class StrategyResource extends JsonResource
@@ -23,6 +25,8 @@ class StrategyResource extends JsonResource
             'name' => $this->name,
             'active' => $this->active,
             'content' => $this->content,
+            'created_at' => $this->created_at,
+            'status' => $this->run->status,
         ];
 
     }
