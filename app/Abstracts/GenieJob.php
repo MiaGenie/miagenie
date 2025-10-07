@@ -2,9 +2,11 @@
 
 namespace App\Abstracts;
 
-use App\Actions\GenieState;
+use App\Actions\GenieState\GenieStateRuns;
+use App\Actions\GenieState\GenieStateSyncs;
 use App\Concerns\GenieLogger;
 use App\Contracts\GenieOutputContract;
+use App\Contracts\GenieStateContract;
 use App\Contracts\GenieSyncContract;
 use App\Enums\GenieSyncAction;
 use Illuminate\Support\Facades\App;
@@ -45,7 +47,7 @@ abstract class GenieJob
             GenieData::class,
             [
                 'model' => $this->model,
-                'action' => $this->action
+                'action' => $this->action,
             ]
         );
     }
@@ -66,7 +68,7 @@ abstract class GenieJob
     }
 
     /**
-     * @return GenieOutputContract|mixed|object
+     * @return GenieOutputContract
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     protected function getGenieOutput(GenieData $data): mixed
@@ -80,11 +82,25 @@ abstract class GenieJob
     }
 
     /**
-     * @return GenieState
+     * @return GenieStateContract
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    protected function getGenieState(): mixed
+    protected function getGenieState(GenieData $data): mixed
     {
-        return App::make(GenieState::class);
+        return App::make(
+            GenieStateContract::class,
+            [
+                'type' => $data->getType()
+            ]
+        );
+    }
+
+    /**
+     * @return GenieStateRuns
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    protected function getGenieStateRuns(): mixed
+    {
+        return App::make(GenieStateRuns::class);
     }
 }

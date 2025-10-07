@@ -23,7 +23,7 @@ const workspaces = usePage().props.workspaces;
 const rules = usePage().props.rules;
 const versions = usePage().props.versions;
 const ruleTypes = usePage().props.ruleTypes;
-const statusRun = usePage().props.statusRun;
+const runStatus = usePage().props.runStatus;
 
 const getRuleType = () => {
     let ruleType = find(rules, ['id', props.item.rule_id]).rule_type;
@@ -51,12 +51,12 @@ const getRuleType = () => {
         </TableCell>
 
         <TableCell >
-            {{ find(statusRun,['value', props.item.status]).name }}
+            {{ find(runStatus,['value', props.item.status]).name }}
         </TableCell>
 
         <TableCell>
             <RunItemAction
-                :itemId="item.id"
+                :item="item"
             />
         </TableCell>
 

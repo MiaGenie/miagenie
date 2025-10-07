@@ -8,7 +8,7 @@ use App\Contracts\GenieDataContract;
 class Competitors extends GenieData implements GenieDataContract
 {
 
-    public function getModel(): \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Thread
+    public function getModel(): \App\Models\File|\App\Models\Vector|\App\Models\Assistant
     {
         // TODO: Implement getModel() method.
     }

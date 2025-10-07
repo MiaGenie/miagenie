@@ -9,7 +9,10 @@ use Illuminate\Support\Facades\Log;
 
 class GenieOutput implements GenieOutputContract
 {
-    public function handle(GenieData $data): ?GenieData
+    /**
+     * @param GenieData $data
+     */
+    public function handle(GenieData $data): void
     {
         $model = $data->getModel();
 
@@ -20,12 +23,8 @@ class GenieOutput implements GenieOutputContract
                 GenieSyncAction::DELETE => null,
             };
             $model->update([$providerIdField => $providerId]);
-
-            return $data;
-
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
-            return null;
         }
     }
 

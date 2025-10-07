@@ -62,7 +62,7 @@ class FileJob extends GenieJob implements ShouldQueue
 
         if (!($this->action === GenieSyncAction::DELETE && !$data->getModelProviderId())) {
             $state = $this->getGenieState();
-            $state->handle($this->model, $this->action, 'init');
+            $state->handle($data, 'init');
 
             $action = $this->getGenieAction();
             $data = $action->handle($data);
@@ -74,12 +74,12 @@ class FileJob extends GenieJob implements ShouldQueue
                 return;
             }
 
-            $state->handle($this->model, $this->action, 'end');
+            $state->handle($data, 'end');
         }
 
         if ($this->action !== GenieSyncAction::UPDATE) {
             $genieOutput = $this->getGenieOutput($data);
-            $data = $genieOutput->handle($data);
+            $genieOutput->handle($data);
         }
     }
 
@@ -91,7 +91,8 @@ class FileJob extends GenieJob implements ShouldQueue
     public function failed(?Throwable $exception): void
     {
         $state = $this->getGenieState();
-        $state->handle($this->model, $this->action, 'fail');
+        $data = $this->getGenieData();
+        $state->handle($data, 'fail');
     }
 
 }

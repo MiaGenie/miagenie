@@ -1,7 +1,7 @@
 <script setup>
 import {useI18n} from "vue-i18n";
 import {inject} from "vue";
-import {reduce} from "lodash";
+import {find, reduce} from "lodash";
 import Badge from "@/Components/DataDisplay/Badge.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
@@ -19,16 +19,31 @@ const props = defineProps({
 
 const identifier = inject("identifier");
 const fieldList = inject("fieldList");
+const runStatus = inject("runStatus");
+
+const itemRunStatus = () => {
+    return find(runStatus, ['value',props.item.status]);
+}
+
+const itemBadge = () => {
+    return itemRunStatus().isError ? 'error' :
+        itemRunStatus().requiresUpdate ? 'warning' :
+        itemRunStatus().isComplete ? 'success' : 'info';
+}
 
 const fieldsCount = reduce(fieldList, (acc, field) => {
         acc.total ++;
-        acc.filled += props.item.content[field.code_name] ? 1 : 0;
+        acc.filled += (props.item?.content !== null && typeof props.item.content[field.code_name] !== "undefined") ? 1 : 0;
         return acc;
     }, {
         'total': 0,
         'filled': 0
     }
 );
+
+const itemDate = () => {
+    return new Date(props.item.created_at).toLocaleString();
+}
 
 const percentage = Number(fieldsCount.filled / fieldsCount.total * 100).toFixed(0);
 
@@ -37,10 +52,10 @@ const percentage = Number(fieldsCount.filled / fieldsCount.total * 100).toFixed(
     <TableRow :hoverable="true">
 
         <TableCell>
-            {{ item.id }}
+            {{ itemDate() }}
 
             <Flex :responsive="false" class="md:hidden">
-                <Badge :variant="percentage == 100 ? 'success' : 'error'">
+                <Badge :variant="itemBadge()">
                     {{ percentage + '%'}}
                 </Badge>
             </Flex>
@@ -48,13 +63,22 @@ const percentage = Number(fieldsCount.filled / fieldsCount.total * 100).toFixed(
         </TableCell>
 
         <TableCell class="hidden md:table-cell">
-            <Badge :variant="percentage == 100 ? 'success' : 'error'">
+            <Badge :variant="itemBadge()">
                 {{ percentage + '%'}}
             </Badge>
         </TableCell>
 
+        <TableCell class="hidden md:table-cell">
+            <Badge :variant="itemBadge()">
+                {{ itemRunStatus().title }}
+            </Badge>
+        </TableCell>
+
         <TableCell>
-            <StrategyItemAction :itemId="item.id"/>
+            <StrategyItemAction
+                :itemId="item.id"
+                :review="itemRunStatus().requiresUpdate"
+            />
         </TableCell>
     </TableRow>
 </template>

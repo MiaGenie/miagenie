@@ -2,41 +2,36 @@
 
 namespace App\Genie\Data;
 
-use App\Abstracts\GenieData as AbstractThreadActionData;
+use App\Abstracts\GenieData;
 use App\Concerns\GenieParser;
 use App\Contracts\GenieDataContract;
 use App\Enums\GenieSyncAction;
-use App\Enums\GenieType;
 use App\Enums\RuleSubType;
 use App\Enums\RunResponseStatus;
 use App\Enums\VersionGroupType;
-use App\Models\Assistant;
 use App\Models\Briefing;
-use App\Models\Competitor;
 use App\Models\RuleStep;
-use App\Models\RunCompetitor;
 use App\Models\RunResponse;
 use App\Models\Strategy;
-use App\Models\Thread;
-use App\Models\ThreadRun;
-use App\Models\Vector;
 use App\Models\VersionField;
 use App\Models\VersionFieldOption;
 use Arr;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 use Inovector\Mixpost\Facades\WorkspaceManager;
 
-class GenieDataResponses extends AbstractThreadActionData implements GenieDataContract
+class GenieDataResponses extends GenieData implements GenieDataContract
 {
     use GenieParser;
-
-    protected const TYPE = 'THREAD';
 
     /**
      * @var RunResponse
      */
     private RunResponse $runResponse;
+
+    /**
+     * @var ?RunResponse
+     */
+    private ?RunResponse $previousRunResponse;
 
     /**
      * @var ?RuleStep
@@ -53,6 +48,7 @@ class GenieDataResponses extends AbstractThreadActionData implements GenieDataCo
     ) {
         parent::__construct($runResponse, $action);
         $this->runResponse = $runResponse;
+        $this->previousRunResponse = $this->getPreviousResponse();
         WorkspaceManager::setCurrent($this->runResponse->run->workspace);
     }
 
@@ -61,24 +57,24 @@ class GenieDataResponses extends AbstractThreadActionData implements GenieDataCo
      */
     public function getData(): array
     {
-        $assistant = $this->runResponse->step->assistant;
+        $step = $this->runResponse->step;
 
         $data = [
             'include' => null,
             'input' => $this->getMessage(),
-            'instructions' => $assistant->instructions,
+            'instructions' => $step->instructions,
             'max_output_tokens' => null,
-            'model' => $assistant->model,
+            'model' => $step->ai_model,
             'previous_response_id' => $this->getPreviousResponseId(),
 //            'prompt' => '',
-            'reasoning' => $assistant->reasoning_effort,
+            'reasoning' => $step->reasoning_effort,
             'store' => true,
-            'temperature' => $assistant->temperature ? (float)$assistant->temperature : null,
-            'top_p' => $assistant->top_p ? (float)$assistant->top_p : null
+            'temperature' => $step->temperature ? (float)$step->temperature : null,
+            'top_p' => $step->top_p ? (float)$step->top_p : null
         ];
 
-/*        if ($assistant->vector_id) {
-            $vectorStoreIds = Vector::find($assistant->vector_id)?->vector_provider_id;
+/*        if ($step->vector_id) {
+            $vectorStoreIds = Vector::find($step->vector_id)?->vector_provider_id;
             $tools['type'] = 'file_search';
             $tools['vector_store_ids'] = [$vectorStoreIds];
             $data['tools'] = [$tools];
@@ -86,11 +82,12 @@ class GenieDataResponses extends AbstractThreadActionData implements GenieDataCo
 
         $data['tool_choice'] = 'required';*/
 
-        $format['type'] = $assistant->response_format;
-        if ($assistant->response_format === 'json_schema') {
-            $format['name'] = Str::snake($assistant->name);
+        $format['type'] = $step->response_format;
+        if ($step->response_format === 'json_schema') {
+            $name = preg_replace("/[^\sa-zA-Z0-9_-]/", "", $step->name);
+            $format['name'] = Str::snake($name);
             $format['strict'] = true;
-            $format['schema'] = json_decode($assistant->json_schema, true);
+            $format['schema'] = json_decode($step->json_schema, true);
         }
         $data['text']['format'] = $format;
 
@@ -106,15 +103,24 @@ class GenieDataResponses extends AbstractThreadActionData implements GenieDataCo
     }
 
     /**
+     * @return ?RunResponse
+     */
+    private function getPreviousResponse(): ?RunResponse
+    {
+        $previousRunResponse = RunResponse::where(['run_id' => $this->runResponse->run->id])
+            ->whereKeyNot($this->runResponse->id)
+            ->latest('id')
+            ->first();
+
+        return $previousRunResponse;
+    }
+
+    /**
      * @return ?string
      */
     private function getPreviousResponseId(): ?string
     {
-        $previousResponse = RunResponse::where(['run_id' => $this->runResponse->run->id])
-            ->whereKeyNot($this->runResponse->id)
-            ->latest('id')
-            ->value('response_provider_id');
-        return $previousResponse;
+        return $this->previousRunResponse?->response_provider_id;
     }
 
     /**
@@ -124,7 +130,7 @@ class GenieDataResponses extends AbstractThreadActionData implements GenieDataCo
     {
         $status = $this->response['status'] ? RunResponseStatus::fromName($this->response['status']) : null;
 
-        if ($status && ($status->isComplete() || $status->requiresUpdate())) {
+        if ($status && !$this->runResponse->step->requires_review && ($status->isComplete() || $status->requiresUpdate())) {
             return GenieSyncAction::UPDATE;
         }
 
@@ -136,9 +142,10 @@ class GenieDataResponses extends AbstractThreadActionData implements GenieDataCo
      */
     private function getMessage(): string
     {
+        $reviewMsg = $this->getReviewMessage();
         $replacements = $this->getReplacements();
 
-        return $this->parseContent($this->runResponse->step->message, $replacements);
+        return $this->parseContent($reviewMsg . $this->runResponse->step->message, $replacements);
     }
 
     /**
@@ -229,8 +236,42 @@ class GenieDataResponses extends AbstractThreadActionData implements GenieDataCo
         return implode(', ', $item);
     }
 
+    /**
+     * @return array
+     */
     public function getRequest(): array
     {
-        return $this->getData();
+        if (sizeof($this->request) > 0) {
+            return $this->request;
+        }
+
+        $this->request = $this->getData();
+
+        return $this->request;
+    }
+
+    /**
+     * @return void
+     */
+    public function setResponseStatus(): void
+    {
+        parent::setResponseStatus();
+        if ($this->response['error'] ?? false) {
+            $this->error = true;
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function getReviewMessage(): string
+    {
+        $reviewMsg = '';
+        if ($this->previousRunResponse?->step->requires_review && $this->previousRunResponse?->runResponseReview?->id) {
+            $reviewMsg = $this->previousRunResponse->step->review_message_system. "/n";
+            //$reviewMsg = implode("\n", $this->previousRunResponse->runResponseReview->reviewed) . "\n";
+
+        }
+        return $reviewMsg;
     }
 }

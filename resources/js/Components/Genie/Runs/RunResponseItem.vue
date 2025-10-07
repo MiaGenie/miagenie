@@ -16,7 +16,7 @@ const props = defineProps({
 
 const ruleSteps = usePage().props.ruleSteps;
 const ruleSubTypes = usePage().props.ruleSubTypes;
-const statusTypes = usePage().props.statusTypes;
+const runResponseStatus = usePage().props.runResponseStatus;
 
 const getStepName = (stepId) => {
     return find(ruleSteps, ['id', stepId]).name;
@@ -27,8 +27,8 @@ const getRuleSubType = (stepId) => {
     return find(ruleSubTypes, ['value', ruleSubTypeId]).name;
 }
 
-const versionStatus = () => {
-    return find(statusTypes, ['value', Number(props.item.status)]).name;
+const itemStatus = () => {
+    return find(runResponseStatus, ['value', Number(props.item.status)]).name;
 }
 
 </script>
@@ -48,12 +48,12 @@ const versionStatus = () => {
         </TableCell>
 
         <TableCell>
-            {{ versionStatus() }}
+            {{ itemStatus() }}
         </TableCell>
 
         <TableCell>
             <RunResponseItemAction
-                :itemId="item.id"
+                :item="item"
             />
         </TableCell>
 

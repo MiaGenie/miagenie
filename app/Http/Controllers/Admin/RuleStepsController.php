@@ -7,9 +7,11 @@ use App\Enums\RuleType;
 use App\Enums\VersionGroupType;
 use App\Enums\VersionStatus;
 use App\Http\Resources\Admin\VersionResource;
+use App\Models\AIModel;
 use App\Models\Assistant;
 use App\Models\Rule;
 use App\Models\RuleStep;
+use App\Models\Vector;
 use App\Models\Version;
 use App\Models\VersionField;
 use Illuminate\Http\JsonResponse;
@@ -68,8 +70,6 @@ class RuleStepsController extends Controller
         $rule = Rule::firstOrFailByUuid($request->route('rule'));
         $version = Version::firstOrFailByUuid($request->route('version'));
 
-        $assistants = Assistant::where('assistant_type', $rule->rule_type)->get(['id', 'name']);
-
         $outputFields = VersionField::where(
             [
                 'version_id' => $rule->version_id,
@@ -83,7 +83,8 @@ class RuleStepsController extends Controller
             'ruleSubTypes' => RuleSubType::withTitle(),
             'record' => null,
             'version' => new VersionResource($version),
-            'assistants' => $assistants,
+            'models' => AIModel::all(),
+            'vectorIds' => Vector::all('id', 'name', 'vector_type'),
             'outputFields' => $outputFields,
             'versionStatusTypes' => VersionStatus::withTitle(),
             'ruleStatusTypes' => RuleStatus::withTitle()
@@ -121,7 +122,6 @@ class RuleStepsController extends Controller
         $version = Version::firstOrFailByUuid($request->route('version'));
 
         $record = RuleStep::firstOrFailByUuid($request->route('step'));
-        $assistants = Assistant::where('assistant_type', $rule->rule_type)->get(['id', 'name']);
 
         $outputFields = VersionField::where(
             [
@@ -136,7 +136,8 @@ class RuleStepsController extends Controller
             'ruleSubTypes' => RuleSubType::withTitle(),
             'record' => new RuleStepResource($record),
             'version' => new VersionResource($version),
-            'assistants' => $assistants,
+            'models' => AIModel::all(),
+            'vectorIds' => Vector::all('id', 'name', 'vector_type'),
             'outputFields' => $outputFields,
             'versionStatusTypes' => VersionStatus::withTitle(),
             'ruleStatusTypes' => RuleStatus::withTitle()

@@ -13,6 +13,7 @@ import PencilSquare from "@/Icons/PencilSquare.vue";
 import Trash from "@/Icons/Trash.vue";
 import PureButton from "@/Components/Button/PureButton.vue";
 import PureButtonLink from "@/Components/Button/PureButtonLink.vue";
+import Eye from "@/Icons/Eye.vue";
 
 const {t: $t} = useI18n()
 
@@ -24,6 +25,10 @@ const props = defineProps({
     itemId: {
         type: String,
         required: true,
+    },
+    review: {
+        type: Boolean,
+        default: false,
     }
 })
 
@@ -37,6 +42,11 @@ const getRoute = (name) => {
     switch (name) {
         case 'edit':
             return route('genie.strategies.edit', {
+                workspace: workspaceCtx.id,
+                strategy: props.itemId
+            });
+        case 'review':
+            return route('genie.strategies.review', {
                 workspace: workspaceCtx.id,
                 strategy: props.itemId
             });
@@ -94,11 +104,20 @@ const deleteStrategyAfterConfirmed = (dialog) => {
 
                 <template #content>
                     <DropdownItem
+                        v-if="review"
+                        :href="getRoute('review')">
+                        <template #icon>
+                            <Eye/>
+                        </template>
+                        {{ $t('genie.review_strategy') }}
+                    </DropdownItem>
+
+                    <DropdownItem
                         :href="getRoute('edit')">
                         <template #icon>
                             <PencilSquare/>
                         </template>
-                        {{ $t('general.edit') }}
+                        {{ $t('genie.view_strategy') }}
                     </DropdownItem>
 
                     <DropdownItem @click="confirmDeleteStrategy" as="button">
@@ -113,10 +132,18 @@ const deleteStrategyAfterConfirmed = (dialog) => {
         <div class="flex-row items-center justify-end gap-lg hidden sm:flex">
 
             <PureButtonLink
-                :href="getRoute('edit')"
-                v-tooltip="$t('general.edit')"
+                v-if="review"
+                :href="getRoute('review')"
+                v-tooltip="$t('genie.review_strategy')"
             >
                 <PencilSquare/>
+            </PureButtonLink>
+
+            <PureButtonLink
+                :href="getRoute('edit')"
+                v-tooltip="$t('genie.view_strategy')"
+            >
+                <Eye/>
             </PureButtonLink>
 
             <PureButton

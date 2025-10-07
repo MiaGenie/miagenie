@@ -20,18 +20,24 @@ class CreateResponse implements GenieSyncContract
         try {
             $startTime = time();
             $response = OpenAI::responses()->create(
-                $data->getData(),
+                $data->getRequest()
             );
             $endTime = time();
 
             $data->setDuration($endTime - $startTime);
 
             $data->setResponse($response->toArray());
+            $data->setResponseStatus();
             return $data;
 
         } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
-            return null;
+            $errorMsg = $exception->getMessage();
+            Log::error($errorMsg);
+            $data->setError(true);
+            $data->setResponse(
+                ['Exception Error' => $errorMsg]
+            );
+            return $data;
         }
     }
 

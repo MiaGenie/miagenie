@@ -11,11 +11,13 @@ use App\Enums\GenieType;
 use App\Models\Rule;
 use App\Models\RunResponse;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class RunResponseJob extends GenieJob implements ShouldQueue
@@ -73,16 +75,18 @@ class RunResponseJob extends GenieJob implements ShouldQueue
 
         $data = $action->handle($data);
 
-        if (!$data) {
+        $this->logRun(GenieType::RUN_RESPONSE, $this->action, $data);
+
+        if ($data->getError()) {
             $this->release(30);
             return;
         }
 
         $genieOutput = $this->getGenieOutput($data);
+        $genieOutput->handle($data);
 
-        $data = $genieOutput->handle($data);
-
-        $this->logRun(GenieType::RUN_RESPONSE, $this->action, $data);
+        $genieState = $this->getGenieState($data);
+        $genieState->handle($data, 'end');
 
         $nextAction = $data->nextAction();
         if ($nextAction) {
@@ -94,24 +98,14 @@ class RunResponseJob extends GenieJob implements ShouldQueue
     /**
      * @param Throwable|null $exception
      * @return void
+     * @throws BindingResolutionException
      */
     public function failed(?Throwable $exception): void
     {
+        Log::error($exception->getMessage());
+        $data = $this->getGenieData();
+        $genieState = $this->getGenieState($data);
+        $genieState->handle($data, 'fail');
 
-    }
-
-    /**
-     * @return GenieOutputContract|mixed|object
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
-     */
-    public function getGenieOutput(GenieData $data): mixed
-    {
-        return App::make(
-            GenieOutputContract::class,
-            [
-                'data' => $data,
-                'type' => $data->getType()
-            ]
-        );
     }
 }

@@ -19,8 +19,7 @@ class RunResource extends JsonResource
     {
 
         return [
-            'id' => $this->id,
-            'uuid' => $this->uuid,
+            'id' => $this->uuid,
             'workspace_id' => $this->workspace_id,
             'rule_id' => $this->rule_id,
             'status' => $this->status,

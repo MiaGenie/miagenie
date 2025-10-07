@@ -7,8 +7,8 @@ import {usePage} from "@inertiajs/vue3";
 const {t: $t} = useI18n()
 
 const props = defineProps({
-    itemId: {
-        type: Number,
+    item: {
+        type: Object,
         required: true,
     }
 })
@@ -18,8 +18,9 @@ const runId = usePage().props.runUuid;
 const getRoute = (name) => {
     switch (name) {
         case 'view':
-            return route('genie.admin.run_responses.view', {
-                run_response: props.itemId,
+            return route('genie.admin.runs.run_responses.view', {
+                run: route().params.run,
+                run_response: props.item.id,
             });
         default:
             return '';

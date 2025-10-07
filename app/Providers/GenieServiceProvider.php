@@ -5,14 +5,16 @@ namespace App\Providers;
 use App\Abstracts\GenieData;
 use App\Actions\GenieOutput;
 use App\Actions\GenieOutput\GenieOutputStrategy;
-use App\Actions\GenieOutput\ThreadOutput;
 use App\Actions\GenieRun\CreateResponse;
 use App\Actions\GenieRun\RetrieveResponse;
+use App\Actions\GenieState\GenieStateRunResponses;
+use App\Actions\GenieState\GenieStateSyncs;
 use App\Actions\GenieSync\CreateFile;
 use App\Actions\GenieSync\DeleteFile;
 use App\Actions\GenieSync\DeleteVector;
 use App\Actions\GenieSync\UploadVector;
 use App\Contracts\GenieOutputContract;
+use App\Contracts\GenieStateContract;
 use App\Contracts\GenieSyncContract;
 use App\Enums\GenieSyncAction;
 use App\Enums\GenieType;
@@ -40,9 +42,7 @@ class GenieServiceProvider extends ServiceProvider
             switch ($type) {
 //                case GenieType::RUN:
 //                    return match($action) {
-//                        GenieSyncAction::CREATE => new CreateThread(),
-//                        GenieSyncAction::UPDATE => new UpdateThread(),
-//                        GenieSyncAction::STATUS => new StatusThread(),
+
 //                    };
                 case GenieType::RUN_RESPONSE:
                     return match($action) {
@@ -70,9 +70,7 @@ class GenieServiceProvider extends ServiceProvider
 
             switch ($type) {
                 case GenieType::RUN_RESPONSE:
-                    return match($params['action']) {
-                        GenieSyncAction::CREATE => new GenieDataResponses($model, $action),
-                    };
+                    return new GenieDataResponses($model, $action);
                 case GenieType::FILE:
                     return new GenieDataFiles($model, $action);
                 case GenieType::VECTOR:
@@ -83,36 +81,20 @@ class GenieServiceProvider extends ServiceProvider
 
         });
 
-        /*        $this->app->bind(GenieRunData::class, function ($app, $params) {
-                    $model = $params['model'];
-                    $type = GenieType::fromName(class_basename($model));
-                    $action = $params['action'];
-
-                    switch ($type) {
-                        case GenieType::RUN:
-                            return match($params['rule_type']) {
-                                'ANALYSIS' => new Analysis($model, $action),
-                            };
-                        case GenieType::FILE:
-                            return new GenieDataFiles($model, $action);
-                        case GenieType::VECTOR:
-                            return new GenieDataVectors($model, $action);
-                        case GenieType::ASSISTANT:
-                            return new GenieDataAssistants($model, $action);
-                    }
-
-                });*/
-
         $this->app->bind(GenieOutputContract::class, function ($app, $params) {
-
             return match ($params['type']) {
                 GenieType::FILE,
-                GenieType::VECTOR,
-                GenieType::ASSISTANT => new GenieOutput(),
-                GenieType::RUN => new ThreadOutput(),
+                GenieType::VECTOR => new GenieOutput(),
                 GenieType::RUN_RESPONSE => new GenieOutputStrategy(),
             };
+        });
 
+        $this->app->bind(GenieStateContract::class, function ($app, $params) {
+            return match ($params['type']) {
+                GenieType::FILE,
+                GenieType::VECTOR => new GenieStateSyncs(),
+                GenieType::RUN_RESPONSE => new GenieStateRunResponses(),
+            };
         });
 
     }

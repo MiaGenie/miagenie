@@ -2,6 +2,7 @@
 
 return [
     'name' => 'Name',
+    'progression' => 'Progression',
     'status' => 'Status',
 
     'genie' => 'Genie',
@@ -60,6 +61,8 @@ return [
     'step_message' => 'Message',
     'step_assistant_id' => 'Assistant ID',
     'step_requires_review' => 'Requires Review',
+    'step_review_message_user' => 'User Review Message',
+    'step_review_message_system' => 'System Review Message',
     'step_optional' => 'Is Optional',
     'step_output' => 'Output Field',
 
@@ -135,6 +138,8 @@ return [
     'rule_run_sub_type' => 'Sub Type',
     'run_workspace' => 'Workspace',
     'run_version' => 'Version',
+    'run_resume' => 'Resume Run',
+    'run_resumed' => 'Run has been resumed',
     'response_provider_id' => 'Provider ID',
     'response_provider_status' => 'Provider Status',
     'rule_run_type_analysis' => 'Analysis',
@@ -150,6 +155,10 @@ return [
     'run_response_error_details' => 'Error Details',
     'run_response_output' => 'Output',
     'run_response_output_text' => 'Output Text',
+    'delete_run_response' => 'Delete Response',
+    'delete_run_response_confirm' => 'Are you sure you want to delete this response?',
+    'run_response_deleted' => 'Response Deleted',
+    'run_response_not_found' => 'Response not found',
 
     'created_at' => 'Created At',
 
@@ -203,6 +212,7 @@ return [
     'field_max_value' => 'Max. Value',
     'field_step' => 'Step',
     'field_input_type' => 'Input Type',
+    'field_is_multiple' => 'Is Multiple',
     'field_required' => 'Required',
     'field_genie_required' => 'Genie Required',
     'field_is_identifier' => 'Identifier',
@@ -239,6 +249,10 @@ return [
     'strategies' => 'Strategies',
     'strategies_desc' => 'Your direct strategies. This information is important to help improve your strategy',
     'create_strategy' => 'Create Strategy',
+    'generating_strategy' => 'Strategy generation started',
+    'strategy_review' => 'Strategy Review',
+    'review_strategy' => 'Review Strategy',
+    'view_strategy' => 'View Strategy',
     'edit_strategy' => 'Edit strategy',
     'delete_strategy' => 'Delete strategy',
     'strategy_updated' => 'Strategy updated successfully',

@@ -42,7 +42,7 @@ class Channels extends GenieData implements GenieDataContract
         $this->data = $this->getData();
     }
 
-    public function getModel(): \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Thread
+    public function getModel(): \App\Models\File|\App\Models\Vector|\App\Models\Assistant
     {
         // TODO: Implement getModel() method.
     }

@@ -32,7 +32,7 @@ class RunStep extends Command
 
         $run = Run::find($this->option('run'));
 
-        RunJob::dispatch($run, GenieSyncAction::UPDATE);
+        RunJob::dispatch($run, GenieSyncAction::CREATE);
 
         $this->info('All assistants without sync have been added to Assistant Sync Job');
     }

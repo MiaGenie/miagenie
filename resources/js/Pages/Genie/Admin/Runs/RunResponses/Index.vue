@@ -14,6 +14,9 @@ import NoResult from "@/Components/Util/NoResult.vue";
 import X from "@/Icons/X.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import RunResponseHeader from '@/Components/DataDisplay/Genie/RunResponseHeader.vue';
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
+import Refresh from "@/Icons/Refresh.vue";
+import {find} from "lodash";
 
 defineOptions({layout: AdminLayout});
 
@@ -44,7 +47,11 @@ const props = defineProps({
         type: Object,
         required: true
     },
-    statusTypes: {
+    run: {
+        type: Object,
+        required: true
+    },
+    runResponseStatus: {
         type: Object,
         required: true
     },
@@ -59,6 +66,18 @@ const backToList = () => {
         'genie.admin.runs.index',
     ));
 }
+
+const resumeRun = () => {
+    router.put(route(
+        'genie.admin.runs.resume',
+        {run: props.run.id}
+    ));
+}
+
+const runStatus = () => {
+    return find(props.runResponseStatus, ['value', Number(props.run.status)]).name;
+}
+
 
 </script>
 <template>
@@ -143,6 +162,18 @@ const backToList = () => {
                             <X/>
                         </template>
                     </PrimaryButton>
+
+                    <SecondaryButton
+                        @click="resumeRun"
+                        type="button"
+                        v-if="runStatus() === 'ERROR' || runStatus() === 'OPEN' || true"
+                        :hidden-text-on-small-screen=true
+                    >
+                        {{ $t("genie.run_resume")}}
+                        <template #icon>
+                            <Refresh/>
+                        </template>
+                    </SecondaryButton>
 
                 </div>
             </div>

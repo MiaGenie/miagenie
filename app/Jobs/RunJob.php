@@ -21,6 +21,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class RunJob extends GenieJob implements ShouldQueue
@@ -57,9 +58,9 @@ class RunJob extends GenieJob implements ShouldQueue
     protected GenieSyncAction $action;
 
     /**
-     * @param GenieSyncAction $action
      * @param Run $run
-     */
+     * @param GenieSyncAction $action
+ */
     public function __construct(Run $run, GenieSyncAction $action)
     {
         parent::__construct($run, $action);
@@ -74,21 +75,34 @@ class RunJob extends GenieJob implements ShouldQueue
     public function handle(): void
     {
         $data = $this->getGenieRunData();
+        $genieState = $this->getGenieStateRuns();
         $nextStep = $data->nextStep();
 
         if ($nextStep) {
-            $runResponse = $this->run->runResponses()->create([
-                'step_id' => $nextStep->id,
-                'status' => GenieSyncStatus::CREATING
-            ]);
+
+            if ($this->action === GenieSyncAction::CREATE) {
+                $runResponse = $this->run->runResponses()->create([
+                    'step_id' => $nextStep->id
+                ]);
+            } else {
+                $runResponse =  $this->run->runResponses()->where('status', '!=', RunStatus::COMPLETE)->firstOrCreate(
+                    [
+                        'run_id' => $this->run->id,
+                        'step_id' => $nextStep->id,
+                    ]
+                );
+            }
             if ($nextStep?->rule_sub_type === RuleSubType::COMPETITORS) {
                 $runResponse->runCompetitor()->create([
                     'competitor_id' => $data->getNextCompetitor()->id,
                 ]);
             }
+
+            $genieState->handle($data, 'run');
             RunResponseJob::dispatch($runResponse, GenieSyncAction::CREATE);
         } else {
 
+            $genieState->handle($data, 'end');
         }
 
     }
@@ -99,7 +113,10 @@ class RunJob extends GenieJob implements ShouldQueue
      */
     public function failed(?Throwable $exception): void
     {
-
+        Log::error($exception->getMessage());
+        $data = $this->getGenieRunData();
+        $genieState = $this->getGenieStateRuns();
+        $genieState->handle($data, 'fail');
     }
 
     /**
@@ -112,22 +129,7 @@ class RunJob extends GenieJob implements ShouldQueue
             GenieRunData::class,
             [
                 'model' => $this->run,
-                'action' => $this->action,
-            ]
-        );
-    }
-
-    /**
-     * @return GenieOutputContract|mixed|object
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
-     */
-    public function getGenieOutput(GenieData $data): mixed
-    {
-        return App::make(
-            GenieOutputContract::class,
-            [
-                'data' => $data,
-                'type' => $data->getType()
+                'action' => $this->action
             ]
         );
     }

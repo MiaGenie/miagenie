@@ -23,7 +23,7 @@ class Log extends Model
         'response',
         'duration',
         'created_at',
-        'updated_at'
+        'updated_at',
     ];
 
     protected $casts = [

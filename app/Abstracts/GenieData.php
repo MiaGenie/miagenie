@@ -5,6 +5,7 @@ namespace App\Abstracts;
 use App\Contracts\GenieDataContract;
 use App\Enums\GenieSyncAction;
 use App\Enums\GenieType;
+use App\Enums\RunResponseStatus;
 use Illuminate\Support\Str;
 
 abstract class GenieData implements GenieDataContract
@@ -36,6 +37,11 @@ abstract class GenieData implements GenieDataContract
     protected array $response;
 
     /**
+     * @var bool
+     */
+    protected bool $error;
+
+    /**
      * @var int
      */
     public int $duration;
@@ -58,6 +64,7 @@ abstract class GenieData implements GenieDataContract
         $this->data = [];
         $this->request = [];
         $this->response = [];
+        $this->error = false;
         $this->duration = 0;
         $this->nextAction = null;
     }
@@ -119,6 +126,34 @@ abstract class GenieData implements GenieDataContract
     {
         return $this->response;
     }
+
+    /**
+     * @return void
+     */
+    public function setResponseStatus(): void
+    {
+        if ($this->response['error'] ?? false) {
+            $this->error = true;
+        }
+    }
+
+    /**
+     * @param bool $error
+     * @return bool
+     */
+    public function setError(bool $error): bool
+    {
+        return $this->error = $error;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getError(): bool
+    {
+        return $this->error;
+    }
+
 
     /**
      * @param int $duration

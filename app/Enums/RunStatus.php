@@ -3,12 +3,14 @@
 namespace App\Enums;
 
 use App\Concerns\Enum\FromName;
+use App\Concerns\Enum\HasState;
 use App\Concerns\Enum\WithTitle;
 
 enum RunStatus: int
 {
     use WithTitle;
     use FromName;
+    use HasState;
 
     case OPEN = 1;
     case RUNNING = 2;
@@ -31,6 +33,39 @@ enum RunStatus: int
             self::PENDING_REVIEW => 'pending_review',
             self::REVIEWED => 'reviewed',
             self::COMPLETE => 'complete',
+        };
+    }
+
+    /**
+     * @return bool
+     */
+    public function isError(): bool
+    {
+        return match ($this) {
+            self::ERROR => true,
+            default => false,
+        };
+    }
+
+    /**
+     * @return bool
+     */
+    public function requiresUpdate(): bool
+    {
+        return match ($this) {
+            self::PENDING_REVIEW => true,
+            default => false,
+        };
+    }
+
+    /**
+     * @return bool
+     */
+    public function isComplete(): bool
+    {
+        return match ($this) {
+            self::COMPLETE => true,
+            default => false,
         };
     }
 }

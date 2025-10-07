@@ -11,12 +11,11 @@ use Illuminate\Http\Request;
 
 class RunResponsesQuery implements Query
 {
+
     public static function apply(Request $request): Builder
     {
         $query = RunResponse::query();
-
-        $run = Run::all()->find($request->route('run'));
-
+        $run = Run::firstOrFailByUuid($request->route('run'));
         $query = RunIdFilter::apply($query, $run->id);
 
         return $query;

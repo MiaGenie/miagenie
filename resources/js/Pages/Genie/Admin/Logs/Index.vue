@@ -33,7 +33,7 @@ const props = defineProps({
 
 </script>
 <template>
-    <Head :title="$t('genie.rules')"/>
+    <Head :title="$t('genie.logs')"/>
 
     <div class="w-full mx-auto row-py">
 

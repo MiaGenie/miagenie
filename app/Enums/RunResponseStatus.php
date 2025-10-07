@@ -37,7 +37,7 @@ enum RunResponseStatus: int
     /**
      * @return bool
      */
-    public function hasError(): bool
+    public function isError(): bool
     {
         return match ($this) {
             self::FAILED, self::CANCELLED, self::INCOMPLETE => true,

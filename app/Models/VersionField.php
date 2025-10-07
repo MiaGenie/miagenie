@@ -42,6 +42,7 @@ class VersionField extends Model
         'max_value',
         'step',
         'rows',
+        'is_multiple',
         'required',
         'genie_required',
         'is_identifier',

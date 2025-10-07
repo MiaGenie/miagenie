@@ -40,7 +40,7 @@ const getRoute = (name) => {
             });
         case 'delete':
             return route('genie.admin.versions.rules.steps.delete', {
-                version: props.version.id,
+                version: version.id,
                 rule: rule.id,
                 step: props.item.id
             });

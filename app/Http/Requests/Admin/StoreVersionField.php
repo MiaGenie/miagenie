@@ -91,6 +91,7 @@ class StoreVersionField extends FormRequest
                 'max_value' => $this->input('max_value'),
                 'step' => $this->input('step'),
                 'rows' => $this->input('rows'),
+                'is_multiple' => $this->input('is_multiple'),
                 'required' => $this->input('required'),
                 'genie_required' => $this->input('genie_required'),
                 'is_identifier' => $this->input('is_identifier'),

@@ -60,7 +60,7 @@ class VectorJob extends GenieJob implements ShouldQueue
         $data = $this->getGenieData();
 
         $state = $this->getGenieState();
-        $state->handle($this->model, $this->action, 'init');
+        $state->handle($data, 'init');
 
         $action = $this->getGenieAction();
         $data = $action->handle($data);
@@ -70,21 +70,23 @@ class VectorJob extends GenieJob implements ShouldQueue
             return;
         }
 
-        $state->handle($this->model, $this->action, 'end');
+        $state->handle($data, 'end');
 
         if ($this->action !== GenieSyncAction::UPDATE) {
             $genieOutput = $this->getGenieOutput($data);
-            $data = $genieOutput->handle($data);
+            $genieOutput->handle($data);
         }
     }
 
     /**
      * @param Throwable|null $exception
      * @return void
+     * @throws BindingResolutionException
      */
     public function failed(?Throwable $exception): void
     {
         $state = $this->getGenieState();
-        $state->handle($this->model, $this->action, 'fail');
+        $data = $this->getGenieData();
+        $state->handle($data, 'fail');
     }
 }

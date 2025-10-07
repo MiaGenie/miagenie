@@ -6,8 +6,8 @@ import Eye from "@/Icons/Eye.vue";
 const {t: $t} = useI18n()
 
 const props = defineProps({
-    itemId: {
-        type: Number,
+    item: {
+        type: Object,
         required: true,
     }
 })
@@ -15,8 +15,8 @@ const props = defineProps({
 const getRoute = (name) => {
     switch (name) {
         case 'view':
-            return route('genie.admin.run_responses.index', {
-                run: props.itemId,
+            return route('genie.admin.runs.run_responses.index', {
+                run: props.item.id,
             });
         default:
             return '';

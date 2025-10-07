@@ -46,6 +46,7 @@ return new class extends Migration
             $table->smallInteger('max_value')->nullable();
             $table->smallInteger('step')->nullable();
             $table->tinyInteger('rows')->nullable();
+            $table->boolean('is_multiple')->default(false);
             $table->boolean('genie_required')->default(true);
             $table->boolean('required')->default(false);
             $table->boolean('is_identifier')->default(false);

@@ -41,7 +41,7 @@ enum GenieSyncStatus: int
     /**
      * @return bool
      */
-    public function hasError(): bool
+    public function isError(): bool
     {
         return match ($this) {
             self::FAILED_CREATION, self::FAILED_UPDATE, self::FAILED_DELETION => true,

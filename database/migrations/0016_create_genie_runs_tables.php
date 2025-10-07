@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\RunStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +19,7 @@ return new class extends Migration
             $table->uuid()->unique();
             $table->foreignId('workspace_id')->nullable()->constrained('mixpost_workspaces')->nullOnDelete();
             $table->foreignId('rule_id')->nullable()->constrained('genie_rules')->nullOnDelete();
-            $table->tinyInteger('status');
+            $table->tinyInteger('status')->default(RunStatus::OPEN);
             $table->timestamps();
         });
 
@@ -34,7 +35,7 @@ return new class extends Migration
             $table->string('incomplete_details')->nullable();
             $table->json('output')->nullable();
             $table->text('output_text')->nullable();
-            $table->tinyInteger('status');
+            $table->tinyInteger('status')->default(RunStatus::OPEN);
             $table->timestamps();
         });
 
@@ -51,6 +52,14 @@ return new class extends Migration
             $table->foreignId('competitor_id')->nullable()->constrained('genie_competitors')->nullOnDelete();
             $table->timestamps();
         });
+
+        Schema::create('genie_run_response_reviews', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('run_response_id')->constrained('genie_run_responses')->onDelete('cascade');
+            $table->json('original');
+            $table->json('reviewed');
+            $table->timestamps();
+        });
     }
 
     /**
@@ -60,6 +69,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('genie_run_response_reviews');
         Schema::dropIfExists('genie_run_competitors');
         Schema::dropIfExists('genie_run_briefings');
         Schema::dropIfExists('genie_run_responses');

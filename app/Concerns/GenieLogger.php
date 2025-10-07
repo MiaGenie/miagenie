@@ -20,7 +20,7 @@ trait GenieLogger
         return Log::create([
             'type' => $type,
             'action' => $action,
-            'data' => $data->getRequest(),
+            'request' => $data->getRequest(),
             'response' => $data->getResponse(),
             'duration' => $data->getDuration(),
         ]);

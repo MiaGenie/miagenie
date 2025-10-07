@@ -19,8 +19,7 @@ class RunResponseResource extends JsonResource
     {
 
         return [
-            'id' => $this->id,
-            'uuid' => $this->uuid,
+            'id' => $this->uuid,
             'run_id' => $this->run_id,
             'step_id' => $this->step_id,
             'response_provider_id' => $this->response_provider_id,

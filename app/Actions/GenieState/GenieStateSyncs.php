@@ -1,25 +1,24 @@
 <?php
 
-namespace App\Actions;
+namespace App\Actions\GenieState;
 
+use App\Abstracts\GenieData;
+use App\Contracts\GenieStateContract;
 use App\Enums\GenieSyncAction;
 use App\Enums\GenieSyncStatus;
 use Illuminate\Support\Facades\Log;
 
-class GenieState
+class GenieStateSyncs implements GenieStateContract
 {
     /**
-     * @param \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Thread $model
-     * @param GenieSyncAction $action
+     * @param GenieData $data
      * @param string $state
      */
-    public function handle(
-        \App\Models\File|\App\Models\Vector|\App\Models\Assistant|\App\Models\Thread $model,
-        GenieSyncAction $action,
-        string $state
-    ): void {
+    public function handle(GenieData $data, string $state): void
+    {
         try {
 
+            $action = $data->getAction();
             switch ($action) {
                 case GenieSyncAction::CREATE:
                     $status = match ($state) {
@@ -44,6 +43,7 @@ class GenieState
                     break;
             }
 
+            $model = $data->getModel();
             $model->update(['status' => $status]);
 
         } catch (\Exception $exception) {

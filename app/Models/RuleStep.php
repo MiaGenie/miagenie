@@ -20,16 +20,26 @@ class RuleStep extends Model
         'rule_sub_type',
         'name',
         'description',
-        'assistant_id',
+        'instructions',
+        'ai_model',
+        'response_format',
+        'json_schema',
+        'temperature',
+        'top_p',
+        'reasoning_effort',
+        'vector_id',
         'message',
         'output',
         'requires_review',
+        'review_message_user',
+        'review_message_system',
         'optional',
-        'position'
+        'position',
     ];
 
     protected $casts = [
         'rule_sub_type' => RuleSubType::class,
+        'output' => 'array',
     ];
 
     /**
@@ -46,13 +56,5 @@ class RuleStep extends Model
     public function competitors(): HasMany
     {
         return $this->hasMany(RunResponse::class, 'step_id');
-    }
-
-    /**
-     * @return BelongsTo
-     */
-    public function assistant(): BelongsTo
-    {
-        return $this->belongsTo(Assistant::class, 'assistant_id');
     }
 }

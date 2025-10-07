@@ -22,18 +22,6 @@ return new class extends Migration {
             $table->softDeletes();
             $table->timestamps();
         });
-
-        Schema::create('genie_strategy_reviews', function (Blueprint $table) {
-            $table->id();
-            $table->uuid('uuid')->unique();
-            $table->foreignId('strategy_id')->constrained('genie_strategies')->onDelete('cascade');
-            $table->foreignId('run_response_id')->nullable()->constrained('genie_run_responses')->nullOnDelete();
-            $table->json('original');
-            $table->json('edited')->nullable();
-            $table->boolean('status')->default(false);
-            $table->softDeletes();
-            $table->timestamps();
-        });
     }
 
     /**

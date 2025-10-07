@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use App\Enums\GenieSyncStatus;
 use App\Enums\RunResponseError;
 use App\Enums\RunResponseStatus;
+use App\Enums\RunStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -37,7 +37,7 @@ class RunResponse extends Model
         'error' => RunResponseError::class,
         'provider_status' => RunResponseStatus::class,
         'output' => 'array',
-        'status' => GenieSyncStatus::class,
+        'status' => RunStatus::class,
     ];
 
     /**
@@ -62,5 +62,13 @@ class RunResponse extends Model
     public function runCompetitor(): HasOne
     {
         return $this->HasOne(RunCompetitor::class, 'run_response_id');
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function runResponseReview(): HasOne
+    {
+        return $this->HasOne(RunResponseReview::class, 'run_response_id');
     }
 }

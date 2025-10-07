@@ -9,6 +9,9 @@ import X from "@/Icons/X.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import {find} from "lodash";
 import RunResponseHeader from "@/Components/DataDisplay/Genie/RunResponseHeader.vue";
+import DangerButton from "@/Components/Button/DangerButton.vue";
+import Trash from "@/Icons/Trash.vue";
+import {inject} from "vue";
 
 defineOptions({layout: AdminLayout});
 
@@ -43,33 +46,58 @@ const props = defineProps({
         type: Object,
         required: true
     },
-    runResponseStatusTypes: {
+    runResponseProviderStatus: {
         type: Object,
         required: true
     },
-    genieSyncStatusTypes: {
+    runResponseStatus: {
         type: Object,
         required: true
     },
+    isLast: {
+        type: Boolean,
+    }
 });
+
+const confirmation = inject('confirmation');
 
 const getRuleSubType = () => {
     return find(props.ruleSubTypes, ['value', props.ruleStep.rule_sub_type]).name;
 }
 
 const status = () => {
-    return find(props.genieSyncStatusTypes, ['value', Number(props.runResponse.status)]).name;
+    return find(props.runResponseStatus, ['value', Number(props.runResponse.status)]).name;
 }
 
 const providerStatus = () => {
-    return find(props.runResponseStatusTypes, ['value', Number(props.runResponse.provider_status)]).name;
+    return find(props.runResponseProviderStatus, ['value', Number(props.runResponse.provider_status)])?.name;
 }
 
 const backToList = () => {
     router.get(route(
-        'genie.admin.run_responses.index', {
-            run: props.runResponse.run_id,
+        'genie.admin.runs.run_responses.index', {
+            run: route().params.run,
         }));
+}
+
+const deleteResponse = () => {
+    confirmation()
+        .title($t("genie.delete_run_response"))
+        .description($t("genie.delete_run_response_confirm"))
+        .destructive()
+        .onConfirm((dialog) => {
+            dialog.isLoading(true);
+
+            router.delete(
+                route(
+                    'genie.admin.runs.run_responses.delete',
+                    {
+                        run: route().params.run,
+                        run_response: props.runResponse.id
+                    }
+                )
+            );
+        }).show();
 }
 
 </script>
@@ -176,6 +204,20 @@ const backToList = () => {
                             <X/>
                         </template>
                     </PrimaryButton>
+
+                    <div v-if="isLast">
+
+                        <DangerButton
+                            @click="deleteResponse"
+                            :hidden-text-on-small-screen=true
+                        >
+                            {{ $t("general.delete") }}
+                            <template #icon>
+                                <Trash/>
+                            </template>
+                        </DangerButton>
+
+                    </div>
 
                 </div>
             </div>

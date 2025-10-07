@@ -41,7 +41,7 @@ const props = defineProps({
         type: Object,
         required: true
     },
-    statusRun: {
+    runStatus: {
         type: Object,
         require: true
     },
@@ -88,7 +88,7 @@ watch(() => currentFilter.value.rule_type, throttle(() => {
 
 </script>
 <template>
-    <Head :title="$t('genie.rules')"/>
+    <Head :title="$t('genie.runs')"/>
 
     <div class="w-full mx-auto row-py">
 

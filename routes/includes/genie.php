@@ -92,11 +92,13 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
 
     Route::prefix('runs')->name('runs.')->group(function () {
         Route::get('/', [RunsController::class, 'index'])->name('index');
-    });
+        Route::put('{run}', [RunsController::class, 'resume'])->name('resume');
 
-    Route::prefix('run_responses')->name('run_responses.')->group(function () {
-        Route::get('{run}', [RunResponsesController::class, 'index'])->name('index');
-        Route::get('run/{run_response}', [RunResponsesController::class, 'view'])->name('view');
+        Route::prefix('{run}/run_responses')->name('run_responses.')->group(function () {
+            Route::get('/', [RunResponsesController::class, 'index'])->name('index');
+            Route::get('{run_response}', [RunResponsesController::class, 'view'])->name('view');
+            Route::delete('{run_response}', [RunResponsesController::class, 'destroy'])->name('delete');
+        });
     });
 
     Route::prefix('logs')->name('logs.')->group(function () {
