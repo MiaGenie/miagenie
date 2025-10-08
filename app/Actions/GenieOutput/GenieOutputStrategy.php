@@ -44,22 +44,22 @@ class GenieOutputStrategy extends GenieOutput implements GenieOutputContract
                     switch ($model->step->response_format) {
                         default:
                         case 'text':
-                            $content[$firstOutput] = $response['output_text'];
+                            $content[$firstOutput] = $response['output'][0]['content'][0]['text'];
                             break;
                         case 'json_schema':
-                            $responseOutput = json_decode($response['output_text'], true);
+                            $responseOutput = json_decode($response['output'][0]['content'][0]['text'], true);
                             $content[$firstOutput] = $responseOutput[$firstOutput];
                             break;
                     }
                     break;
                 case RuleSubType::BRIEFINGS_MULTIPLE:
-                    $responseOutput = json_decode($response['output_text'], true);
+                    $responseOutput = json_decode($response['output'][0]['content'][0]['text'], true);
                     foreach ($model->step->output as $output) {
                         $content[$output] = $responseOutput[$output];
                     }
                     break;
                 case RuleSubType::COMPETITORS:
-                    $content[$firstOutput][$model->runCompetitor->competitor_id] = $response['output_text'];
+                    $content[$firstOutput][$model->runCompetitor->competitor_id] = $response['output'][0]['content'][0]['text'];
                     break;
             }
             $strategy->content = $content;
