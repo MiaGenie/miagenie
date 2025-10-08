@@ -38,7 +38,11 @@ const fieldType = (field) => {
 
 const fieldContent = (field) => {
     if (typeof(field) === "object") {
-        return field.join("\n")
+        let string = '';
+        Object.keys(field).forEach(key => {
+            string += field[key] + "\n";
+        });
+        return string;
     }
     return field;
 }
@@ -54,14 +58,14 @@ const fieldContent = (field) => {
             </template>
 
             <template v-if="fieldType(field).name === 'INPUT' || fieldType(field).name === 'TEXTAREA'">
-                <span style="white-space: pre-line">
+                <span class="bg-gray-100" style="white-space: pre-line">
                     {{ fieldContent(record.content[field.code_name]) }}
                 </span>
             </template>
 
             <template v-if="fieldType(field).name === 'CHECKBOX'">
 
-                <span style="white-space: pre-line">
+                <span class="bg-gray-100" style="white-space: pre-line">
                     <template v-for="(value, key) in record.content[field.code_name]":key="key">
                       {{ key }}: {{ value }} {{ "\n" }}
                     </template>
