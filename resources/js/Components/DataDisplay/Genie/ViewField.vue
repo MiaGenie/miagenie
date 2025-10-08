@@ -1,19 +1,13 @@
 <script setup>
 import { useI18n } from "vue-i18n";
-import LabelSuffix from "@/Components/Form/LabelSuffix.vue";
-import Error from "@/Components/Form/Error.vue";
-import Textarea from "@/Components/Form/Textarea.vue";
 import Select from "@/Components/Form/Select.vue";
 import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import Radio from "@/Components/Form/Radio.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
-import Checkbox from "@/Components/Form/Checkbox.vue";
 import Flex from "@/Components/Layout/Flex.vue";
-import Label from "@/Components/Form/Label.vue";
-import Input from "@/Components/Form/Input.vue";
 import {inject, provide} from "vue";
-import {find} from "lodash";
+import {find, pick} from "lodash";
 
 const {t: $t} = useI18n();
 
@@ -36,12 +30,20 @@ const fieldType = (field) => {
     return find(fieldTypes, ['value', Number(field.field_type)]);
 }
 
-const fieldContent = (field) => {
+const fieldContent = (field, level = 0) => {
     if (typeof(field) === "object") {
         let string = '';
-        Object.keys(field).forEach(key => {
-            if (typeof(field[key]) === "object") {
-                string += fieldContent(field[key]) + "\n";
+
+        const ordered = pick(field, Object.keys(field).sort());
+
+        Object.keys(ordered).forEach(key => {
+            if (typeof(field[key]) === "string") {
+                if (level > 0){
+                    string += " ".repeat(level * 2);
+                }
+                string += field[key] + "\n";
+            } else if (typeof(field[key]) === "object") {
+                string += fieldContent(field[key], level + 1) + "\n";
             } else {
                 string += field[key] + "\n";
             }
@@ -62,14 +64,14 @@ const fieldContent = (field) => {
             </template>
 
             <template v-if="fieldType(field).name === 'INPUT' || fieldType(field).name === 'TEXTAREA'">
-                <span class="bg-gray-100" style="white-space: pre-line">
+                <span class="bg-gray-100" style="white-space: pre-wrap">
                     {{ fieldContent(record.content[field.code_name]) }}
                 </span>
             </template>
 
             <template v-if="fieldType(field).name === 'CHECKBOX'">
 
-                <span class="bg-gray-100" style="white-space: pre-line">
+                <span class="bg-gray-100" style="white-space: pre-wrap">
                     <template v-for="(value, key) in record.content[field.code_name]":key="key">
                       {{ key }}: {{ value }} {{ "\n" }}
                     </template>
