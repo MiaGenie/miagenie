@@ -40,7 +40,11 @@ const fieldContent = (field) => {
     if (typeof(field) === "object") {
         let string = '';
         Object.keys(field).forEach(key => {
-            string += field[key] + "\n";
+            if (typeof(field[key]) === "object") {
+                string += fieldContent(field[key]) + "\n";
+            } else {
+                string += field[key] + "\n";
+            }
         });
         return string;
     }
