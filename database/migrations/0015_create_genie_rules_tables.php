@@ -43,8 +43,8 @@ return new class extends Migration
             $table->text('message');
             $table->string('output');
             $table->boolean('requires_review');
-            $table->text('review_message_user');
-            $table->text('review_message_system');
+            $table->text('review_message_user')->nullable();
+            $table->text('review_message_system')->nullable();
             $table->boolean('optional');
             $table->integer('position');
             $table->timestamps();
