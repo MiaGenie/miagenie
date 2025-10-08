@@ -36,7 +36,7 @@ class RunResponseJob extends GenieJob implements ShouldQueue
     /**
      * @var int
      */
-    public int $timeout = 30;
+    public int $timeout = 60;
 
     /**
      * @var Rule
@@ -78,7 +78,7 @@ class RunResponseJob extends GenieJob implements ShouldQueue
         $this->logRun(GenieType::RUN_RESPONSE, $this->action, $data);
 
         if ($data->getError()) {
-            $this->release(30);
+            $this->release(5);
             return;
         }
 
