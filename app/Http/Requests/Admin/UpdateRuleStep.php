@@ -21,11 +21,11 @@ class UpdateRuleStep extends FormRequest
             'instructions' => ['required'],
             'ai_model' => ['required'],
             'response_format' => ['required'],
-            'json_schema' => [\Illuminate\Validation\Rule::requiredIf($this->input('response_format') === 'json_schema'), 'json'],
+            'json_schema' => [ValidationRule::when($this->input('response_format') === 'json_schema', ['required', 'json'])],
             'message' => ['required', 'string'],
             'output' => ['required'],
             'requires_review' => ['required', 'boolean'],
-            'review_message_user' => [\Illuminate\Validation\Rule::requiredIf($this->input('requires_review'))],
+            'review_message_user' => [ValidationRule::requiredIf($this->input('requires_review'))],
             'optional' => ['required', 'boolean'],
         ];
     }
