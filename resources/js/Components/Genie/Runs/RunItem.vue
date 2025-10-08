@@ -35,11 +35,11 @@ const getRuleType = () => {
     <TableRow :hoverable="true">
 
         <TableCell>
-            {{ workspaces[item.workspace_id] }}
+            {{ workspaces[item.workspace_id - 1] }}
         </TableCell>
 
         <TableCell>
-            {{ find(versions, ['id', find(rules, ['id', props.item.rule_id]).version_id]).name }}
+            {{ find(versions, ['id', find(rules, ['id', props.item.rule_id] ).version_id]).name }}
         </TableCell>
 
         <TableCell >

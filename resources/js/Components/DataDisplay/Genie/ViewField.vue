@@ -36,6 +36,13 @@ const fieldType = (field) => {
     return find(fieldTypes, ['value', Number(field.field_type)]);
 }
 
+const fieldContent = (field) => {
+    if (typeof(field) === "object") {
+        return field.join("\n")
+    }
+    return field;
+}
+
 </script>
 <template>
     <template slot="title">{{ $t("general.details") }}</template>
@@ -48,7 +55,7 @@ const fieldType = (field) => {
 
             <template v-if="fieldType(field).name === 'INPUT' || fieldType(field).name === 'TEXTAREA'">
                 <span style="white-space: pre-line">
-                    {{ record.content[field.code_name] }}
+                    {{ fieldContent(record.content[field.code_name]) }}
                 </span>
             </template>
 
