@@ -89,6 +89,7 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     review_message_user: isEdit.value ? props.record.review_message_user : '',
     review_message_system: isEdit.value ? props.record.review_message_system : '',
     optional: isEdit.value ? props.record.optional : 0,
+    depends_on: isEdit.value ? props.record.depends_on : '',
 });
 
 const filteredModels = ref(props.models);
@@ -236,6 +237,30 @@ const deleteStep = () => {
 
                         <template #footer>
                             <Error :message="form.errors.rule_sub_type"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup v-if="ruleSubType['name'] === 'CHANNELS'" class="form-field mt-lg">
+                        <template #title>
+                            <label for="depends_on">{{ $t("genie.step_depends_on") }}</label>
+                            <LabelSuffix :danger="true">*</LabelSuffix>
+                        </template>
+
+                        <Select
+                            v-model="form.depends_on"
+                            :error="form.errors.depends_on !== undefined"
+                            id="depends_on"
+                            required
+                        >
+                            <template v-for="(field) in outputFields">
+                                <option v-if="field.field_type == 4" :value="field.id">
+                                    {{field.code_name }} - {{ field.name}}
+                                </option>
+                            </template>
+                        </Select>
+
+                        <template #footer>
+                            <Error :message="form.errors.output"/>
                         </template>
                     </VerticalGroup>
 

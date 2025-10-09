@@ -14,6 +14,8 @@ enum RuleSubType: int
     case BRIEFINGS = 12;
     case BRIEFINGS_MULTIPLE = 13;
 
+    case CHANNELS = 14;
+
     /**
      * @return string
      */
@@ -23,6 +25,7 @@ enum RuleSubType: int
             self::COMPETITORS => 'competitors',
             self::BRIEFINGS => 'briefings',
             self::BRIEFINGS_MULTIPLE => 'briefings_multiple',
+            self::CHANNELS => 'channels'
         };
     }
 }

@@ -65,6 +65,7 @@ return [
     'step_review_message_system' => 'System Review Message',
     'step_optional' => 'Is Optional',
     'step_output' => 'Output Field',
+    'step_depends_on' => 'Depends on Field',
 
 
     'assistants' => 'Assistants',

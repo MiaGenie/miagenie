@@ -38,6 +38,7 @@ class RuleStepResource extends JsonResource
             'review_message_user' => $this->review_message_user,
             'review_message_system' => $this->review_message_system,
             'optional' => $this->optional,
+            'depends_on' => $this->depends_on,
             'position' => $this->position,
         ];
 
