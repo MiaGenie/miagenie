@@ -6,6 +6,7 @@ use App\Enums\RuleSubType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 
 class RuleStep extends Model
@@ -35,6 +36,7 @@ class RuleStep extends Model
         'review_message_system',
         'optional',
         'position',
+        'depends_on'
     ];
 
     protected $casts = [
@@ -56,5 +58,13 @@ class RuleStep extends Model
     public function competitors(): HasMany
     {
         return $this->hasMany(RunResponse::class, 'step_id');
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function dependsOn(): HasOne
+    {
+        return $this->hasOne(VersionField::class, 'id', 'depends_on');
     }
 }
