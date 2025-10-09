@@ -18,11 +18,6 @@ class VersionFieldOption extends Model
     /**
      * @var string[]
      */
-    protected $hidden = ['id', 'field_id'];
-
-    /**
-     * @var string[]
-     */
     protected $fillable = [
         'uuid',
         'field_id',

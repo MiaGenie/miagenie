@@ -27,7 +27,8 @@ class UpdateRuleStep extends FormRequest
             'requires_review' => ['required', 'boolean'],
             'review_message_user' => [ValidationRule::requiredIf($this->input('requires_review'))],
             'optional' => ['required', 'boolean'],
-            'depends_on' => [ValidationRule::requiredIf($this->input('rule_sub_type') === RuleSubType::CHANNELS)],
+            'depends_on_field' => [ValidationRule::requiredIf($this->input('rule_sub_type') === RuleSubType::CHANNELS)],
+            'depends_on_option' => [ValidationRule::requiredIf($this->input('rule_sub_type') === RuleSubType::CHANNELS)],
         ];
     }
 
@@ -55,7 +56,8 @@ class UpdateRuleStep extends FormRequest
             'review_message_user' => $this->input('review_message_user'),
             'review_message_system' => $this->input('review_message_system'),
             'optional' => $this->input('optional'),
-            'depends_on' => $this->input('depends_on')
+            'depends_on_field' => $this->input('depends_on_field'),
+            'depends_on_option' => $this->input('depends_on_option'),
         ]);
     }
 

@@ -89,7 +89,8 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     review_message_user: isEdit.value ? props.record.review_message_user : '',
     review_message_system: isEdit.value ? props.record.review_message_system : '',
     optional: isEdit.value ? props.record.optional : 0,
-    depends_on: isEdit.value ? props.record.depends_on : '',
+    depends_on_field: isEdit.value ? props.record.depends_on_field : '',
+    depends_on_option: isEdit.value ? props.record.depends_on_option : '',
 });
 
 const filteredModels = ref(props.models);
@@ -125,6 +126,9 @@ watch( () => form.rule_sub_type, () => {
     checkMultiple()
 })
 
+const dependsOnOptions = () => {
+    return find(props.outputFields, ['id', parseInt(form.depends_on_field)]) ?? {}
+}
 
 const store = () => {
     form.post(route('genie.admin.versions.rules.steps.store', {
@@ -242,14 +246,14 @@ const deleteStep = () => {
 
                     <VerticalGroup v-if="ruleSubType['name'] === 'CHANNELS'" class="form-field mt-lg">
                         <template #title>
-                            <label for="depends_on">{{ $t("genie.step_depends_on") }}</label>
+                            <label for="depends_on_field">{{ $t("genie.step_depends_on_field") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
                         </template>
 
                         <Select
-                            v-model="form.depends_on"
-                            :error="form.errors.depends_on !== undefined"
-                            id="depends_on"
+                            v-model="form.depends_on_field"
+                            :error="form.errors.depends_on_field !== undefined"
+                            id="depends_on_field"
                             required
                         >
                             <template v-for="(field) in outputFields">
@@ -260,7 +264,32 @@ const deleteStep = () => {
                         </Select>
 
                         <template #footer>
-                            <Error :message="form.errors.output"/>
+                            <Error :message="form.errors.depends_on_field"/>
+                        </template>
+                    </VerticalGroup>
+
+
+                    <VerticalGroup v-if="ruleSubType['name'] === 'CHANNELS' && form.depends_on_field !== ''" class="form-field mt-lg">
+                        <template #title>
+                            <label for="depends_on_option">{{ $t("genie.step_depends_on_option") }}</label>
+                            <LabelSuffix :danger="true">*</LabelSuffix>
+                        </template>
+
+                        <Select
+                            v-model="form.depends_on_option"
+                            :error="form.errors.depends_on_option !== undefined"
+                            id="depends_on_option"
+                            required
+                        >
+                            <template v-for="(option) in dependsOnOptions().options">
+                                <option :value="option.id">
+                                    {{option.code_name }} - {{ option.name}}
+                                </option>
+                            </template>
+                        </Select>
+
+                        <template #footer>
+                            <Error :message="form.errors.depends_on_option"/>
                         </template>
                     </VerticalGroup>
 
@@ -302,7 +331,7 @@ const deleteStep = () => {
 
                     <VerticalGroup class="form-field mt-lg">
                         <template #title>
-                            <label for="instructions">{{ $t("genie.assistant_instructions") }}</label>
+                            <label for="instructions">{{ $t("genie.step_instructions") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
                         </template>
 
@@ -320,7 +349,7 @@ const deleteStep = () => {
 
                     <VerticalGroup class="form-field mt-lg">
                         <template #title>
-                            <label for="ai_model">{{ $t("genie.assistant_model") }}</label>
+                            <label for="ai_model">{{ $t("genie.step_model") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
                         </template>
 
@@ -345,7 +374,7 @@ const deleteStep = () => {
 
                     <VerticalGroup v-if="modelHas['file_search'] ?? true" class="form-field mt-lg">
                         <template #title>
-                            <label for="vector_id">{{ $t("genie.assistant_vector_id") }}</label>
+                            <label for="vector_id">{{ $t("genie.step_vector_id") }}</label>
                         </template>
 
                         <Select
@@ -367,7 +396,7 @@ const deleteStep = () => {
 
                     <VerticalGroup v-if="modelHas['temperature_top_p'] ?? true"  class="form-field mt-lg">
                         <template #title>
-                            <label for="temperature">{{ $t("genie.assistant_temperature") }}
+                            <label for="temperature">{{ $t("genie.step_temperature") }}
                             </label>
                         </template>
 
@@ -391,7 +420,7 @@ const deleteStep = () => {
 
                     <VerticalGroup v-if="modelHas['temperature_top_p'] ?? true" class="form-field mt-lg">
                         <template #title>
-                            <label for="top_p">{{ $t("genie.assistant_top_p") }}
+                            <label for="top_p">{{ $t("genie.step_top_p") }}
                             </label>
                         </template>
 
@@ -415,7 +444,7 @@ const deleteStep = () => {
 
                     <VerticalGroup v-if="modelHas['reasoning_effort'] ?? true" class="form-field mt-lg">
                         <template #title>
-                            <label for="reasoning_effort">{{ $t("genie.assistant_reasoning_effort") }}</label>
+                            <label for="reasoning_effort">{{ $t("genie.step_reasoning_effort") }}</label>
                         </template>
 
                         <Select
@@ -517,7 +546,7 @@ const deleteStep = () => {
 
                     <VerticalGroup class="form-field mt-lg">
                         <template #title>
-                            <label for="response_format">{{ $t("genie.assistant_response_format") }}</label>
+                            <label for="response_format">{{ $t("genie.step_response_format") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
                         </template>
 
@@ -543,7 +572,7 @@ const deleteStep = () => {
                         class="form-field mt-lg"
                     >
                         <template #title>
-                            <label for="json_schema">{{ $t("genie.assistant_json_schema") }}</label>
+                            <label for="json_schema">{{ $t("genie.step_json_schema") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
                         </template>
 
