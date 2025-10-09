@@ -36,7 +36,8 @@ class RuleStep extends Model
         'review_message_system',
         'optional',
         'position',
-        'depends_on'
+        'depends_on_field',
+        'depends_on_option'
     ];
 
     protected $casts = [
@@ -63,8 +64,13 @@ class RuleStep extends Model
     /**
      * @return HasOne
      */
-    public function dependsOn(): HasOne
+    public function dependsOnField(): HasOne
     {
-        return $this->hasOne(VersionField::class, 'id', 'depends_on');
+        return $this->hasOne(VersionField::class, 'id', 'depends_on_field');
+    }
+
+    public function dependsOnOption(): HasOne
+    {
+        return $this->hasOne(VersionFieldOption::class, 'id', 'depends_on_option');
     }
 }

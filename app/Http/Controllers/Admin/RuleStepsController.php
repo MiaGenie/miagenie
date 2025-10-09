@@ -75,7 +75,7 @@ class RuleStepsController extends Controller
                 'version_id' => $rule->version_id,
                 'group_type' => VersionGroupType::STRATEGIES,
             ]
-        )->get(['id', 'name', 'code_name', 'field_type']);
+        )->with('options')->get();
 
         return Inertia::render('Genie/Admin/Versions/Rules/Steps/CreateEdit', [
             'mode' => 'create',
@@ -128,7 +128,7 @@ class RuleStepsController extends Controller
                 'version_id' => $rule->version_id,
                 'group_type' => VersionGroupType::STRATEGIES,
             ]
-        )->get(['id', 'name', 'code_name', 'field_type']);
+        )->with('options')->get();
 
         return Inertia::render('Genie/Admin/Versions/Rules/Steps/CreateEdit', [
             'mode' => 'edit',
