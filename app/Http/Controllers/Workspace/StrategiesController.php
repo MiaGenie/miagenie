@@ -68,14 +68,15 @@ class StrategiesController extends Controller
         $strategy = Strategy::firstOrFailByUuid($request->strategy);
         $step = $strategy->run->runResponses->last()->step;
         $fieldName = $step->output[0];
-        $field = VersionField::where('code_name', $fieldName)->firstOrFail();
+        $field = VersionField::where('code_name', $fieldName)->with('options')->firstOrFail();
 
-        $record = $strategy->content[$fieldName];
+        $record[$fieldName] = $strategy->content[$fieldName];
 
         return Inertia::render(
             'Genie/Workspace/Strategies/Review',
             [
                 'field' => $field,
+                'fieldName' => $fieldName,
                 'fieldTypes' => FormFieldType::withFieldOptions(),
                 'step' => $step,
                 'record' => $record

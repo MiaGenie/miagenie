@@ -41,6 +41,7 @@ class GenieOutputStrategy extends GenieOutput implements GenieOutputContract
             switch ($model->step->rule_sub_type) {
                 default:
                 case RuleSubType::BRIEFINGS:
+                case RuleSubType::CHANNELS:
                     switch ($model->step->response_format) {
                         default:
                         case 'text':

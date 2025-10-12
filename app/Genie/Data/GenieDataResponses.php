@@ -66,7 +66,6 @@ class GenieDataResponses extends GenieData implements GenieDataContract
             'max_output_tokens' => null,
             'model' => $step->ai_model,
             'previous_response_id' => $this->getPreviousResponseId(),
-//            'prompt' => '',
             'reasoning' => $step->reasoning_effort,
             'store' => true,
             'temperature' => $step->temperature ? (float)$step->temperature : null,

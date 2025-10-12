@@ -4,12 +4,10 @@ namespace App\Http\Requests\Workspace\Strategy;
 
 use App\Concerns\IngestVersionsContent;
 use App\Enums\GenieSyncAction;
-use App\Enums\GenieSyncStatus;
 use App\Enums\RunStatus;
 use App\Jobs\RunJob;
 use App\Models\RunResponseReview;
 use App\Models\Strategy;
-use App\Models\Version;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Collection;
 
@@ -46,7 +44,7 @@ class ReviewUpdateStrategy extends FormRequest
 
         $original = array_map('trim', $strategy->content[$field]);
         $reviewed = array_map('trim', $this->input($field));
-        $diff = array_diff($original, $reviewed);
+        $diff = array_diff_assoc($original, $reviewed);
 
         $run = $strategy->run;
         $response = $run->runResponses->last();

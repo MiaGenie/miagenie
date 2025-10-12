@@ -14,12 +14,19 @@ import Label from "@/Components/Form/Label.vue";
 import Input from "@/Components/Form/Input.vue";
 import { inject } from "vue";
 import {find} from "lodash";
+import XIcon from "@/Icons/X.vue";
+import CheckIcon from "@/Icons/Check.vue";
+import SectionTitle from "@/Components/DataDisplay/SectionTitle.vue";
 
 const {t: $t} = useI18n();
 
 const props = defineProps({
     index: {
         type: Number,
+        required: true,
+    },
+    record: {
+        type: Object,
         required: true,
     },
     field: {
@@ -30,7 +37,6 @@ const props = defineProps({
         type: Object,
         required: true,
     },
-
 });
 
 const form = inject('form');
@@ -41,51 +47,83 @@ const fieldType = (field) => {
 
 </script>
 <template>
-    <template slot="title">{{ $t("general.details") }}</template>
+
+        <template
+            class="form-field mt-lg"
+            v-if="fieldType(field).name === 'INPUT'"
+            v-for="(value, key, index) in props.record[field.code_name]" :key="key"
+        >
+            <VerticalGroup class="form-field mt-lg">
+                <template #title>
+                    <label :for="key">{{ field.name + ' ' + (index + 1) }}</label>
+                </template>
+
+                <template #default>
+
+                    <Input v-model="form[field.code_name][key]"
+                           type="text"
+                           :id="key"
+                           :error="form.errors[field.code_name] !== undefined"
+                           :required="field.required"
+                    />
+
+                </template>
+            </VerticalGroup>
+        </template>
+
+        <template
+            class="form-field mt-lg"
+            v-if="fieldType(field).name === 'TEXTAREA'"
+            v-for="(value, key, index) in props.record[field.code_name]" :key="key"
+        >
+            <VerticalGroup class="form-field mt-lg">
+                <template #title>
+                    <label :for="key">{{ field.name + ' ' + (index + 1) }}</label>
+                </template>
+
+                <template #default>
+
+                    <Textarea v-model="form[field.code_name][key]"
+                              :error="form.errors[field.code_name] !== undefined"
+                              :id="key"
+                              class="w-full placeholder:italic placeholder:text-sm"
+                              :rows="field.size ?? 4"
+                              :required="field.required"
+                    />
+
+                </template>
+
+            </VerticalGroup>
+        </template>
+
+        <template
+            class="form-field mt-lg"
+            v-if="fieldType(field).name === 'CHECKBOX'"
+        >
+            <SectionTitle>
+                {{ field.name }}
+            </SectionTitle>
+
+            <VerticalGroup class="form-field mt-lg">
+
+                <template #default>
+
+                    <TableCell class="">
+                        <template v-for="(option, key) in field.options" :key="option.code_name">
+                            <Flex class="py-sm">
+                                <Checkbox v-model="form[field.code_name][option.code_name]" :checked="record[field.code_name][option.code_name]"/>
+                                {{ option.name }}
+                            </Flex>
+                        </template>
+                    </TableCell>
+
+                </template>
+
+            </VerticalGroup>
+        </template>
 
 
         <VerticalGroup class="form-field mt-lg">
-            <template #title>
-                <label :for="field.code_name">{{ '#' + (index+1) }}</label>
-            </template>
-
-            <template v-if="fieldType(field).name === 'INPUT'">
-
-                <Input v-model="form[field.code_name][index]"
-                       type="text"
-                       :id="field.code_name"
-                       @keydown.enter.prevent=""
-                       :placeholder="field.description"
-                       :error="form.errors[field.code_name] !== undefined"
-                       :required="field.required"
-                />
-
-            </template>
-
-            <template v-if="fieldType(field).name === 'TEXTAREA'">
-
-                <Textarea v-model="form[field.code_name][index]"
-                          :placeholder="field.description"
-                          :error="form.errors[field.code_name] !== undefined"
-                          :id="field.code_name"
-                          class="w-full placeholder:italic placeholder:text-sm"
-                          :rows="field.size ?? 8"
-                />
-
-            </template>
-
-            <template v-if="fieldType(field).name === 'CHECKBOX'">
-
-                <TableCell class="">
-                    <template v-for="(option, index_option) in field.options[0]" :key="option.code_name">
-                        <Flex class="py-sm">
-                            <Checkbox v-model:checked="form[field.code_name][index]" :value="option.code_name"/>
-                            {{ option.name }}
-                        </Flex>
-                    </template>
-                </TableCell>
-
-            </template>
 
             <template v-if="fieldType(field).name === 'DROP_DOWN'">
 

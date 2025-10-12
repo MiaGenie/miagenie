@@ -9,6 +9,9 @@ use App\Models\RuleStep;
 use App\Models\RunCompetitor;
 use App\Models\Run;
 use App\Models\RunResponse;
+use App\Models\Strategy;
+use App\Models\VersionField;
+use App\Models\VersionFieldOption;
 use Illuminate\Support\Collection;
 use Inovector\Mixpost\Facades\WorkspaceManager;
 
@@ -39,17 +42,24 @@ class GenieRunData
     private ?RuleStep $nextStep;
 
     /**
+     * @var array
+     */
+    private array $channelFields;
+
+    /**
      * @param Run $model
      */
     public function __construct(
         Run $model,
         GenieSyncAction $action,
+        array $channelFields = []
     ) {
         $this->run = $model;
         $this->action = $action;
         WorkspaceManager::setCurrent($this->run->workspace);
         $this->lastStep = $this->lastStep();
         $this->nextStep = $this->nextStep($this->lastStep);
+        $this->channelFields = $channelFields;
     }
 
     /**
@@ -101,7 +111,7 @@ class GenieRunData
             $this->nextStep = $this->lastStep();
         } else {
             $this->nextStep = match ($lastStep?->rule_sub_type->name) {
-                null, 'BRIEFINGS', 'BRIEFINGS_MULTIPLE' => $this->getNextStep(),
+                null, 'BRIEFINGS', 'BRIEFINGS_MULTIPLE', 'CHANNELS' => $this->getNextStep(),
                 'COMPETITORS' => $this->getNextStepCompetitor()
             };
         }
@@ -181,6 +191,13 @@ class GenieRunData
         if ($nextStep?->rule_sub_type->name === 'COMPETITORS' && $this->getCompetitorIds()->count() === 0) {
             $lastPosition++;
             return $this->getNextStep($lastPosition);
+        } elseif ($nextStep?->rule_sub_type->name === 'CHANNELS') {
+            if ($this->isValidChannelStep($nextStep)) {
+                return $nextStep;
+            } else {
+                $lastPosition++;
+                return $this->getNextStep($lastPosition);
+            }
         } else {
             return $nextStep;
         }
@@ -206,5 +223,19 @@ class GenieRunData
     private function getLastPosition(): int
     {
         return $this->lastStep?->position ?? 0;
+    }
+
+    /**
+     * @param RuleStep|null $nextStep
+     * @return bool
+     */
+    private function isValidChannelStep(?RuleStep $nextStep): bool
+    {
+        $fieldName = VersionField::findOrFail($nextStep->depends_on_field)->code_name;
+        $fieldOption = VersionFieldOption::findOrFail($nextStep->depends_on_option)->code_name;
+        $fieldOptions = $this->run->strategy->content[$fieldName];
+
+        return $fieldOptions[$fieldOption] ?? false;
+
     }
 }

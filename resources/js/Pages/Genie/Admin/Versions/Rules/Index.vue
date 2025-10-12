@@ -18,6 +18,8 @@ import Panel from "@/Components/Surface/Panel.vue";
 import NoResult from "@/Components/Util/NoResult.vue";
 import Plus from "@/Icons/Plus.vue";
 import VersionHeader from "@/Components/DataDisplay/Genie/VersionHeader.vue";
+import ChevronLeft from "@/Icons/ChevronLeft.vue";
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 
 defineOptions({layout: AdminLayout});
 
@@ -92,6 +94,10 @@ const createRule = () => {
         {rule_type: Number(currentFilter.value.rule_type)}
     );
 }
+
+const backToVersions = () => {
+    router.get(route('genie.admin.versions.index'));
+}
 </script>
 <template>
     <Head :title="$t('genie.rules')"/>
@@ -103,7 +109,18 @@ const createRule = () => {
         <VersionHeader />
 
 
-        <div class="w-full row-px row-mb mt-lg">
+        <div class="w-full row-px row-mb mt-lg flex items-center grow gap-6">
+            <SecondaryButton
+                @click="backToVersions"
+                :hiddenTextOnSmallScreen="true"
+                size="sm"
+            >
+                <template #icon>
+                    <ChevronLeft/>
+                </template>
+                {{ $t("genie.back") }}
+            </SecondaryButton>
+
             <PrimaryButton
                 @click="createRule"
                 :hiddenTextOnSmallScreen="true"
