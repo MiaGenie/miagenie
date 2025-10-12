@@ -16,13 +16,17 @@ import Panel from "@/Components/Surface/Panel.vue";
 import PencilSquare from "@/Icons/PencilSquare.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import X from "@/Icons/X.vue";
-import Check from "@/Icons/Check.vue";
+import CheckIcon from "@/Icons/Check.vue";
 
 const {t: $t} = useI18n();
 
 const props = defineProps({
     field: {
         type: Object,
+        required: true,
+    },
+    fieldName: {
+        type: String,
         required: true,
     },
     fieldTypes: {
@@ -47,8 +51,8 @@ const editing = ref(false);
 const {notify} = useNotifications();
 const {onError} = useRouter();
 
-const form = useForm({'target_audiences': cloneDeep(props.record)
-});
+const fieldName = props.field.code_name;
+const form = useForm(cloneDeep(props.record));
 
 const update = () => {
     form.transform((data) => ({
@@ -111,21 +115,20 @@ provide(/* key */ 'form', /* value */ form);
                         {{ step.review_message_user }}
                     </SectionTitle>
 
-                    <template v-for="(content, index) in props.record" :key="index">
                         <EditReviewField
                             v-if="editing"
                             :fieldTypes="props.fieldTypes"
                             :field="props.field"
-                            :index="index"
+                            :record="props.record"
                         />
 
                         <ViewReviewField
                             v-if="!editing"
                             :fieldTypes="props.fieldTypes"
                             :field="props.field"
-                            :index="index"
+                            :record="props.record"
                         />
-                    </template>
+
                 </Panel>
 
                 <Flex
@@ -149,7 +152,7 @@ provide(/* key */ 'form', /* value */ form);
                                 {{ $t("general.save") }}
                             </template>
                             <template #icon v-if="!editing">
-                                <Check/>
+                                <CheckIcon/>
                             </template>
                             <template #icon v-if="editing">
                                 <Save/>

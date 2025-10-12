@@ -42,21 +42,36 @@ const getRoute = (name) => {
                 :href="getRoute('fields')"
                 v-tooltip="$t('genie.fields')"
             >
-                <QueueList/>
+                <template #icon>
+                    <QueueList/>
+                </template>
+                <template #default>
+                    {{ $t('genie.fields') }}
+                </template>
             </PureButtonLink>
 
             <PureButtonLink
                 :href="getRoute('rules')"
                 v-tooltip="$t('genie.rules')"
             >
-                <RulesIcon/>
+                <template #icon>
+                    <RulesIcon/>
+                </template>
+                <template #default>
+                    {{ $t('genie.rules') }}
+                </template>
             </PureButtonLink>
 
             <PureButtonLink
                 :href="getRoute('edit')"
                 v-tooltip="$t('general.edit')"
             >
-                <PencilSquare/>
+                <template #icon>
+                    <PencilSquare/>
+                </template>
+                <template #default>
+                    {{ $t('general.edit') }}
+                </template>
             </PureButtonLink>
         </div>
     </div>

@@ -60,7 +60,7 @@ class RunJob extends GenieJob implements ShouldQueue
     /**
      * @param Run $run
      * @param GenieSyncAction $action
- */
+    */
     public function __construct(Run $run, GenieSyncAction $action)
     {
         parent::__construct($run, $action);
@@ -101,10 +101,8 @@ class RunJob extends GenieJob implements ShouldQueue
             $genieState->handle($data, 'run');
             RunResponseJob::dispatch($runResponse, GenieSyncAction::CREATE);
         } else {
-
             $genieState->handle($data, 'end');
         }
-
     }
 
     /**
@@ -113,10 +111,10 @@ class RunJob extends GenieJob implements ShouldQueue
      */
     public function failed(?Throwable $exception): void
     {
-        Log::error($exception->getMessage());
         $data = $this->getGenieRunData();
         $genieState = $this->getGenieStateRuns();
         $genieState->handle($data, 'fail');
+        Log::error($exception->getMessage());
     }
 
     /**

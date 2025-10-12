@@ -71,11 +71,13 @@ class RunResponseJob extends GenieJob implements ShouldQueue
     public function handle(): void
     {
         $data = $this->getGenieData();
+
+        $genieState = $this->getGenieState($data);
+        $genieState->handle($data, 'run');
+
         $action = $this->getGenieAction();
 
         $data = $action->handle($data);
-
-        $this->logRun(GenieType::RUN_RESPONSE, $this->action, $data);
 
         if ($data->getError()) {
             $this->release(5);
@@ -85,14 +87,13 @@ class RunResponseJob extends GenieJob implements ShouldQueue
         $genieOutput = $this->getGenieOutput($data);
         $genieOutput->handle($data);
 
-        $genieState = $this->getGenieState($data);
         $genieState->handle($data, 'end');
+        $this->logRun(GenieType::RUN_RESPONSE, $this->action, $data);
 
         $nextAction = $data->nextAction();
         if ($nextAction) {
             RunJob::dispatch($this->runResponse->run, $nextAction);
         }
-
     }
 
     /**
@@ -102,10 +103,9 @@ class RunResponseJob extends GenieJob implements ShouldQueue
      */
     public function failed(?Throwable $exception): void
     {
-        Log::error($exception->getMessage());
         $data = $this->getGenieData();
         $genieState = $this->getGenieState($data);
         $genieState->handle($data, 'fail');
-
+        Log::error($exception->getMessage());
     }
 }

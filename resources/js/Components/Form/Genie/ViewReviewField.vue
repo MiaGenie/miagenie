@@ -14,12 +14,20 @@ import Label from "@/Components/Form/Label.vue";
 import Input from "@/Components/Form/Input.vue";
 import { inject } from "vue";
 import {find} from "lodash";
+import SectionTitle from "@/Components/DataDisplay/SectionTitle.vue";
+import CheckIcon from "@/Icons/Check.vue";
+import XIcon from "@/Icons/X.vue";
+
 
 const {t: $t} = useI18n();
 
 const props = defineProps({
     index: {
         type: Number,
+        required: true,
+    },
+    record: {
+        type: Object,
         required: true,
     },
     field: {
@@ -30,7 +38,6 @@ const props = defineProps({
         type: Object,
         required: true,
     },
-
 });
 
 const form = inject('form');
@@ -41,32 +48,53 @@ const fieldType = (field) => {
 
 </script>
 <template>
-    <template slot="title">{{ $t("general.details") }}</template>
 
+
+        <template
+            class="form-field mt-lg"
+            v-if="fieldType(field).name === 'INPUT' || fieldType(field).name === 'TEXTAREA'"
+            v-for="(value, key, index) in props.record[field.code_name]" :key="key"
+        >
+            <VerticalGroup class="form-field mt-lg">
+
+                <template #title>
+                    {{ field.name + ' ' + (index + 1) }}
+                </template>
+
+                <template #default>
+                    <span style="white-space: pre-line">
+                        {{ value }}
+                    </span>
+                </template>
+
+            </VerticalGroup>
+        </template>
+
+        <template
+            class="form-field mt-lg"
+            v-if="fieldType(field).name === 'CHECKBOX'"
+        >
+            <SectionTitle>
+                {{ field.name }}
+            </SectionTitle>
+
+            <template v-for="(option, key) in field.options" :key="key">
+
+                <VerticalGroup class="form-field mt-sm">
+                    <template #default>
+                        <CheckIcon class="text-green-900" v-if="record[field.code_name][option.code_name]" />
+                        <XIcon class="text-red-700" v-if="!record[field.code_name][option.code_name]" />
+                        <span :class="record[field.code_name][option.code_name] ? 'text-green-900, font-semibold' : 'text-red-700'">
+                            {{ option.name }}
+                        </span>
+                    </template>
+                </VerticalGroup>
+
+            </template>
+
+        </template>
 
         <VerticalGroup class="form-field mt-lg">
-            <template #title>
-                <label :for="field.code_name">{{ '#' + (index+1) }}</label>
-            </template>
-
-            <template v-if="fieldType(field).name === 'INPUT' || fieldType(field).name === 'TEXTAREA'">
-                <span style="white-space: pre-line">
-                    {{ form[field.code_name][index] }}
-                </span>
-            </template>
-
-            <template v-if="fieldType(field).name === 'CHECKBOX'">
-
-                <TableCell class="">
-                    <template v-for="(option, index_option) in field.options[0]" :key="option.code_name">
-                        <Flex class="py-sm">
-                            <Checkbox v-model:checked="form[field.code_name][index]" :value="option.code_name"/>
-                            {{ option.name }}
-                        </Flex>
-                    </template>
-                </TableCell>
-
-            </template>
 
             <template v-if="fieldType(field).name === 'DROP_DOWN'">
 
