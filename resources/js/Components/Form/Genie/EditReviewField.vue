@@ -1,6 +1,6 @@
 <script setup>
-import { useI18n } from "vue-i18n";
-import LabelSuffix from "@/Components/Form/LabelSuffix.vue";
+import { inject } from "vue";
+import {find} from "lodash";
 import Error from "@/Components/Form/Error.vue";
 import Textarea from "@/Components/Form/Textarea.vue";
 import Select from "@/Components/Form/Select.vue";
@@ -10,21 +10,10 @@ import Radio from "@/Components/Form/Radio.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import Checkbox from "@/Components/Form/Checkbox.vue";
 import Flex from "@/Components/Layout/Flex.vue";
-import Label from "@/Components/Form/Label.vue";
 import Input from "@/Components/Form/Input.vue";
-import { inject } from "vue";
-import {find} from "lodash";
-import XIcon from "@/Icons/X.vue";
-import CheckIcon from "@/Icons/Check.vue";
 import SectionTitle from "@/Components/DataDisplay/SectionTitle.vue";
 
-const {t: $t} = useI18n();
-
 const props = defineProps({
-    index: {
-        type: Number,
-        required: true,
-    },
     record: {
         type: Object,
         required: true,

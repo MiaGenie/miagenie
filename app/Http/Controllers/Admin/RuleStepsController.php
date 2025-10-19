@@ -6,23 +6,22 @@ use App\Enums\RuleSubType;
 use App\Enums\RuleType;
 use App\Enums\VersionGroupType;
 use App\Enums\VersionStatus;
+use App\Http\Requests\Admin\UpdateRuleStepTranslations;
+use App\Http\Resources\Admin\RuleStepTranslationResource;
 use App\Http\Resources\Admin\VersionResource;
 use App\Models\AIModel;
-use App\Models\Assistant;
 use App\Models\Rule;
 use App\Models\RuleStep;
 use App\Models\Vector;
 use App\Models\Version;
 use App\Models\VersionField;
+use Arr;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
-use App\Builders\RuleGroupQuery;
-use App\Enums\FormStepType;
-use App\Enums\FormInputType;
-use App\Enums\RuleGroupType;
 use App\Enums\RuleStatus;
 use App\Http\Requests\Admin\StoreRuleStep;
 use App\Http\Requests\Admin\UpdateRuleStep;
@@ -30,6 +29,7 @@ use App\Http\Requests\Admin\UpdateRuleStepPositions;
 use App\Http\Resources\Admin\RuleStepResource;
 use App\Http\Resources\Admin\RuleResource;
 use Inertia\Response;
+use Inovector\Mixpost\Util;
 
 class RuleStepsController extends Controller
 {
@@ -58,6 +58,36 @@ class RuleStepsController extends Controller
             'records' => RuleStepResource::collection($records),
             'versionStatusTypes' => VersionStatus::withTitle(),
             'ruleStatusTypes' => RuleStatus::withTitle()
+        ]);
+    }
+
+    /**
+     * @param Request $request
+     * @return Response
+     */
+    public function indexTranslate(Request $request)
+    {
+        $rule = Rule::firstOrFailByUuid($request->route('rule'));
+        $version = Version::firstOrFailByUuid($request->route('version'));
+
+        $records = RuleStep::query()
+            ->where('rule_id', $rule->id)
+            ->oldest('position')
+            ->paginate(100)
+            ->onEachSide(1);
+
+        $translations = $this->getTranslations($records->collect());
+
+        return Inertia::render('Genie/Admin/Versions/Rules/Steps/IndexTranslate', [
+            'rule' => new RuleResource($rule),
+            'ruleTypes' => RuleType::withTitle(),
+            'ruleSubTypes' => RuleSubType::withTitle(),
+            'version' => new VersionResource($version),
+            'records' => RuleStepResource::collection($records),
+            'versionStatusTypes' => VersionStatus::withTitle(),
+            'ruleStatusTypes' => RuleStatus::withTitle(),
+            'translations' => $translations,
+            'locales' => Util::config('locales')
         ]);
     }
 
@@ -145,6 +175,30 @@ class RuleStepsController extends Controller
     }
 
     /**
+     * @param Request $request
+     * @return Response
+     */
+    public function translate(Request $request)
+    {
+        $rule = Rule::firstOrFailByUuid($request->route('rule'));
+        $version = Version::firstOrFailByUuid($request->route('version'));
+
+        $record = RuleStep::firstOrFailByUuid($request->route('step'))->setLocale($request->route('locale'));
+
+        $locales = Util::config('locales');
+        $locale = Arr::first($locales, function ($value) use ($request) {
+            return $value['long'] === $request->route('locale');
+        });
+
+        return Inertia::render('Genie/Admin/Versions/Rules/Steps/Translate', [
+            'rule' => new RuleResource($rule),
+            'record' => new RuleStepTranslationResource($record),
+            'version' => new VersionResource($version),
+            'locale' => $locale
+        ]);
+    }
+
+    /**
      * @param UpdateRuleStep $updateRuleStep
      * @return RedirectResponse
      * @throws \Throwable
@@ -152,6 +206,18 @@ class RuleStepsController extends Controller
     public function update(UpdateRuleStep $updateRuleStep)
     {
         $updateRuleStep->handle();
+
+        return redirect()->back()->with('success', __('genie.step_updated'));
+    }
+
+    /**
+     * @param UpdateRuleStepTranslations $updateRuleStepTranslations
+     * @return RedirectResponse
+     * @throws \Throwable
+     */
+    public function updateTranslations(UpdateRuleStepTranslations $updateRuleStepTranslations)
+    {
+        $updateRuleStepTranslations->handle();
 
         return redirect()->back()->with('success', __('genie.step_updated'));
     }
@@ -192,5 +258,25 @@ class RuleStepsController extends Controller
                 'rule' => $rule->uuid
             ])
             ->with('success', __('genie.step_deleted'));
+    }
+
+    /**
+     * @param Collection $records
+     * @return array
+     */
+    public function getTranslations(Collection $records): array
+    {
+        $translations = [];
+
+        foreach ($records as $record) {
+            $recordTranslations = $record->getTranslations();
+            foreach ($recordTranslations as $field => $locales) {
+                array_walk_recursive($locales, function (&$item) {
+                    $item = !empty($item);
+                });
+                $translations[$record->uuid][$field] = $locales;
+            }
+        }
+        return $translations;
     }
 }

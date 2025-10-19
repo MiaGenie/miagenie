@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\RunResponsesController;
 use App\Http\Controllers\Admin\RunsController;
 use App\Http\Controllers\Admin\VectorsController;
 use App\Http\Controllers\Admin\VersionFieldsController;
+use App\Http\Controllers\Admin\VersionFieldOptionsController;
 use App\Http\Controllers\Admin\VersionsController;
 use Illuminate\Support\Facades\Route;
 use Inovector\Mixpost\Http\Base\Middleware\Admin;
@@ -27,10 +28,15 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
 
         Route::prefix('{version}/fields')->name('fields.')->group(function () {
             Route::get('/', [VersionFieldsController::class, 'index'])->name('index');
+            Route::get('index-translate', [VersionFieldsController::class, 'indexTranslate'])->name('index-translate');
             Route::get('create', [VersionFieldsController::class, 'create'])->name('create');
             Route::post('store', [VersionFieldsController::class, 'store'])->name('store');
             Route::get('{field}', [VersionFieldsController::class, 'edit'])->name('edit');
+            Route::get('translate-field/{field}/{locale}', [VersionFieldsController::class, 'translate'])->name('translate-field');
+            Route::get('translate-options/{field}/{locale}', [VersionFieldOptionsController::class, 'translate'])->name('translate-options');
             Route::put('{field}', [VersionFieldsController::class, 'update'])->name('update');
+            Route::put('update-translation-field/{field}/{locale}', [VersionFieldsController::class, 'updateTranslations'])->name('update-translation-field');
+            Route::put('update-translation-options/{field}/{locale}', [VersionFieldOptionsController::class, 'updateTranslations'])->name('update-translation-options');
             Route::post('positions', [VersionFieldsController::class, 'updatePositions'])->name('positions');
             Route::delete('{field}', [VersionFieldsController::class, 'destroy'])->name('delete');
         });
@@ -45,10 +51,13 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
 
             Route::prefix('{rule}/steps')->name('steps.')->group(function () {
                 Route::get('/', [RuleStepsController::class, 'index'])->name('index');
+                Route::get('index-translate', [RuleStepsController::class, 'indexTranslate'])->name('index-translate');
                 Route::get('create', [RuleStepsController::class, 'create'])->name('create');
                 Route::post('store', [RuleStepsController::class, 'store'])->name('store');
                 Route::get('{step}', [RuleStepsController::class, 'edit'])->name('edit');
+                Route::get('translate/{step}/{locale}', [RuleStepsController::class, 'translate'])->name('translate');
                 Route::put('{step}', [RuleStepsController::class, 'update'])->name('update');
+                Route::put('update-translation/{step}/{locale}', [RuleStepsController::class, 'updateTranslations'])->name('update-translation');
                 Route::post('positions', [RuleStepsController::class, 'updatePositions'])->name('positions');
                 Route::delete('{step}', [RuleStepsController::class, 'destroy'])->name('delete');
             });

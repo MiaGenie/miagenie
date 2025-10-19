@@ -1,5 +1,4 @@
 <script setup>
-import {inject} from "vue";
 import {router, usePage, Link} from "@inertiajs/vue3";
 import {useI18n} from "vue-i18n";
 import {find} from "lodash";
@@ -12,6 +11,7 @@ import Plus from "@/Icons/Plus.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import Sort from "@/Icons/Genie/Sort.vue";
 import X from "@/Icons/X.vue";
+import Translation from "@/Icons/Genie/Translation.vue";
 
 const {t: $t} = useI18n();
 
@@ -34,7 +34,6 @@ const props = defineProps({
 
 const {notify} = useNotifications();
 const emit = defineEmits(['editing-positions', 'is-loading']);
-const routePrefix = inject('routePrefix')
 
 const version = usePage().props.version;
 const groupTypes = usePage().props.groupTypes;
@@ -51,6 +50,16 @@ const createField = () => {
 const backToVersions = () => {
     router.get(route('genie.admin.versions.index'));
 }
+
+const openTranslations = () => {
+    router.get(route('genie.admin.versions.fields.index-translate',
+        {
+            version: version.id,
+        }),
+        {group_type: Number(props.filter.group_type)}
+    );
+}
+
 const currentGroup = () => {
     return find(groupTypes, ['value', Number(props.filter.group_type)])
 }
@@ -88,7 +97,7 @@ const updatePositions = () => {
 
 </script>
 <template>
-    <div class="flex flex-row items-center row-mt content-stretch">
+    <div class="flex flex-row items-center row-mt content-stretch gap-6">
         <div
             v-if="!editingPositions"
             class="flex items-center grow gap-6"
@@ -113,7 +122,6 @@ const updatePositions = () => {
                     :isLoading="isLoading"
                     size="sm"
                 >
-
                     <template #icon>
                         <Plus/>
                     </template>
@@ -179,5 +187,22 @@ const updatePositions = () => {
             </SecondaryButton>
 
         </div>
+
+        <SecondaryButton
+            v-if="!editingPositions"
+            @click="openTranslations"
+            :disabled="isLoading"
+            :isLoading="isLoading"
+            :hiddenTextOnSmallScreen="true"
+            size="sm"
+            class="justify-self-end"
+        >
+
+            <template #icon>
+                <Translation/>
+            </template>
+            {{ $t('genie.translations') }}
+        </SecondaryButton>
+
     </div>
 </template>

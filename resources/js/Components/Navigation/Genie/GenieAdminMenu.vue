@@ -8,6 +8,8 @@ import CogIcon from "@/Icons/Cog.vue";
 import DocumentIcon from "@/Icons/Document.vue";
 import VectorIcon from "@/Icons/Genie/Vector.vue";
 import AIModelIcon from "@/Icons/Genie/AIModel.vue";
+import RunIcon from "@/Icons/Genie/Run.vue";
+import LogsIcon from "@/Icons/Genie/Logs.vue";
 </script>
 <template>
     <MenuGroupHeader>
@@ -51,7 +53,7 @@ import AIModelIcon from "@/Icons/Genie/AIModel.vue";
         <MenuItem :url="route('genie.admin.runs.index')"
                   :active="$page.component === 'Genie/Admin/Runs/Index'">
             <template #icon>
-                <DocumentIcon/>
+                <RunIcon/>
             </template>
             {{ $t('genie.runs') }}
         </MenuItem>
@@ -59,7 +61,7 @@ import AIModelIcon from "@/Icons/Genie/AIModel.vue";
         <MenuItem :url="route('genie.admin.logs.index')"
                   :active="$page.component === 'Genie/Admin/Logs/Index'">
             <template #icon>
-                <DocumentIcon/>
+                <LogsIcon/>
             </template>
             {{ $t('genie.logs') }}
         </MenuItem>

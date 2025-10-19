@@ -189,13 +189,13 @@ class GenieRunData
         $lastPosition ??= $this->getLastPosition();
         $nextStep = $this->getNextStepByPosition($lastPosition);
         if ($nextStep?->rule_sub_type->name === 'COMPETITORS' && $this->getCompetitorIds()->count() === 0) {
-            $lastPosition++;
+            $lastPosition = $nextStep->position;
             return $this->getNextStep($lastPosition);
         } elseif ($nextStep?->rule_sub_type->name === 'CHANNELS') {
             if ($this->isValidChannelStep($nextStep)) {
                 return $nextStep;
             } else {
-                $lastPosition++;
+                $lastPosition = $nextStep->position;
                 return $this->getNextStep($lastPosition);
             }
         } else {

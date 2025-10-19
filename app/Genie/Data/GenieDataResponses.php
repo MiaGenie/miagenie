@@ -39,6 +39,11 @@ class GenieDataResponses extends GenieData implements GenieDataContract
     private ?RuleStep $lastStep;
 
     /**
+     * @var string
+     */
+    private string $locale;
+
+    /**
      * @param RunResponse $runResponse
      * @param GenieSyncAction $action
      */
@@ -50,6 +55,7 @@ class GenieDataResponses extends GenieData implements GenieDataContract
         $this->runResponse = $runResponse;
         $this->previousRunResponse = $this->getPreviousResponse();
         WorkspaceManager::setCurrent($this->runResponse->run->workspace);
+        $this->locale = $this->runResponse->run->workspace->locale ?? app()->getFallbackLocale();
     }
 
     /**
@@ -142,9 +148,10 @@ class GenieDataResponses extends GenieData implements GenieDataContract
     private function getMessage(): string
     {
         $reviewMsg = $this->getReviewMessage();
+        $msg = $this->runResponse->step->getTranslation('message', $this->locale);
         $replacements = $this->getReplacements();
 
-        return $this->parseContent($reviewMsg . $this->runResponse->step->message, $replacements);
+        return $this->parseContent($reviewMsg . $msg, $replacements);
     }
 
     /**
@@ -165,7 +172,7 @@ class GenieDataResponses extends GenieData implements GenieDataContract
     private function getBriefingReplacements(): array
     {
         $briefing = Briefing::where(['workspace_id' => $this->runResponse->run->workspace_id])->latest()->first()?->content;
-        $briefing = $this->translateFieldOptions($briefing, 'BRIEFINGS');
+        $briefing = $this->formatFieldOptions($briefing, 'BRIEFINGS');
 
         return Arr::prependKeysWith($briefing, 'briefings.');
     }
@@ -176,7 +183,7 @@ class GenieDataResponses extends GenieData implements GenieDataContract
     private function getCompetitorReplacements(): array
     {
         $competitor = $this->runResponse->runCompetitor->competitor->content;
-        $competitor = $this->translateFieldOptions($competitor, 'COMPETITORS');
+        $competitor = $this->formatFieldOptions($competitor, 'COMPETITORS');
 
         return Arr::prependKeysWith($competitor, 'competitors.');
     }
@@ -199,10 +206,10 @@ class GenieDataResponses extends GenieData implements GenieDataContract
      * @param string $type
      * @return array
      */
-    private function translateFieldOptions(array $content, string $type): array
+    private function formatFieldOptions(array $content, string $type): array
     {
         foreach ($content as $key => $item) {
-            $content[$key] = is_array($item) ? $this->getTranslatedFieldOptions($key, $item, $type) : $item;
+            $content[$key] = is_array($item) ? $this->getFormatedFieldOptions($key, $item, $type) : $item;
         }
         return $content;
     }
@@ -213,7 +220,7 @@ class GenieDataResponses extends GenieData implements GenieDataContract
      * @param string $type
      * @return string
      */
-    private function getTranslatedFieldOptions(string $key, array $item, string $type): string
+    private function getFormatedFieldOptions(string $key, array $item, string $type): string
     {
         $field = VersionField::where([
             'version_id' => $this->runResponse->run->rule->version_id,
@@ -267,9 +274,7 @@ class GenieDataResponses extends GenieData implements GenieDataContract
     {
         $reviewMsg = '';
         if ($this->previousRunResponse?->step->requires_review && $this->previousRunResponse?->runResponseReview?->id) {
-            $reviewMsg = $this->previousRunResponse->step->review_message_system. "/n";
-            //$reviewMsg = implode("\n", $this->previousRunResponse->runResponseReview->reviewed) . "\n";
-
+            $reviewMsg = $this->previousRunResponse->step->getTranslation('instructions', $this->locale) . "\n";
         }
         return $reviewMsg;
     }
