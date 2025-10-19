@@ -253,7 +253,7 @@ return [
      * The available locales for the Mixpost
      */
     'locales' => [
-        ['short' => 'de', 'long' => 'de-DE', 'direction' => 'ltr', 'english' => 'German)', 'native' => 'Deutsch'],
+        ['short' => 'de', 'long' => 'de-DE', 'direction' => 'ltr', 'english' => 'German', 'native' => 'Deutsch'],
         ['short' => 'en', 'long' => 'en-GB', 'direction' => 'ltr', 'english' => 'English', 'native' => 'English'],
         ['short' => 'es', 'long' => 'es-ES', 'direction' => 'ltr', 'english' => 'Spanish', 'native' => 'Español'],
         ['short' => 'fr', 'long' => 'fr-FR', 'direction' => 'ltr', 'english' => 'French', 'native' => 'Français'],

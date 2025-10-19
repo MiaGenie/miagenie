@@ -12,6 +12,7 @@ import Plus from "@/Icons/Plus.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import Sort from "@/Icons/Genie/Sort.vue";
 import X from "@/Icons/X.vue";
+import Translation from "@/Icons/Genie/Translation.vue";
 
 const {t: $t} = useI18n();
 
@@ -49,7 +50,15 @@ const createStep = () => {
 const backToRules = () => {
     router.get(route('genie.admin.versions.rules.index',
         {
+            version: version.id
+        }));
+}
+
+const openTranslations = () => {
+    router.get(route('genie.admin.versions.rules.steps.index-translate',
+        {
             version: version.id,
+            rule: rule.id
         }));
 }
 
@@ -89,7 +98,7 @@ const updatePositions = () => {
 
 </script>
 <template>
-    <div class="flex flex-row items-center row-mt content-stretch">
+    <div class="flex flex-row items-center row-mt content-stretch gap-6">
         <div
             v-if="!editingPositions"
             class="flex items-center grow gap-6"
@@ -107,53 +116,51 @@ const updatePositions = () => {
             </SecondaryButton>
 
 
-                <PrimaryButton
-                    @click="createStep"
-                    :hiddenTextOnSmallScreen="true"
-                    :disabled="isLoading"
-                    :isLoading="isLoading"
-                    size="sm"
-                >
+            <PrimaryButton
+                @click="createStep"
+                :hiddenTextOnSmallScreen="true"
+                :disabled="isLoading"
+                :isLoading="isLoading"
+                size="sm"
+            >
 
-                    <template #icon>
-                        <Plus/>
-                    </template>
-                    {{ $t('genie.create_step') }}
-                </PrimaryButton>
+                <template #icon>
+                    <Plus/>
+                </template>
+                {{ $t('genie.create_step') }}
+            </PrimaryButton>
 
 
         </div>
 
+        <div class="flex flex-row items-center justify-end grow gap-6">
+
             <template v-if="editingPositions">
+            <SecondaryButton
+                @click="$emit('editing-positions', false)"
+                :hiddenTextOnSmallScreen="true"
+                size="sm"
+            >
 
-                <div class="flex flex-row items-center justify-end grow gap-6">
-                    <SecondaryButton
-                        @click="$emit('editing-positions', false)"
-                        :hiddenTextOnSmallScreen="true"
-                        size="sm"
-                    >
+                <template #icon>
+                    <X/>
+                </template>
+                {{ $t("genie.close") }}
+            </SecondaryButton>
 
-                        <template #icon>
-                            <X/>
-                        </template>
-                        {{ $t("genie.close") }}
-                    </SecondaryButton>
+            <PrimaryButton
+                @click="updatePositions"
+                :hiddenTextOnSmallScreen="true"
+                :disabled="isLoading"
+                :isLoading="isLoading"
+                size="sm"
+            >
 
-                    <PrimaryButton
-                        @click="updatePositions"
-                        :hiddenTextOnSmallScreen="true"
-                        :disabled="isLoading"
-                        :isLoading="isLoading"
-                        size="sm"
-                    >
-
-                        <template #icon>
-                            <Save/>
-                        </template>
-                        {{ $t('genie.save') }}
-                    </PrimaryButton>
-                </div>
-
+                <template #icon>
+                    <Save/>
+                </template>
+                {{ $t('genie.save') }}
+            </PrimaryButton>
             </template>
 
             <SecondaryButton
@@ -171,6 +178,22 @@ const updatePositions = () => {
                 </template>
                 {{ $t('genie.reorder') }}
             </SecondaryButton>
+        </div>
+
+        <SecondaryButton
+            v-if="!editingPositions"
+            @click="openTranslations"
+            :disabled="isLoading"
+            :isLoading="isLoading"
+            :hiddenTextOnSmallScreen="true"
+            size="sm"
+            class="justify-self-end"
+        >
+            <template #icon>
+                <Translation/>
+            </template>
+            {{ $t('genie.translations') }}
+        </SecondaryButton>
 
     </div>
 </template>

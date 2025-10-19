@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\Models\HasTranslations;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
@@ -9,6 +10,7 @@ use Inovector\Mixpost\Concerns\Model\HasUuid;
 class VersionFieldOption extends Model
 {
     use HasUuid;
+    use HasTranslations;
 
     /**
      * @var string

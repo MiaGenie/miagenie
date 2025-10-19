@@ -69,7 +69,7 @@ provide('runStatus', props.runStatus);
                             <TableCell component="th" scope="col">{{ $t('genie.created') }}</TableCell>
 
                             <TableCell component="th" scope="col" class="hidden md:table-cell">
-                                {{ $t('general.progression') }}
+                                {{ $t('genie.progression') }}
                             </TableCell>
 
                             <TableCell component="th" scope="col" class="hidden md:table-cell">

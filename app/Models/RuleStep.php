@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\Models\HasTranslations;
 use App\Enums\RuleSubType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,7 @@ use Inovector\Mixpost\Concerns\Model\HasUuid;
 class RuleStep extends Model
 {
     use HasUuid;
+    use HasTranslations;
 
     public $table = 'genie_rule_steps';
 
@@ -43,6 +45,17 @@ class RuleStep extends Model
     protected $casts = [
         'rule_sub_type' => RuleSubType::class,
         'output' => 'array',
+    ];
+
+    /**
+     * @var array|string[]
+     */
+    public array $translatable = [
+        'instructions',
+        'message',
+        'json_schema',
+        'review_message_user',
+        'review_message_system'
     ];
 
     /**

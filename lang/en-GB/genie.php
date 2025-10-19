@@ -4,6 +4,7 @@ return [
     'name' => 'Name',
     'progression' => 'Progression',
     'status' => 'Status',
+    'language' => 'Language',
 
     'genie' => 'Genie',
     'ai_provider' => 'AI Provider',
@@ -27,6 +28,8 @@ return [
     'reorder' => 'Reorder',
     'reordering' => 'Reordering',
 
+    'translations' => 'Translations',
+
     'are_you_sure' => 'Are you sure?',
     'unsaved_will_lost' => 'Unsaved changes will be lost.',
     'discard' => 'Discard',
@@ -49,9 +52,9 @@ return [
     'rule_type_content' => 'Content',
     'rule_version_id' => 'Version ID',
 
-
     'steps' => 'Steps',
     'create_step' => 'Create Step',
+    'translate_step' => 'Translate Step',
     'edit_step' => 'Edit Step',
     'delete_step' => 'Delete Step',
     'step_updated' => 'Step Updated',
@@ -75,7 +78,6 @@ return [
     'step_reasoning_effort' => 'Reasoning Effort',
     'step_instructions' => 'Instructions',
     'step_model' => 'Model',
-
 
     'assistants' => 'Assistants',
     'create_assistant' => 'Create Assistant',
@@ -113,7 +115,6 @@ return [
     'ai_model_file_search' => 'File Search',
     'ai_model_reasoning_effort' => 'Reason. Effort',
     'ai_model_temperature_top_p' => 'Temp. / Top P',
-
 
     'vectors' => 'Vectors',
     'vectors_desc' => 'MiaGenie Vectors',
@@ -180,12 +181,12 @@ return [
     'log_request' => 'Request',
     'log_response' => 'Response',
     'log_duration' => 'Duration (seconds)',
-
     'groups' => 'Groups',
 
     'fields' => 'Fields',
     'fields_desc' => 'MiaGenie Fields',
     'create_field' => 'Create Field',
+    'translate_field' => 'Translate Field',
     'field_created' => 'Field Created',
     'edit_field' => 'Edit Field',
     'field_updated' => 'Field Updated',
@@ -195,9 +196,9 @@ return [
     'delete_field_confirm' => 'Are you sure you want to delete this field?',
     'field_positions_updated' => 'Field positions updated',
 
-
     'field_option_name' => 'Name',
     'field_option_code_name' => 'Code',
+    'translate_field_options' => 'Translate Field Options',
     'add_field_option' => 'Add Option',
     'add_field_options_group' => 'Add Group',
     'delete_field_option' => 'Delete Option',
