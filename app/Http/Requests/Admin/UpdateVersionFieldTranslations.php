@@ -51,7 +51,7 @@ class UpdateVersionFieldTranslations extends FormRequest
         $baseLocale = Arr::first($locales, function ($value) {
             return $value['short'] === $this->defaultLocale;
         });
-        $record->setLocale($baseLocale);
+        $record->setLocale($baseLocale['long']);
 
         foreach ($record->translatable as $field) {
             if ($record->{$field} !== $this->input($field) && $record->{$field} !== null && $record->{$field} !== '') {

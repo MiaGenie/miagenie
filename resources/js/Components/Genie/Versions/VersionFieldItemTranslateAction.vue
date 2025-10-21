@@ -24,7 +24,7 @@ const fieldType = inject('fieldType');
 
 const baseFieldTranslations = filter(translations['fields'][props.item.id], 'en-GB');
 const baseOptionsTranslations = reduce(translations['options']?.[props.item.id], function(result, value, key) {
-    result = filter(value, 'en-GB');
+    result[key] = filter(value, 'en-GB');
     return result;
 }, {});
 
@@ -43,7 +43,10 @@ const getOptionsClass = (locale) => {
     // let doneTranslations = filter(translations['options'][props.item.id], locale.long);
 
     let doneTranslations = reduce(translations['options'][props.item.id], function(result, value, key) {
-        result = filter(value, locale.long);
+        let filtered = filter(value, locale.long);
+         if (!isEmpty(filtered)) {
+             result[key] = filtered;
+         }
         return result;
     }, {});
     if (isEmpty(doneTranslations)) {
