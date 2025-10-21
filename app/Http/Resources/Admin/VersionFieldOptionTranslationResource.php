@@ -20,7 +20,7 @@ class VersionFieldOptionTranslationResource extends JsonResource
 
         return [
             'id' => $this->uuid,
-            'name' => $this->name,
+            'name' => $this->getTranslation('name', $request->route('locale')),
             'code_name' => $this->code_name,
         ];
 

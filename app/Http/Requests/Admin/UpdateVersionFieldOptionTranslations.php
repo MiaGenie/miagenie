@@ -29,7 +29,7 @@ class UpdateVersionFieldOptionTranslations extends FormRequest
      */
     public function handle(): void
     {
-        $ids = Arr::pluck($this->input(), 'id');
+        $input = collect($this->input())->keyBy('id');
         $locale = $this->route('locale');
 
         $locales = Util::config('locales');
@@ -37,16 +37,17 @@ class UpdateVersionFieldOptionTranslations extends FormRequest
             return $value['short'] === $this->defaultLocale;
         });
 
-        $records = VersionFieldOption::whereIn('uuid', $ids)->get();
+        $ids = $input->pluck('id');
+        $records = VersionFieldOption::whereIn('uuid', $ids)->get()->keyBy('uuid');
 
-        $records->each(function (VersionFieldOption $record) use ($locale, $baseLocale) {
-            $record->setLocale($baseLocale);
-            if ($record->{$field} !== $this->input($field) && $record->{$field} !== null && $record->{$field} !== '') {
-                foreach ($record->translatable as $field) {
-                    $record->setTranslation($field, $locale, $this->input($field));
+        $records->each(function (VersionFieldOption $record, $key) use ($input, $locale, $baseLocale) {
+            $record->setLocale($baseLocale['long']);
+            foreach ($record->translatable as $field) {
+                if ($record->{$field} !== $input->get($key)[$field] && $record->{$field} !== null && $record->{$field} !== '') {
+                    $record->setTranslation($field, $locale, $input->get($key)[$field]);
                 }
-                $record->save();
             }
+            $record->save();
         });
     }
 }

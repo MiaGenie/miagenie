@@ -29,9 +29,8 @@ class VersionFieldOptionsController extends Controller
     {
         $version = Version::firstOrFailByUuid($request->route('version'));
 
-        $record = VersionField::with('options')
-            ->where('uuid', $request->route('field'))
-            ->firstOrFail();
+        $record = VersionField::firstOrFailByUuid($request->route('field'))
+            ->setLocale($request->route('locale'));
 
         $locales = Util::config('locales');
         $locale = Arr::first($locales, function ($value) use ($request) {
