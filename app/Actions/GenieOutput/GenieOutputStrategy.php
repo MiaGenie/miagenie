@@ -67,7 +67,7 @@ class GenieOutputStrategy extends GenieOutput implements GenieOutputContract
                             break;
                         case 'json_schema':
                             $responseOutput = json_decode($response['output'][0]['content'][0]['text'], true);
-                            $content[$firstOutput][$model->runCompetitor->competitor_id] = $responseOutput[$firstOutput];
+                            $content[$firstOutput][$model->runCompetitor->competitor_id] = $responseOutput;
                             break;
                     }
                     break;
