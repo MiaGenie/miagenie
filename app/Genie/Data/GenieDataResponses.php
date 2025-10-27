@@ -68,7 +68,7 @@ class GenieDataResponses extends GenieData implements GenieDataContract
         $data = [
             'include' => null,
             'input' => $this->getMessage(),
-            'instructions' => $step->instructions,
+            'instructions' => $step->getTranslation('instructions', $this->locale),
             'max_output_tokens' => null,
             'model' => $step->ai_model,
             'previous_response_id' => $this->getPreviousResponseId(),
@@ -92,7 +92,8 @@ class GenieDataResponses extends GenieData implements GenieDataContract
             $name = preg_replace("/[^\sa-zA-Z0-9_-]/", "", $step->name);
             $format['name'] = Str::snake($name);
             $format['strict'] = true;
-            $format['schema'] = json_decode($step->json_schema, true);
+            $jsonSchema = $step->getTranslation('json_schema', $this->locale);
+            $format['schema'] = json_decode($jsonSchema, true);
         }
         $data['text']['format'] = $format;
 
