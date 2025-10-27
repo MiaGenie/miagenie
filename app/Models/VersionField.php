@@ -46,6 +46,7 @@ class VersionField extends Model
         'required',
         'genie_required',
         'is_identifier',
+        'hidden',
         'position',
     ];
 

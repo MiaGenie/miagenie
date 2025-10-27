@@ -96,6 +96,7 @@ class UpdateVersionField extends FormRequest
                 'required' => $this->input('required'),
                 'genie_required' => $this->input('genie_required'),
                 'is_identifier' => $this->input('is_identifier'),
+                'hidden' => $this->input('hidden')
             ]);
 
             $this->handleChildren($record);

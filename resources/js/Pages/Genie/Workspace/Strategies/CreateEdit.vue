@@ -80,6 +80,7 @@ provide('record', props.record);
             <Panel>
                 <template v-for="(field, index) in props.fieldList.strategies" :key="index">
                     <ViewField
+                        v-if="!field.hidden"
                         :field="field"
                         :index="index"
                     />

@@ -134,6 +134,10 @@ const fieldContent = (field, level = 0, keys = '') => {
                 {{ field.name }}
             </template>
 
+            <template #description>
+                {{ field.description }}
+            </template>
+
             <template v-if="fieldType(field).name === 'INPUT' || fieldType(field).name === 'TEXTAREA'">
                 <span class="bg-gray-100" v-html="fieldContent(record.content[field.code_name])">
                 </span>

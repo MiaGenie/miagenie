@@ -225,6 +225,7 @@ return [
     'field_step' => 'Passo',
     'field_input_type' => 'Tipo de Entrada',
     'field_is_multiple' => 'É Múltiplo',
+    'field_hidden' => 'Escondido',
     'field_required' => 'Obrigatório',
     'field_genie_required' => 'Genie Obrigatório',
     'field_is_identifier' => 'Identificador',
