@@ -224,6 +224,7 @@ return [
     'field_step' => 'Step',
     'field_input_type' => 'Input Type',
     'field_is_multiple' => 'Is Multiple',
+    'field_hidden' => 'Hidden',
     'field_required' => 'Required',
     'field_genie_required' => 'Genie Required',
     'field_is_identifier' => 'Identifier',

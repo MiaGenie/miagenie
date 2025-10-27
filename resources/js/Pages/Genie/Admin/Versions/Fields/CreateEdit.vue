@@ -90,6 +90,7 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     required: false,
     genie_required: true,
     is_identifier: false,
+    hidden: false,
     position: '',
 });
 
@@ -567,22 +568,6 @@ const deleteField = () => {
 
                         <VerticalGroup class="form-field basis-1/3">
                             <template #title>
-                                <label for="is_multiple">{{ $t("genie.field_is_multiple") }}</label>
-                            </template>
-
-                            <Switch
-                                v-model="form.is_multiple"
-                                id="is_multiple"
-                                :disabled="form.is_identifier"
-                            />
-
-                            <template #footer>
-                                <Error :message="form.errors.is_multiple"/>
-                            </template>
-                        </VerticalGroup>
-
-                        <VerticalGroup class="form-field basis-1/3">
-                            <template #title>
                                 <label for="genie_required">{{ $t("genie.field_genie_required") }}</label>
                             </template>
 
@@ -628,6 +613,38 @@ const deleteField = () => {
 
                             <template #footer>
                                 <Error :message="form.errors.is_identifier"/>
+                            </template>
+                        </VerticalGroup>
+
+                        <VerticalGroup class="form-field basis-1/3">
+                            <template #title>
+                                <label for="is_multiple">{{ $t("genie.field_is_multiple") }}</label>
+                            </template>
+
+                            <Switch
+                                v-model="form.is_multiple"
+                                id="is_multiple"
+                                :disabled="form.is_identifier"
+                            />
+
+                            <template #footer>
+                                <Error :message="form.errors.is_multiple"/>
+                            </template>
+                        </VerticalGroup>
+
+                        <VerticalGroup class="form-field basis-1/3">
+                            <template #title>
+                                <label for="hidden">{{ $t("genie.field_hidden") }}</label>
+                            </template>
+
+                            <Switch
+                                v-model="form.hidden"
+                                id="hidden"
+                                :disabled="form.is_identifier"
+                            />
+
+                            <template #footer>
+                                <Error :message="form.errors.hidden"/>
                             </template>
                         </VerticalGroup>
 

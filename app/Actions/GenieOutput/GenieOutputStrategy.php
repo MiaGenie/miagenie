@@ -60,7 +60,16 @@ class GenieOutputStrategy extends GenieOutput implements GenieOutputContract
                     }
                     break;
                 case RuleSubType::COMPETITORS:
-                    $content[$firstOutput][$model->runCompetitor->competitor_id] = $response['output'][0]['content'][0]['text'];
+                    switch ($model->step->response_format) {
+                        default:
+                        case 'text':
+                            $content[$firstOutput][$model->runCompetitor->competitor_id] = $response['output'][0]['content'][0]['text'];
+                            break;
+                        case 'json_schema':
+                            $responseOutput = json_decode($response['output'][0]['content'][0]['text'], true);
+                            $content[$firstOutput][$model->runCompetitor->competitor_id] = $responseOutput[$firstOutput];
+                            break;
+                    }
                     break;
             }
             $strategy->content = $content;
