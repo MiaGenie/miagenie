@@ -55,15 +55,15 @@ class RunResponsesController extends Controller
 
         $isLast = $lastRunResponse->id === $runResponse->id;
 
-        $ruleStep = RuleStep::where('rule_id', '=', $runResponse->all()[0]->step->rule->id)
+        $ruleStep = RuleStep::where('rule_id', '=', $runResponse->step->rule->id)
             ->where('id', '=', $runResponse->step_id)
             ->firstOrFail();
 
         return Inertia::render('Genie/Admin/Runs/RunResponses/View', [
-            'versionName' => Version::find($runResponse->all()[0]->step->rule->version_id)->name,
-            'workspaceName' => Workspace::find($runResponse->all()[0]->run->workspace_id)->name,
-            'ruleName' => $runResponse->all()[0]->step->rule->name,
-            'ruleType' => $runResponse->all()[0]->step->rule->rule_type->name,
+            'versionName' => Version::find($runResponse->step->rule->version_id)->name,
+            'workspaceName' => Workspace::find($runResponse->run->workspace_id)->name,
+            'ruleName' => $runResponse->step->rule->name,
+            'ruleType' => $runResponse->step->rule->rule_type->name,
             'ruleStep' => $ruleStep,
             'ruleSubTypes' => RuleSubType::withTitle(),
             'runResponseProviderStatus' => RunResponseStatus::withTitle(),
