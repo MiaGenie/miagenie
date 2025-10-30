@@ -7,6 +7,7 @@ use App\Enums\GenieSyncAction;
 use App\Enums\RuleType;
 use App\Enums\RunStatus;
 use App\Http\Resources\Admin\RunResource;
+use App\Jobs\RunIdeaJob;
 use App\Jobs\RunJob;
 use App\Models\Rule;
 use App\Models\Run;
@@ -33,7 +34,7 @@ class RunsController extends Controller
 
         return Inertia::render('Genie/Admin/Runs/Index', [
             'records' => RunResource::collection($runsRecords),
-            'workspaces' => Workspace::pluck('name'),
+            'workspaces' => Workspace::all()->keyBy('id')->pluck('name','id'),
             'rules' => Rule::all(),
             'versions' => Version::all(),
             'ruleTypes' => RuleType::withTitle(),
@@ -51,7 +52,7 @@ class RunsController extends Controller
     {
         $run = Run::firstOrFailByUuid($request->route('run'));
 
-        RunJob::dispatch($run, GenieSyncAction::UPDATE);
+        RunIdeaJob::dispatch($run, GenieSyncAction::UPDATE);
 
         return redirect()->back()->with('success', __('genie.run_resume'));
     }

@@ -2,16 +2,18 @@
 
 namespace App\Enums;
 
+use App\Concerns\Enum\FromName;
 use App\Concerns\Enum\WithTitle;
 
 enum RuleType: int
 {
     use WithTitle;
+    use FromName;
 
     case STRATEGY = 1;
     case IDEAS = 2;
-    case CONTENT = 3;
-    case SCHEDULE = 4;
+    case DRAFTS = 3;
+
 
     /**
      * @return string
@@ -21,8 +23,7 @@ enum RuleType: int
         return match ($this) {
             self::STRATEGY => 'strategy',
             self::IDEAS => 'ideas',
-            self::CONTENT => 'content',
-            self::SCHEDULE => 'schedule'
+            self::DRAFTS => 'drafts'
         };
     }
 }

@@ -6,6 +6,7 @@ use App\Enums\VersionGroupType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Validation\Rule;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 use App\Enums\VersionStatus;
 
@@ -42,6 +43,14 @@ class Version extends Model
     public function fields(): HasMany
     {
         return $this->hasMany(VersionField::class, 'version_id');
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function rules(): HasMany
+    {
+        return $this->hasMany(Rule::class);
     }
 
     /**

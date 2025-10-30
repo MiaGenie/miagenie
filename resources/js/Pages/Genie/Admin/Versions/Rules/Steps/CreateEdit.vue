@@ -62,6 +62,10 @@ const props = defineProps({
         type: Object,
         required: true
     },
+    outputIdeaFields: {
+        type: Array,
+        required: true
+    },
     record: {
         type: Object
     }
@@ -244,7 +248,7 @@ const deleteStep = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup v-if="ruleSubType['name'] === 'CHANNELS'" class="form-field mt-lg">
+                    <VerticalGroup v-if="ruleSubType['name'] === 'CHANNELS' || ruleSubType['name'] === 'IDEAS_MULTIPLE'" class="form-field mt-lg">
                         <template #title>
                             <label for="depends_on_field">{{ $t("genie.step_depends_on_field") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
@@ -257,7 +261,7 @@ const deleteStep = () => {
                             required
                         >
                             <template v-for="(field) in outputFields">
-                                <option v-if="field.field_type == 4" :value="field.id">
+                                <option v-if="field.field_type == 4 || field.is_multiple" :value="field.id">
                                     {{field.code_name }} - {{ field.name}}
                                 </option>
                             </template>
@@ -480,7 +484,7 @@ const deleteStep = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup v-if="ruleSubType['name'] !== 'BRIEFINGS_MULTIPLE'" class="form-field mt-lg">
+                    <VerticalGroup v-if="rule.rule_type == 1 && ruleSubType['name'] !== 'BRIEFINGS_MULTIPLE'" class="form-field mt-lg">
                         <template #title>
                             <label for="output">{{ $t("genie.step_output") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
@@ -497,6 +501,7 @@ const deleteStep = () => {
                                     {{output.code_name }} - {{ output.name}}
                                 </option>
                             </template>
+
                         </Select>
 
                         <template #footer>
@@ -504,37 +509,23 @@ const deleteStep = () => {
                         </template>
                     </VerticalGroup>
 
-<!--                    <VerticalGroup class="form-field mt-lg">
+                    <VerticalGroup v-if="rule.rule_type == 2 || ruleSubType['name'] === 'BRIEFINGS_MULTIPLE'" class="form-field mt-lg">
                         <template #title>
                             <label for="output">{{ $t("genie.step_output") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
                         </template>
 
                         <TableCell class="">
-                            <template v-for="(output, index) in outputFields" :key="output.code_name">
-                                 <Flex class="py-sm">
-                                    <Radio v-model:checked="form.output[0]" :value="output.code_name"/>
-                                    {{ output.name }}
-                                </Flex>
-                            </template>
-                        </TableCell>
-
-                        <template #footer>
-                            <Error :message="form.errors.output"/>
-                        </template>
-                    </VerticalGroup>-->
-
-                    <VerticalGroup v-if="ruleSubType['name'] === 'BRIEFINGS_MULTIPLE'" class="form-field mt-lg">
-                        <template #title>
-                            <label for="output">{{ $t("genie.step_output") }}</label>
-                            <LabelSuffix :danger="true">*</LabelSuffix>
-                        </template>
-
-                        <TableCell class="">
-                            <template v-for="(output, index) in outputFields" :key="output.code_name">
+                            <template v-if="rule.rule_type == 1" v-for="(output, index) in outputFields" :key="output.code_name">
                                 <Flex class="py-sm">
                                     <Checkbox v-model:checked="form.output" :value="output.code_name"/>
                                     {{ output.name }}
+                                </Flex>
+                            </template>
+                            <template v-if="rule.rule_type == 2" v-for="(output, index) in outputIdeaFields" :key="output">
+                                <Flex class="py-sm">
+                                    <Checkbox v-model:checked="form.output" :value="output"/>
+                                    {{ output }}
                                 </Flex>
                             </template>
                         </TableCell>

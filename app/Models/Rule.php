@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\RuleSubType;
 use App\Enums\RuleType;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 
@@ -26,6 +27,14 @@ class Rule extends Model
     protected $casts = [
         'rule_type' => RuleType::class,
     ];
+
+    /**
+     * @return BelongsTo
+     */
+    public function version(): BelongsTo
+    {
+        return $this->belongsTo(Version::class);
+    }
 
 
     /**

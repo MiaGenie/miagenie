@@ -42,7 +42,6 @@ const props = defineProps({
 const routePrefix = inject('routePrefix');
 const workspaceCtx = inject('workspaceCtx')
 const confirmation = inject('confirmation');
-const authPasswordConfirmation = inject('authPasswordConfirmation');
 
 const {notify} = useNotifications();
 const {isCreate, isEdit} = usePageMode();
@@ -53,8 +52,7 @@ const fieldType = (field) => {
 }
 
 const form = useForm(isEdit.value ? cloneDeep(props.record) :
-
-    props.fieldList.competitors.reduce(
+    cloneDeep(props.fieldList.competitors).reduce(
         (list, field) => {
             list.content[field.code_name] = fieldType(field).hasOptions ? [] : '';
             return list;
@@ -159,17 +157,14 @@ provide(/* key */ 'form', /* value */ form);
     <Head :title="mode === 'create' ? $t('genie.create_competitor') : $t('genie.edit_competitor')"/>
 
     <div class="w-full mx-auto row-py">
-        <PageHeader :title="mode === 'create' ? $t('genie.create_competitor') : $t('genie.edit_competitor')">
-            <template v-if="isEdit">
-                <CompetitorAction :record="record" />
-            </template>
-        </PageHeader>
+
+        <PageHeader :title="mode === 'create' ? $t('genie.create_competitor') : $t('genie.edit_competitor')"/>
 
         <div class="row-px">
             <form method="post" @submit.prevent="submit">
 
                 <Panel>
-                    <VersionFieldsForm :fieldTypes="props.fieldTypes" :fieldList="props.fieldList.competitors"></VersionFieldsForm>
+                    <VersionFieldsForm :fieldTypes="props.fieldTypes" :fields="props.fieldList.competitors"></VersionFieldsForm>
                 </Panel>
 
                 <Flex

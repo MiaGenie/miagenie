@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Abstracts\GenieData;
 use App\Actions\GenieOutput;
+use App\Actions\GenieOutput\GenieOutputIdeas;
 use App\Actions\GenieOutput\GenieOutputStrategy;
 use App\Actions\GenieRun\CreateResponse;
 use App\Actions\GenieRun\RetrieveResponse;
@@ -14,14 +15,19 @@ use App\Actions\GenieSync\DeleteFile;
 use App\Actions\GenieSync\DeleteVector;
 use App\Actions\GenieSync\UploadVector;
 use App\Contracts\GenieOutputContract;
+use App\Contracts\GenieRunDataContract;
 use App\Contracts\GenieStateContract;
 use App\Contracts\GenieSyncContract;
 use App\Enums\GenieSyncAction;
 use App\Enums\GenieType;
+use App\Enums\RuleType;
 use App\Genie\Data\GenieDataAssistants;
 use App\Genie\Data\GenieDataFiles;
+use App\Genie\Data\GenieDataIdeasResponses;
 use App\Genie\Data\GenieDataResponses;
 use App\Genie\Data\GenieDataVectors;
+use App\Genie\Data\GenieRunData;
+use App\Genie\Data\GenieRunIdeasData;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -62,6 +68,22 @@ class GenieServiceProvider extends ServiceProvider
             }
         });
 
+        $this->app->bind(GenieRunDataContract::class, function ($app, $params) {
+            $model = $params['model'];
+            $action = $params['action'];
+            $type = $params['type'];
+
+            switch ($type) {
+                case RuleType::STRATEGY:
+                    return new GenieRunData($model, $action);
+                case RuleType::IDEAS:
+                    return new GenieRunIdeasData($model, $action);
+                case RuleType::DRAFTS:
+                    return new GenieRunIdeasData($model, $action);
+            }
+
+        });
+
         $this->app->bind(GenieData::class, function ($app, $params) {
             $model = $params['model'];
             $action = $params['action'];
@@ -70,7 +92,12 @@ class GenieServiceProvider extends ServiceProvider
 
             switch ($type) {
                 case GenieType::RUN_RESPONSE:
-                    return new GenieDataResponses($model, $action);
+                    switch ($model->run->rule->rule_type) {
+                        case RuleType::STRATEGY:
+                            return new GenieDataResponses($model, $action);
+                        case RuleType::IDEAS:
+                            return new GenieDataIdeasResponses($model, $action);
+                            }
                 case GenieType::FILE:
                     return new GenieDataFiles($model, $action);
                 case GenieType::VECTOR:
@@ -82,11 +109,21 @@ class GenieServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(GenieOutputContract::class, function ($app, $params) {
-            return match ($params['type']) {
-                GenieType::FILE,
-                GenieType::VECTOR => new GenieOutput(),
-                GenieType::RUN_RESPONSE => new GenieOutputStrategy(),
-            };
+            $model = $params['model'];
+            $type = $params['type'];
+
+            switch ($type) {
+                case GenieType::RUN_RESPONSE:
+                    switch ($model->run->rule->rule_type) {
+                        case RuleType::STRATEGY:
+                            return new GenieOutputStrategy();
+                        case RuleType::IDEAS:
+                            return new GenieOutputIdeas();
+                    }
+                case GenieType::FILE:
+                case GenieType::VECTOR:
+                    return new GenieOutput();
+            }
         });
 
         $this->app->bind(GenieStateContract::class, function ($app, $params) {

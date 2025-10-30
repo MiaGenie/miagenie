@@ -10,6 +10,7 @@ use App\Http\Requests\Admin\UpdateRuleStepTranslations;
 use App\Http\Resources\Admin\RuleStepTranslationResource;
 use App\Http\Resources\Admin\VersionResource;
 use App\Models\AIModel;
+use App\Models\Idea;
 use App\Models\Rule;
 use App\Models\RuleStep;
 use App\Models\Vector;
@@ -110,12 +111,13 @@ class RuleStepsController extends Controller
         return Inertia::render('Genie/Admin/Versions/Rules/Steps/CreateEdit', [
             'mode' => 'create',
             'rule' => new RuleResource($rule),
-            'ruleSubTypes' => RuleSubType::withTitle(),
+            'ruleSubTypes' => RuleSubType::withTitle('', $rule->rule_type->value),
             'record' => null,
             'version' => new VersionResource($version),
             'models' => AIModel::all(),
             'vectorIds' => Vector::all('id', 'name', 'vector_type'),
             'outputFields' => $outputFields,
+            'outputIdeaFields' => [0 => 'theme', 1 => 'description'],
             'versionStatusTypes' => VersionStatus::withTitle(),
             'ruleStatusTypes' => RuleStatus::withTitle()
         ]);
@@ -169,6 +171,7 @@ class RuleStepsController extends Controller
             'models' => AIModel::all(),
             'vectorIds' => Vector::all('id', 'name', 'vector_type'),
             'outputFields' => $outputFields,
+            'outputIdeaFields' => [0 => 'theme', 1 => 'description'],
             'versionStatusTypes' => VersionStatus::withTitle(),
             'ruleStatusTypes' => RuleStatus::withTitle()
         ]);

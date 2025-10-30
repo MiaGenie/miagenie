@@ -48,12 +48,20 @@ const {notify} = useNotifications();
 const {isCreate, isEdit} = usePageMode();
 const {onError} = useRouter();
 
+const briefingsFields =  cloneDeep(props.fieldList.briefings).reduce(
+    (list, field) => {
+        field.name = field.description;
+        field.description = field.sub_description;
+        list.push(field);
+        return list;
+    }, []
+)
+
+
 const form = useForm(isEdit.value ? cloneDeep(props.record) :
 
-    props.fieldList.briefings.reduce(
+    cloneDeep(props.fieldList.briefings).reduce(
         (list, field) => {
-            field.name = field.description;
-            field.description = field.sub_description;
             list.content[field.code_name] = props.fieldTypes.find((field_type) => field_type.value === field.field_type  ).hasOptions ? [] : '' ;
             if(Array.isArray(list.content[field.code_name])) {
                 field.options.forEach(function(group, indexGroup){
@@ -166,17 +174,14 @@ provide(/* key */ 'form', /* value */ form);
     <Head :title="mode === 'create' ? $t('genie.create_briefing') : $t('genie.edit_briefing')"/>
 
     <div class="w-full mx-auto row-py">
-        <PageHeader :title="mode === 'create' ? $t('genie.create_briefing') : $t('genie.edit_briefing')">
-            <template v-if="isEdit">
-                <BriefingAction :record="record" />
-            </template>
-        </PageHeader>
+
+        <PageHeader :title="mode === 'create' ? $t('genie.create_briefing') : $t('genie.edit_briefing')"/>
 
         <div class="row-px">
             <form method="post" @submit.prevent="submit">
 
                 <Panel>
-                    <VersionFieldsForm :fieldTypes="props.fieldTypes" :fieldList="props.fieldList.briefings"></VersionFieldsForm>
+                    <VersionFieldsForm :fieldTypes="props.fieldTypes" :fields="briefingsFields"></VersionFieldsForm>
                 </Panel>
 
                 <Flex

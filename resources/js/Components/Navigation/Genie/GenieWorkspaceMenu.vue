@@ -6,6 +6,8 @@ import MenuGroupHeader from "@/Components/Sidebar/MenuGroupHeader.vue"
 import MenuGroupBody from "@/Components/Sidebar/MenuGroupBody.vue"
 import CompetitorIcon from "@/Icons/Genie/Competitor.vue";
 import BriefingIcon from "@/Icons/Genie/Briefings.vue";
+import LampIcon from "@/Icons/Genie/Lamp.vue";
+import DraftIcon from "@/Icons/Genie/Draft.vue";
 import StrategyIcon from "@/Icons/Genie/Strategies.vue";
 
 const workspaceCtx = inject('workspaceCtx');
@@ -36,6 +38,20 @@ const workspaceCtx = inject('workspaceCtx');
                 <StrategyIcon/>
             </template>
             {{ $t('genie.strategies') }}
+        </MenuItem>
+        <MenuItem :url="route('genie.ideas.index', {workspace: workspaceCtx.id})"
+                  :active="$page.component === 'Genie/Ideas/Index'">
+            <template #icon>
+                <LampIcon/>
+            </template>
+            {{ $t('genie.ideas') }}
+        </MenuItem>
+        <MenuItem :url="route('genie.drafts.index', {workspace: workspaceCtx.id})"
+                  :active="$page.component === 'Genie/Drafts/Index'">
+            <template #icon>
+                <DraftIcon/>
+            </template>
+            {{ $t('genie.drafts') }}
         </MenuItem>
     </MenuGroupBody>
 </template>

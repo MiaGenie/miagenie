@@ -7,6 +7,7 @@ use App\Enums\RunResponseStatus;
 use App\Enums\RunStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 
@@ -62,6 +63,14 @@ class RunResponse extends Model
     public function runCompetitor(): HasOne
     {
         return $this->HasOne(RunCompetitor::class, 'run_response_id');
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function runFieldIterator(): HasOne
+    {
+        return $this->HasOne(RunFieldIterator::class);
     }
 
     /**
