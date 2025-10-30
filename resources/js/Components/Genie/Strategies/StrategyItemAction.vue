@@ -10,7 +10,8 @@ import Dropdown from "@/Components/Dropdown/Dropdown.vue";
 import DropdownButton from "@/Components/Dropdown/DropdownButton.vue";
 import DropdownItem from "@/Components/Dropdown/DropdownItem.vue";
 import PencilSquare from "@/Icons/PencilSquare.vue";
-import Trash from "@/Icons/Trash.vue";
+import TrashIcon from "@/Icons/Trash.vue";
+import LampIcon from "@/Icons/Genie/Lamp.vue";
 import PureButton from "@/Components/Button/PureButton.vue";
 import PureButtonLink from "@/Components/Button/PureButtonLink.vue";
 import Eye from "@/Icons/Eye.vue";
@@ -27,6 +28,10 @@ const props = defineProps({
         required: true,
     },
     review: {
+        type: Boolean,
+        default: false,
+    },
+    complete: {
         type: Boolean,
         default: false,
     }
@@ -55,12 +60,18 @@ const getRoute = (name) => {
                 workspace: workspaceCtx.id,
                 strategy: props.itemId
             });
+        case 'generate':
+            return route('genie.ideas.generate', {
+                workspace: workspaceCtx.id,
+                strategy: props.itemId
+            });
         default:
             return '';
     }
 }
 
 const confirmationDeletion = ref(false);
+const confirmationGeneration = ref(false);
 
 const confirmDeleteStrategy = () => {
     confirmation()
@@ -92,6 +103,19 @@ const deleteStrategyAfterConfirmed = (dialog) => {
         }
     })
 }
+
+const confirmGenerate = () => {
+    confirmation()
+        .title($t('genie.generate_ideas'))
+        .description($t('genie.generate_ideas_confirm'))
+        .warning()
+        .onConfirm((dialog) => {
+            router.put(getRoute('generate'));
+            dialog.reset();
+        })
+        .show();
+}
+
 </script>
 <template>
     <div>
@@ -122,7 +146,7 @@ const deleteStrategyAfterConfirmed = (dialog) => {
 
                     <DropdownItem @click="confirmDeleteStrategy" as="button">
                         <template #icon>
-                            <Trash class="text-red-500"/>
+                            <TrashIcon class="text-red-500"/>
                         </template>
                         {{ $t('general.delete') }}
                     </DropdownItem>
@@ -150,7 +174,15 @@ const deleteStrategyAfterConfirmed = (dialog) => {
                 @click="confirmDeleteStrategy"
                 v-tooltip="$t('general.delete')"
             >
-                <Trash class="text-red-500"/>
+                <TrashIcon class="text-red-500"/>
+            </PureButton>
+
+            <PureButton
+                v-if="complete"
+                @click="confirmGenerate"
+                v-tooltip="$t('genie.generate_ideas')"
+            >
+                <LampIcon class="text-yellow-500"/>
             </PureButton>
 
         </div>

@@ -8,6 +8,8 @@ use App\Concerns\GenieLogger;
 use App\Contracts\GenieOutputContract;
 use App\Enums\GenieSyncAction;
 use App\Enums\GenieType;
+use App\Enums\RuleSubType;
+use App\Enums\RuleType;
 use App\Models\Rule;
 use App\Models\RunResponse;
 use Illuminate\Bus\Queueable;
@@ -80,6 +82,7 @@ class RunResponseJob extends GenieJob implements ShouldQueue
         $data = $action->handle($data);
 
         if ($data->getError()) {
+            $this->logRun(GenieType::RUN_RESPONSE, $this->action, $data);
             $this->release(5);
             return;
         }
@@ -92,7 +95,13 @@ class RunResponseJob extends GenieJob implements ShouldQueue
 
         $nextAction = $data->nextAction();
         if ($nextAction) {
-            RunJob::dispatch($this->runResponse->run, $nextAction);
+            switch ($data->getRuleType()) {
+                case RuleType::STRATEGY:
+                    RunJob::dispatch($this->runResponse->run, $nextAction);
+                    break;
+                case RuleType::IDEAS:
+                    RunIdeaJob::dispatch($this->runResponse->run, $nextAction);
+            }
         }
     }
 

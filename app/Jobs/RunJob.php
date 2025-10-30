@@ -6,6 +6,7 @@ use App\Abstracts\GenieData;
 use App\Abstracts\GenieJob;
 use App\Concerns\GenieLogger;
 use App\Contracts\GenieOutputContract;
+use App\Contracts\GenieRunDataContract;
 use App\Enums\GenieSyncAction;
 use App\Enums\GenieSyncStatus;
 use App\Enums\RuleSubType;
@@ -94,7 +95,7 @@ class RunJob extends GenieJob implements ShouldQueue
             }
             if ($nextStep?->rule_sub_type === RuleSubType::COMPETITORS) {
                 $runResponse->runCompetitor()->create([
-                    'competitor_id' => $data->getNextCompetitor()->id,
+                    'competitor_id' => $data->getNextIterator()->id,
                 ]);
             }
 
@@ -118,16 +119,17 @@ class RunJob extends GenieJob implements ShouldQueue
     }
 
     /**
-     * @return GenieRunData
+     * @return GenieRunDataContract
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function getGenieRunData(): GenieRunData
+    public function getGenieRunData(): GenieRunDataContract
     {
         return App::make(
-            GenieRunData::class,
+            GenieRunDataContract::class,
             [
                 'model' => $this->run,
-                'action' => $this->action
+                'action' => $this->action,
+                'type' => $this->run->rule->rule_type
             ]
         );
     }

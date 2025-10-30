@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 use Inovector\Mixpost\Concerns\OwnedByWorkspace;
 
@@ -42,5 +43,13 @@ class Strategy extends Model
     public function run(): BelongsTo
     {
         return $this->belongsTo(Run::class);
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function ideas(): HasMany
+    {
+        return $this->hasMany(Idea::class);
     }
 }

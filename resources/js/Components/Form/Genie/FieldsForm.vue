@@ -10,7 +10,6 @@ import Radio from "@/Components/Form/Radio.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import Checkbox from "@/Components/Form/Checkbox.vue";
 import Flex from "@/Components/Layout/Flex.vue";
-import Label from "@/Components/Form/Label.vue";
 import Input from "@/Components/Form/Input.vue";
 import { inject } from "vue";
 import {find} from "lodash";
@@ -18,7 +17,7 @@ import {find} from "lodash";
 const {t: $t} = useI18n();
 
 const props = defineProps({
-    fieldList: {
+    fields: {
         type: Object,
         required: true,
     },
@@ -39,7 +38,7 @@ const fieldType = (field) => {
 <template>
     <template slot="title">{{ $t("general.details") }}</template>
 
-    <template v-for="(field, index) in props.fieldList" :key="index">
+    <template v-for="(field, index) in props.fields" :key="index">
         <VerticalGroup class="form-field mt-lg">
             <template #title>
                 <label :for="field.code_name">{{ field.name }}</label>
@@ -71,6 +70,10 @@ const fieldType = (field) => {
 
             </template>
 
+            <template #description v-if="fieldType(field).name === 'DROP_DOWN'">
+                {{ field.description }}
+            </template>
+
             <template v-if="fieldType(field).name === 'CHECKBOX'">
 
                 <TableCell class="">
@@ -82,6 +85,10 @@ const fieldType = (field) => {
                     </template>
                 </TableCell>
 
+            </template>
+
+            <template #description v-if="fieldType(field).name === 'DROP_DOWN'">
+                {{ field.description }}
             </template>
 
             <template v-if="fieldType(field).name === 'DROP_DOWN'">
@@ -98,6 +105,10 @@ const fieldType = (field) => {
 
             </template>
 
+            <template #description v-if="fieldType(field).name === 'RADIO'">
+                {{ field.description }}
+            </template>
+
             <template v-if="fieldType(field).name === 'RADIO'">
 
                 <TableCell class="">
@@ -111,6 +122,10 @@ const fieldType = (field) => {
                     </template>
                 </TableCell>
 
+            </template>
+
+            <template #description v-if="fieldType(field).name === 'RADIO_GROUP'">
+                {{ field.description }}
             </template>
 
             <template v-if="fieldType(field).name === 'RADIO_GROUP'">

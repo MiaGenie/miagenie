@@ -35,7 +35,7 @@ const getRuleType = () => {
     <TableRow :hoverable="true">
 
         <TableCell>
-            {{ workspaces[item.workspace_id - 1] }}
+            {{ workspaces[item.workspace_id]  + item.workspace_id }}
         </TableCell>
 
         <TableCell>

@@ -6,7 +6,9 @@ use App\Enums\RunStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 use Inovector\Mixpost\Models\Workspace;
 
@@ -33,7 +35,7 @@ class Run extends Model
      */
     public function rule(): BelongsTo
     {
-        return $this->belongsTo(Rule::class, 'rule_id');
+        return $this->belongsTo(Rule::class);
     }
 
     /**
@@ -41,7 +43,7 @@ class Run extends Model
      */
     public function workspace(): BelongsTo
     {
-        return $this->belongsTo(Workspace::class, 'workspace_id');
+        return $this->belongsTo(Workspace::class);
     }
 
     /**
@@ -49,7 +51,15 @@ class Run extends Model
      */
     public function runResponses(): HasMany
     {
-        return $this->hasMany(RunResponse::class, 'run_id');
+        return $this->hasMany(RunResponse::class);
+    }
+
+    /**
+     * @return HasManyThrough
+     */
+    public function runFieldIterators(): HasManyThrough
+    {
+        return $this->hasManyThrough(RunFieldIterator::class, RunResponse::class);
     }
 
     /**
@@ -57,7 +67,15 @@ class Run extends Model
      */
     public function strategy(): HasOne
     {
-        return $this->HasOne(Strategy::class, 'run_id');
+        return $this->HasOne(Strategy::class);
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function runIdea(): HasOne
+    {
+        return $this->HasOne(RunIdea::class);
     }
 
     /**

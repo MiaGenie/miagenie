@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Builders;
+
+use App\Builders\Filters\DraftStatusFilter;
+use App\Contracts\Query;
+use App\Models\Draft;
+use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+
+class DraftQuery implements Query
+{
+    public static function apply(Request $request): Builder
+    {
+        $query = Draft::query();
+
+        if ($request->has('status') && $request->get('status') !== null) {
+            $query = DraftStatusFilter::apply($query, $request->get('status'));
+        }
+
+        return $query;
+    }
+}

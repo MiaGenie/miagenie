@@ -14,15 +14,14 @@ trait GenieParser
         return preg_replace_callback(
             '/\{\{\{([^}]*)\}\}\}/',
             function (array $keys) use ($replacements) {
-                $replacement = '';
                 if (array_key_exists($keys[1], $replacements)) {
                     $replacement = $replacements[$keys[1]];
                     if (is_array($replacement)) {
                         $replacement = implode("\n", $replacement);
                     }
+                    return $replacement;
                 }
-
-                return $replacement;
+                return $keys[0];
             },
             $text
         );

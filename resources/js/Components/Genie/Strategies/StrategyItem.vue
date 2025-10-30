@@ -78,6 +78,7 @@ const percentage = Number(fieldsCount.filled / fieldsCount.total * 100).toFixed(
             <StrategyItemAction
                 :itemId="item.id"
                 :review="itemRunStatus().requiresUpdate"
+                :complete="itemRunStatus().isComplete"
             />
         </TableCell>
     </TableRow>

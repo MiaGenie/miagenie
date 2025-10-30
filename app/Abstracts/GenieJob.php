@@ -76,6 +76,7 @@ abstract class GenieJob
         return App::make(
             GenieOutputContract::class,
             [
+                'model' => $this->model,
                 'type' => $data->getType()
             ]
         );

@@ -3,19 +3,19 @@
 namespace App\Genie\Data;
 
 use App\Concerns\GenieParser;
+use App\Contracts\GenieRunDataContract;
 use App\Enums\GenieSyncAction;
 use App\Models\Competitor;
 use App\Models\RuleStep;
 use App\Models\RunCompetitor;
 use App\Models\Run;
 use App\Models\RunResponse;
-use App\Models\Strategy;
 use App\Models\VersionField;
 use App\Models\VersionFieldOption;
 use Illuminate\Support\Collection;
 use Inovector\Mixpost\Facades\WorkspaceManager;
 
-class GenieRunData
+class GenieRunData implements GenieRunDataContract
 {
     use GenieParser;
 
@@ -81,7 +81,7 @@ class GenieRunData
     /**
      * @return ?RuleStep
      */
-    public function lastStep(): ?RuleStep
+    private function lastStep(): ?RuleStep
     {
         if (isset($this->lastStep)) {
             return $this->lastStep;
@@ -142,7 +142,7 @@ class GenieRunData
     /**
      * @return ?Competitor
      */
-    public function getNextCompetitor(): ?Competitor
+    public function getNextIterator(): ?Competitor
     {
         //TODO - check when both nulls
         $todoCompetitors = $this->getTodoCompetitors($this->nextStep);

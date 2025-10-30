@@ -7,6 +7,7 @@ use App\Concerns\GenieParser;
 use App\Contracts\GenieDataContract;
 use App\Enums\GenieSyncAction;
 use App\Enums\RuleSubType;
+use App\Enums\RuleType;
 use App\Enums\RunResponseStatus;
 use App\Enums\VersionGroupType;
 use App\Models\Briefing;
@@ -141,6 +142,14 @@ class GenieDataResponses extends GenieData implements GenieDataContract
         }
 
         return $this->nextAction;
+    }
+
+    /**
+     * @return RuleType
+     */
+    public function getRuleType(): RuleType
+    {
+        return $this->model->step->rule->rule_type;
     }
 
     /**
