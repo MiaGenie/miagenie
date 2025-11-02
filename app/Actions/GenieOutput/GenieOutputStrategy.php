@@ -4,6 +4,7 @@ namespace App\Actions\GenieOutput;
 
 use App\Abstracts\GenieData;
 use App\Actions\GenieOutput;
+use App\Concerns\CleanAsterisks;
 use App\Contracts\GenieOutputContract;
 use App\Enums\RuleSubType;
 use App\Enums\RunResponseError;
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\Log;
 
 class GenieOutputStrategy extends GenieOutput implements GenieOutputContract
 {
+    use CleanAsterisks;
+
     /**
      * @param GenieData $data
      */
@@ -38,6 +41,8 @@ class GenieOutputStrategy extends GenieOutput implements GenieOutputContract
             $strategy = $model->run->strategy;
             $content = $strategy->content ?? [];
             $firstOutput = $model->step->output[0];
+            $outputText = $response['output'][0]['content'][0]['text'];
+            $outputText = $this->cleanAsterisks($outputText);
             switch ($model->step->rule_sub_type) {
                 default:
                 case RuleSubType::BRIEFINGS:
@@ -45,16 +50,16 @@ class GenieOutputStrategy extends GenieOutput implements GenieOutputContract
                     switch ($model->step->response_format) {
                         default:
                         case 'text':
-                            $content[$firstOutput] = $response['output'][0]['content'][0]['text'];
+                            $content[$firstOutput] = $outputText;
                             break;
                         case 'json_schema':
-                            $responseOutput = json_decode($response['output'][0]['content'][0]['text'], true);
+                            $responseOutput = json_decode($outputText, true);
                             $content[$firstOutput] = $responseOutput[$firstOutput];
                             break;
                     }
                     break;
                 case RuleSubType::BRIEFINGS_MULTIPLE:
-                    $responseOutput = json_decode($response['output'][0]['content'][0]['text'], true);
+                    $responseOutput = json_decode($outputText, true);
                     foreach ($model->step->output as $output) {
                         $content[$output] = $responseOutput[$output];
                     }
@@ -63,10 +68,10 @@ class GenieOutputStrategy extends GenieOutput implements GenieOutputContract
                     switch ($model->step->response_format) {
                         default:
                         case 'text':
-                            $content[$firstOutput][$model->runCompetitor->competitor_id] = $response['output'][0]['content'][0]['text'];
+                            $content[$firstOutput][$model->runCompetitor->competitor_id] = $outputText;
                             break;
                         case 'json_schema':
-                            $responseOutput = json_decode($response['output'][0]['content'][0]['text'], true);
+                            $responseOutput = json_decode($outputText, true);
                             $content[$firstOutput][$model->runCompetitor->competitor_id] = $responseOutput;
                             break;
                     }

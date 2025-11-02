@@ -53,5 +53,12 @@ const workspaceCtx = inject('workspaceCtx');
             </template>
             {{ $t('genie.drafts') }}
         </MenuItem>
+        <MenuItem :url="route('genie.pre_posts.index', {workspace: workspaceCtx.id})"
+                  :active="$page.component === 'Genie/PrePosts/Index'">
+            <template #icon>
+                <DraftIcon/>
+            </template>
+            {{ $t('genie.pre_posts') }}
+        </MenuItem>
     </MenuGroupBody>
 </template>

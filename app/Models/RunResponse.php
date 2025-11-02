@@ -58,11 +58,44 @@ class RunResponse extends Model
     }
 
     /**
+     * @return HasMany
+     */
+    public function ideas(): HasMany
+    {
+        return $this->HasMany(Idea::class);
+    }
+
+    /**
      * @return HasOne
      */
     public function runCompetitor(): HasOne
     {
         return $this->HasOne(RunCompetitor::class, 'run_response_id');
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function runIdeaResponse(): HasOne
+    {
+        return $this->HasOne(RunIdeaResponse::class);
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function runDraftResponse(): HasOne
+    {
+        return $this->HasOne(RunDraftResponse::class);
+    }
+
+
+    /**
+     * @return HasOne
+     */
+    public function prePostRunResponse(): HasOne
+    {
+        return $this->HasOne(PrePostRunResponse::class);
     }
 
     /**

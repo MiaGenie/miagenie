@@ -22,6 +22,8 @@ import X from "@/Icons/X.vue";
 import Label from "@/Components/Form/Label.vue";
 import Flex from "@/Components/Layout/Flex.vue";
 import Switch from "@/Components/Form/Switch.vue";
+import DraftIcon from "mixpost-pro-team/resources/js/Icons/Genie/Draft.vue";
+import WarningButton from "@/Components/Button/WarningButton.vue";
 
 
 const {t: $t} = useI18n()
@@ -145,11 +147,57 @@ const deleteIdea = () => {
 }
 
 const currentStatus = () => {
+    return find(props.statusTypes, ['value', Number(props.record.status)]);
+}
+
+const formStatus = () => {
     return find(props.statusTypes, ['value', Number(form.status)]);
 }
 
-const statusEnabled = () => {
-    return currentStatus()?.name === 'ENABLED';
+const formStatusApproved = () => {
+    return formStatus()?.name === 'APPROVED';
+}
+
+const currentStatusApproved = () => {
+    return currentStatus()?.name === 'APPROVED';
+}
+
+const updateGenerateDraft = () => {
+    confirmation()
+        .title($t('genie.generate_draft'))
+        .description($t('genie.generate_draft_confirm'))
+        .warning()
+        .onConfirm((dialog) => {
+            dialog.isLoading(true);
+
+            form.put(route('genie.ideas.updateGenerate', {
+                idea: props.record.id,
+                workspace: workspaceCtx.id
+            }), {
+                preserveScroll: true,
+                onError: (errors) => {
+                    onError(errors, update);
+                },
+            });
+
+        })
+        .show();
+}
+
+const generateDraft = () => {
+    confirmation()
+        .title($t('genie.generate_draft'))
+        .description($t('genie.generate_draft_confirm'))
+        .warning()
+        .onConfirm((dialog) => {
+            dialog.isLoading(true);
+
+            router.put(route('genie.drafts.generate',{
+                workspace: workspaceCtx.id,
+                idea: props.record.id
+            }));
+        })
+        .show();
 }
 
 </script>
@@ -279,6 +327,20 @@ const statusEnabled = () => {
 
                 <div class="flex flex-row items-center justify-between mt-lg">
                     <div class="flex gap-6">
+                        <WarningButton
+                            v-if="currentStatusApproved()"
+                            @click="generateDraft"
+                            :hiddenTextOnSmallScreen="true"
+                            :disabled="form.processing"
+                            :isLoading="form.processing"
+                            size="sm"
+                        >
+
+                            <template #icon>
+                                <DraftIcon/>
+                            </template>
+                            {{ $t('genie.generate_draft') }}
+                        </WarningButton>
 
                         <PrimaryButton
                             type="submit"
@@ -291,6 +353,21 @@ const statusEnabled = () => {
                                 <Save/>
                             </template>
                         </PrimaryButton>
+
+                        <WarningButton
+                            v-if="!currentStatusApproved() && formStatusApproved()"
+                            @click="updateGenerateDraft"
+                            :hiddenTextOnSmallScreen="true"
+                            :disabled="form.processing"
+                            :isLoading="form.processing"
+                            size="sm"
+                        >
+
+                            <template #icon>
+                                <DraftIcon/>
+                            </template>
+                            {{ $t('genie.update_generate_draft') }}
+                        </WarningButton>
 
                         <SecondaryButton
                             @click="attemptClose"

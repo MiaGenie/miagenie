@@ -7,10 +7,10 @@ use App\Concerns\GenieParser;
 use App\Concerns\GenieSchemaParser;
 use App\Contracts\GenieDataContract;
 use App\Enums\GenieSyncAction;
-use App\Enums\GenieType;
 use App\Enums\RuleSubType;
 use App\Enums\RuleType;
 use App\Enums\RunResponseStatus;
+use App\Enums\RunStatus;
 use App\Enums\VersionGroupType;
 use App\Models\Briefing;
 use App\Models\RuleStep;
@@ -57,8 +57,8 @@ class GenieDataIdeasResponses extends GenieData implements GenieDataContract
     ) {
         parent::__construct($runResponse, $action);
         $this->runResponse = $runResponse;
-        $this->previousRunResponse = $this->getPreviousResponse();
         WorkspaceManager::setCurrent($this->runResponse->run->workspace);
+        $this->previousRunResponse = $this->getPreviousResponse();
         $this->locale = $this->runResponse->run->workspace->locale ?? app()->getFallbackLocale();
     }
 
@@ -117,12 +117,39 @@ class GenieDataIdeasResponses extends GenieData implements GenieDataContract
      */
     private function getPreviousResponse(): ?RunResponse
     {
+        if (
+            $this->runResponse->step->rule_sub_type === RuleSubType::IDEAS_INITIAL ||
+            $this->runResponse->step->rule_sub_type === RuleSubType::DRAFTS_INITIAL
+        ) {
+            return null;
+        }
+
+        $initialStep = $this->ruleInitialStep();
+
+        if (!$initialStep) {
+            if ($this->runResponse->step->link_upstream) {
+                return null;
+            }
+            return RunResponse::where(['run_id' => $this->runResponse->run->id])->whereKeyNot($this->runResponse->id)->latest('id')->first();
+        }
+
+        if ($initialStep->link_upstream) {
+            $initialRunResponse = RunResponse::with(['run' => function ($query) {$query->where('workspace_id', $this->runResponse->run->workspace->id);}])
+                ->where(['step_id' => $initialStep->id, 'status' => RunStatus::COMPLETE])->latest()->first();
+        } else {
+            $initialRunResponse = $this->runResponse->run->runResponses->where('step_id', $initialStep->id)->first();
+        }
+
+        if ($this->runResponse->step->link_upstream) {
+            return $initialRunResponse;
+        }
+
         $previousRunResponse = RunResponse::where(['run_id' => $this->runResponse->run->id])
             ->whereKeyNot($this->runResponse->id)
             ->latest('id')
             ->first();
 
-        return $previousRunResponse;
+        return $previousRunResponse ?? $initialRunResponse;
     }
 
     /**
@@ -231,7 +258,9 @@ class GenieDataIdeasResponses extends GenieData implements GenieDataContract
      */
     private function getStrategySchemas(): array
     {
-        $schemas = $this->runResponse->run->runIdea->strategy->run->rule->ruleSteps->pluck('json_schema');
+        $schemas = $this->runResponse->run->runStrategy->strategy->run->rule->ruleSteps->map(function (RuleStep $step) {
+            return $step->getTranslation('json_schema', $this->locale);
+        });
 
         $schemas = $schemas->reduce(function (array $list, $item) {
             $item = json_decode($item, true);
@@ -318,5 +347,18 @@ class GenieDataIdeasResponses extends GenieData implements GenieDataContract
             $reviewMsg = $this->previousRunResponse->step->getTranslation('instructions', $this->locale) . "\n";
         }
         return $reviewMsg;
+    }
+
+    /**
+     * @return ?RuleStep
+     */
+    private function ruleInitialStep(): ?RuleStep
+    {
+        foreach ($this->runResponse->run->rule->ruleSteps as $ruleStep) {
+            if (str_contains($ruleStep->rule_sub_type->name, 'INITIAL')) {
+                return $ruleStep;
+            }
+        }
+        return null;
     }
 }

@@ -5,6 +5,7 @@ use App\Http\Controllers\Workspace\BriefingsController;
 use App\Http\Controllers\Workspace\DeleteIdeasController;
 use App\Http\Controllers\Workspace\DraftsController;
 use App\Http\Controllers\Workspace\IdeasController;
+use App\Http\Controllers\Workspace\PrePostsController;
 use App\Http\Controllers\Workspace\StrategiesController;
 use Illuminate\Support\Facades\Route;
 use Inovector\Mixpost\Enums\WorkspaceUserRole;
@@ -57,6 +58,7 @@ Route::middleware(array_merge([
             Route::get('/', [IdeasController::class, 'index'])->name('index')->withoutMiddleware($editorMiddleware);
             Route::get('create', [IdeasController::class, 'create'])->name('create');
             Route::put('generate/{strategy}', [IdeasController::class, 'generate'])->name('generate');
+            Route::put('updateGenerate/{idea}', [IdeasController::class, 'updateGenerate'])->name('updateGenerate');
             Route::post('store', [IdeasController::class, 'store'])->name('store');
             Route::get('{idea}', [IdeasController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
             Route::put('{idea}', [IdeasController::class, 'update'])->name('update');
@@ -69,8 +71,22 @@ Route::middleware(array_merge([
             Route::get('create', [DraftsController::class, 'create'])->name('create');
             Route::put('generate/{idea}', [DraftsController::class, 'generate'])->name('generate');
             Route::post('store', [DraftsController::class, 'store'])->name('store');
+            Route::put('updateGenerate/{draft}', [DraftsController::class, 'updateGenerate'])->name('updateGenerate');
             Route::get('{draft}', [DraftsController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
             Route::put('{draft}', [DraftsController::class, 'update'])->name('update');
             Route::delete('{draft}', [DraftsController::class, 'destroy'])->name('delete');
+            Route::post('generateMultiple', [DraftsController::class, 'generateMultiple'])->name('generateMultiple');
+        });
+
+        Route::prefix('pre_posts')->name('pre_posts.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
+            Route::get('/', [PrePostsController::class, 'index'])->name('index')->withoutMiddleware($editorMiddleware);
+            Route::get('create', [PrePostsController::class, 'create'])->name('create');
+            Route::put('generate/{draft}', [PrePostsController::class, 'generate'])->name('generate');
+            Route::post('store', [PrePostsController::class, 'store'])->name('store');
+            Route::post('updateGenerate', [PrePostsController::class, 'updateGenerate'])->name('updateGenerate');
+            Route::get('{pre_post}', [PrePostsController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
+            Route::put('{pre_post}', [PrePostsController::class, 'update'])->name('update');
+            Route::delete('{pre_post}', [PrePostsController::class, 'destroy'])->name('delete');
+            Route::post('generateMultiple', [PrePostsController::class, 'generateMultiple'])->name('generateMultiple');
         });
     });

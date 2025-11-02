@@ -2,20 +2,14 @@
 
 namespace App\Jobs;
 
-use App\Abstracts\GenieData;
 use App\Abstracts\GenieJob;
 use App\Concerns\GenieLogger;
-use App\Contracts\GenieOutputContract;
 use App\Contracts\GenieRunDataContract;
 use App\Enums\GenieSyncAction;
-use App\Enums\GenieSyncStatus;
 use App\Enums\RuleSubType;
-use App\Enums\RunResponseStatus;
 use App\Enums\RunStatus;
-use App\Genie\Data\GenieRunData;
 use App\Models\Rule;
 use App\Models\Run;
-use App\Models\RunResponse;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -86,12 +80,9 @@ class RunJob extends GenieJob implements ShouldQueue
                     'step_id' => $nextStep->id
                 ]);
             } else {
-                $runResponse =  $this->run->runResponses()->where('status', '!=', RunStatus::COMPLETE)->firstOrCreate(
-                    [
-                        'run_id' => $this->run->id,
-                        'step_id' => $nextStep->id,
-                    ]
-                );
+                $runResponse =  $this->run->runResponses()->where('status', '!=', RunStatus::COMPLETE)->firstOrCreate([
+                    'step_id' => $nextStep->id,
+                ]);
             }
             if ($nextStep?->rule_sub_type === RuleSubType::COMPETITORS) {
                 $runResponse->runCompetitor()->create([

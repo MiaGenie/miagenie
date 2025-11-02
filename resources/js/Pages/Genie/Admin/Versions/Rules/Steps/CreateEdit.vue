@@ -42,6 +42,10 @@ const props = defineProps({
         type: Object,
         required: true
     },
+    ruleTypes: {
+        type: Object,
+        required: true
+    },
     ruleSubTypes: {
         type: Object,
         required: true
@@ -66,6 +70,14 @@ const props = defineProps({
         type: Array,
         required: true
     },
+    outputDraftFields: {
+        type: Array,
+        required: true
+    },
+    outputPrePostFields: {
+        type: Array,
+        required: true
+    },
     record: {
         type: Object
     }
@@ -87,6 +99,7 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     top_p: isEdit.value ? props.record.top_p ?? 1 : 1,
     reasoning_effort: isEdit.value ? props.record.reasoning_effort ?? '' : '',
     vector_id: isEdit.value ? props.record.vector_id ?? '' : '',
+    link_upstream: isEdit.value ? props.record.link_upstream : 0,
     message: isEdit.value ? props.record.message : '',
     output: isEdit.value ? props.record.output : [],
     requires_review: isEdit.value ? props.record.requires_review : 0,
@@ -115,6 +128,7 @@ const checkMultiple = () => {
 
 const modelHas = ref({});
 const ruleSubType = ref({});
+const ruleType = find(props.ruleTypes, ['value', parseInt(props.rule.rule_type)]) ?? {};
 
 onMounted( () => {
     ruleSubType.value = find(props.ruleSubTypes, ['value', parseInt(form.rule_sub_type)]) ?? {}
@@ -248,6 +262,25 @@ const deleteStep = () => {
                         </template>
                     </VerticalGroup>
 
+                    <VerticalGroup
+                        v-if="(ruleType['name'] === 'IDEAS' || ruleSubType['name'] === 'CHANNELS') ||
+                         (ruleType['name'] === 'DRAFTS' && !props.rule.link_upstream && ruleSubType['name'] === 'DRAFTS')"
+                        class="form-field"
+                    >
+                        <template #title>
+                            <label for="link_upstream">{{ $t("genie.step_link_upstream") }}</label>
+                        </template>
+
+                        <Switch
+                            v-model="form.link_upstream"
+                            id="link_upstream"
+                        />
+
+                        <template #footer>
+                            <Error :message="form.errors.link_upstream"/>
+                        </template>
+                    </VerticalGroup>
+
                     <VerticalGroup v-if="ruleSubType['name'] === 'CHANNELS' || ruleSubType['name'] === 'IDEAS_MULTIPLE'" class="form-field mt-lg">
                         <template #title>
                             <label for="depends_on_field">{{ $t("genie.step_depends_on_field") }}</label>
@@ -336,7 +369,6 @@ const deleteStep = () => {
                     <VerticalGroup class="form-field mt-lg">
                         <template #title>
                             <label for="instructions">{{ $t("genie.step_instructions") }}</label>
-                            <LabelSuffix :danger="true">*</LabelSuffix>
                         </template>
 
                         <Textarea v-model="form.instructions"
@@ -344,7 +376,7 @@ const deleteStep = () => {
                                   id="instructions"
                                   class="w-full"
                                   rows="10"
-                                  required/>
+                        />
 
                         <template #footer>
                             <Error :message="form.errors.instructions"/>
@@ -484,7 +516,12 @@ const deleteStep = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup v-if="rule.rule_type == 1 && ruleSubType['name'] !== 'BRIEFINGS_MULTIPLE'" class="form-field mt-lg">
+                    <VerticalGroup
+                        v-if="ruleType['name'] === 'STRATEGY' &&
+                            ruleSubType['name'] !== 'BRIEFINGS_MULTIPLE' &&
+                            (ruleSubType['name'] !== 'IDEAS_INITIAL' && ruleSubType['name'] !== 'DRAFTS_INITIAL')"
+                        class="form-field mt-lg"
+                    >
                         <template #title>
                             <label for="output">{{ $t("genie.step_output") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
@@ -509,23 +546,39 @@ const deleteStep = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup v-if="rule.rule_type == 2 || ruleSubType['name'] === 'BRIEFINGS_MULTIPLE'" class="form-field mt-lg">
+                    <VerticalGroup
+                        v-if="(ruleType['name'] === 'IDEAS' || ruleType['name'] === 'DRAFTS'  || ruleType['name'] === 'PRE_POSTS' || ruleSubType['name'] === 'BRIEFINGS_MULTIPLE') &&
+                            (ruleSubType['name'] !== 'IDEAS_INITIAL' && ruleSubType['name'] !== 'DRAFTS_INITIAL' && ruleSubType['name'] !== 'PRE_POSTS_INITIAL')"
+                        class="form-field mt-lg"
+                    >
                         <template #title>
                             <label for="output">{{ $t("genie.step_output") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
                         </template>
 
                         <TableCell class="">
-                            <template v-if="rule.rule_type == 1" v-for="(output, index) in outputFields" :key="output.code_name">
+                            <template v-if="ruleType['name'] === 'STRATEGY'" v-for="(strategy_output, index) in outputFields" :key="strategy_output.code_name">
                                 <Flex class="py-sm">
-                                    <Checkbox v-model:checked="form.output" :value="output.code_name"/>
-                                    {{ output.name }}
+                                    <Checkbox v-model:checked="form.output" :value="strategy_output.code_name"/>
+                                    {{ strategy_output.name }}
                                 </Flex>
                             </template>
-                            <template v-if="rule.rule_type == 2" v-for="(output, index) in outputIdeaFields" :key="output">
+                            <template v-else-if="ruleType['name'] === 'IDEAS'" v-for="(idea_output, index) in outputIdeaFields" :key="idea_output">
                                 <Flex class="py-sm">
-                                    <Checkbox v-model:checked="form.output" :value="output"/>
-                                    {{ output }}
+                                    <Checkbox v-model:checked="form.output" :value="idea_output"/>
+                                    {{ idea_output }}
+                                </Flex>
+                            </template>
+                            <template v-else-if="ruleType['name'] === 'DRAFTS'" v-for="(draft_output, index) in outputDraftFields" :key="draft_output">
+                                <Flex class="py-sm">
+                                    <Checkbox v-model:checked="form.output" :value="draft_output"/>
+                                    {{ draft_output }}
+                                </Flex>
+                            </template>
+                            <template v-else-if="ruleType['name'] === 'PRE_POSTS'" v-for="(pre_post_output, index) in outputPrePostFields" :key="pre_post_output">
+                                <Flex class="py-sm">
+                                    <Checkbox v-model:checked="form.output" :value="pre_post_output"/>
+                                    {{ pre_post_output }}
                                 </Flex>
                             </template>
                         </TableCell>

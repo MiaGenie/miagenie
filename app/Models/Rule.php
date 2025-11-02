@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\RuleSubType;
 use App\Enums\RuleType;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -19,6 +19,7 @@ class Rule extends Model
         'uuid',
         'version_id',
         'rule_type',
+        'link_upstream',
         'name',
         'description',
         'status',
@@ -27,6 +28,16 @@ class Rule extends Model
     protected $casts = [
         'rule_type' => RuleType::class,
     ];
+
+
+    protected function linkUpstream(): Attribute
+    {
+        return Attribute::make(
+
+            set: fn (?bool $value) => boolval($value),
+
+        );
+    }
 
     /**
      * @return BelongsTo
@@ -42,7 +53,7 @@ class Rule extends Model
      */
     public function ruleSteps(): HasMany
     {
-        return $this->hasMany(RuleStep::class, 'rule_id');
+        return $this->hasMany(RuleStep::class, 'rule_id')->orderBy('position');
     }
 
     /**

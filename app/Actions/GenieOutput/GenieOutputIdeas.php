@@ -4,6 +4,7 @@ namespace App\Actions\GenieOutput;
 
 use App\Abstracts\GenieData;
 use App\Actions\GenieOutput;
+use App\Concerns\CleanAsterisks;
 use App\Contracts\GenieOutputContract;
 use App\Enums\FunnelStage;
 use App\Enums\IdeaSource;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Log;
 
 class GenieOutputIdeas extends GenieOutput implements GenieOutputContract
 {
+    use CleanAsterisks;
+
     /**
      * @param GenieData $data
      */
@@ -34,10 +37,12 @@ class GenieOutputIdeas extends GenieOutput implements GenieOutputContract
                 'incomplete_details' => $response['incomplete_details'] ? $response['incomplete_details']['reason'] : null,
             ]);
 
-            $contentPillarData = $model->run->runIdea->strategy->content[$model->step->dependsOnField->code_name][$model->runFieldIterator->field_index]  ?? null;
+            $contentPillarData = $model->run->runStrategy->strategy->content[$model->step->dependsOnField->code_name][$model->runFieldIterator->field_index]  ?? null;
             $contentPillar = $contentPillarData ? array_shift($contentPillarData) : null;
 
-            $output = collect(json_decode($response['output'][0]['content'][0]['text'], true));
+            $responseOutput = $response['output'][0]['content'][0]['text'];
+            $responseOutput = $this->cleanAsterisks($responseOutput);
+            $output = collect(json_decode($responseOutput, true));
 
             $ideas = $output->flatMap(function (array $values, string $key) use ($contentPillar, $model) {
                 $values = array_map(function ($value) use ($key, $contentPillar, $model) {
@@ -51,7 +56,7 @@ class GenieOutputIdeas extends GenieOutput implements GenieOutputContract
                 return $values;
             });
 
-            $strategy = $model->run->runIdea->strategy;
+            $strategy = $model->run->runStrategy->strategy;
 
             $strategy->ideas()->createMany($ideas);
 

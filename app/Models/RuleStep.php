@@ -15,12 +15,11 @@ class RuleStep extends Model
     use HasUuid;
     use HasTranslations;
 
-    public $table = 'genie_rule_steps';
-
     protected $fillable = [
         'uuid',
         'rule_id',
         'rule_sub_type',
+        'link_upstream',
         'name',
         'description',
         'instructions',
@@ -41,6 +40,8 @@ class RuleStep extends Model
         'depends_on_field',
         'depends_on_option'
     ];
+
+    public $table = 'genie_rule_steps';
 
     protected $casts = [
         'rule_sub_type' => RuleSubType::class,

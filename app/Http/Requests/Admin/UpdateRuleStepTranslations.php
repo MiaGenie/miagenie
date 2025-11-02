@@ -15,11 +15,11 @@ class UpdateRuleStepTranslations extends FormRequest
     public function rules(): array
     {
         return [
-            'instructions' => ['required', 'string'],
+            'instructions' => ['nullable', 'string', 'min:1', 'max:10000'],
             'json_schema' => ['nullable', 'json'],
-            'message' => ['required', 'string'],
-            'review_message_user' => ['nullable', 'string'],
-            'review_message_system' => ['nullable', 'string']
+            'message' => ['required', 'string', 'max:5000'],
+            'review_message_user' => ['nullable', 'string', 'max:5000'],
+            'review_message_system' => ['nullable', 'string', 'max:5000']
         ];
     }
 

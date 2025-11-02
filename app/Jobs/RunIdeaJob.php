@@ -8,7 +8,6 @@ use App\Contracts\GenieRunDataContract;
 use App\Enums\GenieSyncAction;
 use App\Enums\RuleSubType;
 use App\Enums\RunStatus;
-use App\Genie\Data\GenieRunData;
 use App\Models\Rule;
 use App\Models\Run;
 use Illuminate\Bus\Queueable;
@@ -76,28 +75,16 @@ class RunIdeaJob extends GenieJob implements ShouldQueue
 
         if ($nextStep) {
 
-            if ($this->action === GenieSyncAction::CREATE) {
-                $runResponse = $this->run->runResponses()->create([
+            $runResponse =  $this->run->runResponses()->where('status', '!=', RunStatus::COMPLETE)->firstOrCreate(
+                [
                     'step_id' => $nextStep->id
+                ]
+            );
+            if ($nextStep?->rule_sub_type === RuleSubType::IDEAS_MULTIPLE) {
+                $runResponse->runFieldIterator()->firstOrCreate([
+                    'field_id' => $nextStep->depends_on_field,
+                    'field_index' => $data->getNextIteratorId(),
                 ]);
-                if ($nextStep?->rule_sub_type === RuleSubType::IDEAS_MULTIPLE) {
-                    $runResponse->runFieldIterator()->create([
-                        'field_id' => $nextStep->depends_on_field,
-                        'field_index' => $data->getNextIteratorId(),
-                    ]);
-                }
-            } else {
-                $runResponse =  $this->run->runResponses()->where('status', '!=', RunStatus::COMPLETE)->firstOrCreate(
-                    [
-                        'step_id' => $nextStep->id
-                    ]
-                );
-                if ($nextStep?->rule_sub_type === RuleSubType::IDEAS_MULTIPLE) {
-                    $runResponse->runFieldIterator()->firstOrCreate([
-                        'field_id' => $nextStep->depends_on_field,
-                        'field_index' => $data->getNextIteratorId(),
-                    ]);
-                }
             }
 
             $genieState->handle($data, 'run');

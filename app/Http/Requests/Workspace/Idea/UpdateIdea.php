@@ -18,7 +18,7 @@ class UpdateIdea extends FormRequest
     {
         return [
             'theme' => ['required', 'string', 'max:255'],
-            'description' => ['required', 'string'],
+            'description' => ['required', 'string', 'max:5000'],
             'status' => [ValidationRule::enum(IdeaStatus::class)],
             'source' => [ValidationRule::enum(IdeaSource::class)],
             'funnel_stage' => [ValidationRule::enum(FunnelStage::class), 'nullable'],

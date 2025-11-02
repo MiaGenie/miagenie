@@ -73,9 +73,25 @@ class Run extends Model
     /**
      * @return HasOne
      */
-    public function runIdea(): HasOne
+    public function runStrategy(): HasOne
     {
-        return $this->HasOne(RunIdea::class);
+        return $this->HasOne(RunStrategy::class);
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function runIdeas(): HasMany
+    {
+        return $this->hasMany(RunIdea::class);
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function runDrafts(): HasMany
+    {
+        return $this->hasMany(RunDraft::class);
     }
 
     /**

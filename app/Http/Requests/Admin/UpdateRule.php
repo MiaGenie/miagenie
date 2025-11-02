@@ -17,6 +17,7 @@ class UpdateRule extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'rule_type' => [ValidationRule::enum(RuleType::class)],
+            'link_upstream' => ['nullable', 'boolean'],
         ];
     }
 
@@ -28,6 +29,7 @@ class UpdateRule extends FormRequest
         $record = Rule::firstOrFailByUuid($this->route('rule'));
 
         return $record->update([
+            'link_upstream' => $this->input('link_upstream'),
             'name' => $this->input('name'),
             'description' => $this->input('description'),
             'status' => $this->input('status')

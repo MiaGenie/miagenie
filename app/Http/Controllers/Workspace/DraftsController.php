@@ -3,21 +3,18 @@
 namespace App\Http\Controllers\Workspace;
 
 use App\Builders\DraftQuery;
+use App\Concerns\Controller\DraftGeneration;
 use App\Concerns\Controller\HasFieldOptions;
+use App\Concerns\Controller\PrePostGeneration;
 use App\Enums\FunnelStage;
-use App\Enums\GenieSyncAction;
 use App\Enums\DraftStatus;
-use App\Enums\RuleType;
-use App\Enums\RunStatus;
 use App\Http\Requests\Workspace\Draft\StoreDraft;
 use App\Http\Requests\Workspace\Draft\UpdateDraft;
 use App\Http\Resources\DraftResource;
-use App\Jobs\RunIdeaJob;
 use App\Models\Draft;
-use App\Models\Rule;
-use App\Models\Run;
+use App\Models\Idea;
 use App\Models\Strategy;
-use App\Models\WorkspaceVersion;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inovector\Mixpost\Facades\WorkspaceManager;
@@ -25,6 +22,8 @@ use Inovector\Mixpost\Facades\WorkspaceManager;
 class DraftsController
 {
     use HasFieldOptions;
+    use DraftGeneration;
+    use PrePostGeneration;
 
     /**
      * @param Request $request
@@ -68,6 +67,22 @@ class DraftsController
         ]);
     }
 
+
+    /**
+     * @param UpdateDraft $updateDraft
+     */
+    public function updateGenerate(UpdateDraft $updateDraft)
+    {
+        $updateDraft->handle();
+
+        $record = Draft::firstOrFailByUuid($updateDraft->route('draft'));
+        $this->prePostGeneration(Draft::where('id', $record->id)->get());
+
+        return redirect()
+            ->route('genie.drafts.index', ['workspace' => $updateDraft->route('workspace')])
+            ->with('success', __('genie.generating_pre_posts'));
+    }
+
     /**
      * @param StoreDraft $storeDraft
      */
@@ -107,28 +122,24 @@ class DraftsController
         ]);
     }
 
-    public function generate(Request $request)
+    public function generate(Request $request): RedirectResponse
     {
-        $workspace = WorkspaceManager::current();
-        $workspaceVersion = WorkspaceVersion::where('workspace_id', $workspace->id)->first();
+        $ideas = Idea::where('uuid', $request->input('idea'))->get();
+        $this->draftGeneration($ideas);
 
-        $strategy = Strategy::findByUuid(request()->route('strategy'));
+        return redirect()
+            ->route('genie.ideas.index', ['workspace' => $request->route('workspace')])
+            ->with('success', __('genie.generating_drafts'));
+    }
 
-        $rule = Rule::where('version_id', $workspaceVersion->version_id)->where('rule_type', RuleType::DRAFTS)->first();
+    public function generateMultiple(Request $request): RedirectResponse
+    {
+        $ideas = Idea::whereIn('uuid', $request->input('ideas'))->get();
+        $this->draftGeneration($ideas);
 
-        $run = Run::create([
-            'workspace_id' => $workspace->id,
-            'rule_id' => $rule->id,
-            'status' => RunStatus::OPEN,
-        ]);
-
-        $run->runIdea()->create([
-            'strategy_id' => $strategy->id
-        ]);
-
-        RunIdeaJob::dispatch($run, GenieSyncAction::CREATE);
-
-        return redirect()->back()->with('success', __('genie.generating_drafts'));
+        return redirect()
+            ->route('genie.ideas.index', ['workspace' => $request->route('workspace')])
+            ->with('success', __('genie.generating_drafts'));
     }
 
     /**
@@ -159,4 +170,5 @@ class DraftsController
         return redirect()->route('genie.drafts.index', ['workspace' => $request->route('workspace')])
             ->with('success', __('genie.draft_deleted'));
     }
+
 }

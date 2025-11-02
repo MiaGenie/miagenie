@@ -19,27 +19,20 @@ trait GenieSchemaParser
 
         $items = [];
         foreach ($matches[1] as $match) {
-            $bar = data_get($replacements, $match);
-            if (is_array($bar)) {
-                ksort($bar);
+            $data = data_get($replacements, $match);
+            if (is_array($data)) {
+                ksort($data);
             }
-            $foo = data_get($schema, $match);
+            $schemaData = data_get($schema, $match);
             $key = rtrim($match, '.0..9');
-            $dar = $this->runResponse->run->rule->version->fields->where(
-                'code_name',
-                str_replace('strategy.', '', $key)
-            )->first();
+
             $items[$key]['match'] = $match;
-            $items[$key]['data'] = $bar;
-            $items[$key]['schema'] = $foo;
-            $items[$key]['field'] = $dar;
+            $items[$key]['data'] = $data;
+            $items[$key]['schema'] = $schemaData;
         }
 
         foreach ($items as $key => $item) {
-            if ($item['field']->field_type->name == 'CHECKBOX') {
-                $string = implode(', ', array_keys($item['data'], true));
-                $text = str_replace('{{{' . $item['match'] . '}}}', $string . "\n", $text);
-            } elseif (!is_array($item['data'])) {
+            if (!is_array($item['data'])) {
                 $text = str_replace('{{{' . $item['match'] . '}}}', $item['data'] . "\n", $text);
             } else {
                 $string = $this->getStr($item['data'], data_get($schema, $key), $key);
@@ -66,26 +59,41 @@ trait GenieSchemaParser
             }
             $schema = array_shift($schema['items']);
         }
-        foreach ($data as $sub_key => $sub_value) {
-            if (!is_array($sub_value)) {
-                if (!isset($schema['items']) && isset(data_get($schema, $key)['properties'][$sub_key]['description'])) {
-                    $string .= "\n" . data_get($schema, $key)['properties'][$sub_key]['description'] . "\n";
-                } elseif (isset($schema['properties'][$sub_key]['description'])) {
-                    $string .= $schema['properties'][$sub_key]['description'] . "\n";
+        foreach ($data as $subKey => $subValue) {
+            if (!is_array($subValue)) {
+                if (is_bool($subValue)) {
+                    if ($subValue) {
+                        if (isset($schema['properties']) && isset(data_get($schema['properties'], $subKey)['title'])) {
+                            $string .= data_get($schema['properties'], $subKey)['title'] . "\n";
+                        } else {
+                            $string .= $subKey . "\n";
+                        }
+                    }
+                } else {
+                    if (!isset($schema['items']) && isset(
+                        data_get(
+                            $schema,
+                            $key
+                        )['properties'][$subKey]['title']
+                    )) {
+                        $string .= "\n" . data_get($schema, $key)['properties'][$subKey]['description'] . "\n";
+                    } elseif (isset($schema['properties'][$subKey]['description'])) {
+                        $string .= $schema['properties'][$subKey]['description'] . "\n";
+                    }
+                    $string .= $subValue . "\n";
                 }
-                $string .= $sub_value . "\n";
             } else {
                 if (isset($schema['items'])) {
                     $subschema = $schema['items'];
                 } else {
-                    $subschema = data_get($schema, $key)['properties'][$sub_key] ?? $schema['properties'][$sub_key] ?? [];
+                    $subschema = data_get($schema, $key)['properties'][$subKey] ?? $schema['properties'][$subKey] ?? [];
                 }
                 if (isset($subschema['items'])) {
                     if (isset($subschema['description'])) {
                         $string .= "\n" . $subschema['description'] . "\n";
                     }
                 }
-                $string .= $this->getStr($sub_value, $subschema, $sub_key);
+                $string .= $this->getStr($subValue, $subschema, $subKey);
             }
         }
         return $string;

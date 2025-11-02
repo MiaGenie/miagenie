@@ -22,6 +22,8 @@ import X from "@/Icons/X.vue";
 import Label from "@/Components/Form/Label.vue";
 import Flex from "@/Components/Layout/Flex.vue";
 import Switch from "@/Components/Form/Switch.vue";
+import DraftIcon from "mixpost-pro-team/resources/js/Icons/Genie/Draft.vue";
+import WarningButton from "@/Components/Button/WarningButton.vue";
 
 
 const {t: $t} = useI18n()
@@ -59,11 +61,13 @@ const {onError} = useRouter();
 const confirmation = inject('confirmation');
 
 const form = useForm(isEdit.value ? cloneDeep(props.record) : {
-    funnel_stage: props.funnelStage ?? '',
-    theme: '',
-    description: '',
+    topic: '',
+    goal: '',
+    key_ideas: '',
+    media: '',
     status: '1'
 });
+
 
 const store = () => {
     form.post(route('genie.drafts.store',
@@ -145,11 +149,57 @@ const deleteDraft = () => {
 }
 
 const currentStatus = () => {
+    return find(props.statusTypes, ['value', Number(props.record.status)]);
+}
+
+const formStatus = () => {
     return find(props.statusTypes, ['value', Number(form.status)]);
 }
 
-const statusEnabled = () => {
-    return currentStatus()?.name === 'ENABLED';
+const formStatusApproved = () => {
+    return formStatus()?.name === 'APPROVED';
+}
+
+const currentStatusApproved = () => {
+    return currentStatus()?.name === 'APPROVED';
+}
+
+const updateGeneratePrePost = () => {
+    confirmation()
+        .title($t('genie.generate_pre_post'))
+        .description($t('genie.generate_pre_post_confirm'))
+        .warning()
+        .onConfirm((dialog) => {
+            dialog.isLoading(true);
+
+            form.put(route('genie.drafts.updateGenerate', {
+                draft: props.record.id,
+                workspace: workspaceCtx.id
+            }), {
+                preserveScroll: true,
+                onError: (errors) => {
+                    onError(errors, update);
+                },
+            });
+
+        })
+        .show();
+}
+
+const generatePrePost = () => {
+    confirmation()
+        .title($t('genie.generate_pre_post'))
+        .description($t('genie.generate_pre_post_confirm'))
+        .warning()
+        .onConfirm((dialog) => {
+            dialog.isLoading(true);
+
+            router.put(route('genie.pre_posts.generate',{
+                workspace: workspaceCtx.id,
+                draft: props.record.id
+            }));
+        })
+        .show();
 }
 
 </script>
@@ -167,82 +217,78 @@ const statusEnabled = () => {
 
                     <VerticalGroup class="form-field mt-lg">
                         <template #title>
-                            <label for="theme">{{ $t("genie.drafts_theme") }}
+                            <label for="topic">{{ $t("genie.drafts_topic") }}
                                 <LabelSuffix :danger="true">*</LabelSuffix>
                             </label>
                         </template>
 
-                        <Input v-model="form.theme"
-                               :error="form.errors.theme !== undefined"
+                        <Input v-model="form.topic"
+                               :error="form.errors.topic !== undefined"
                                type="text"
-                               id="theme"
+                               id="topic"
                                :autofocus="isCreate"
                                required
                         />
 
                         <template #footer>
-                            <Error :message="form.errors.theme"/>
+                            <Error :message="form.errors.topic"/>
                         </template>
                     </VerticalGroup>
 
                     <VerticalGroup class="form-field mt-lg">
                         <template #title>
-                            <label for="description">{{ $t("genie.description") }}</label>
+                            <label for="goal">{{ $t("genie.drafts_goal") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
                         </template>
 
-                        <Textarea v-model="form.description"
-                                  :error="form.errors.description !== undefined"
-                                  id="description"
+                        <Textarea v-model="form.goal"
+                                  :error="form.errors.goal !== undefined"
+                                  id="goal"
                                   class="w-full"
-                                  rows="6"
+                                  rows="10"
                                   required
                         />
 
                         <template #footer>
-                            <Error :message="form.errors.description"/>
+                            <Error :message="form.errors.goal"/>
                         </template>
                     </VerticalGroup>
 
                     <VerticalGroup class="form-field mt-lg">
                         <template #title>
-                            <label for="funnel_stage">{{ $t("genie.funnel_stage") }}</label>
+                            <label for="key_ideas">{{ $t("genie.drafts_key_ideas") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
                         </template>
 
-                        <Select
-                            v-model="form.funnel_stage"
-                            :disabled="isEdit"
-                            id="funnel_stage"
-                            required
-                        >
-                            <option v-for="funnelStage in funnelStages" :value="funnelStage.value">
-                                {{ $t(`genie.funnel_stage_${funnelStage.title}`) }}
-                            </option>
-                        </Select>
+                        <Textarea v-model="form.key_ideas"
+                                  :error="form.errors.key_ideas !== undefined"
+                                  id="key_ideas"
+                                  class="w-full"
+                                  rows="10"
+                                  required
+                        />
 
                         <template #footer>
-                            <Error :message="form.errors.funnel_stage"/>
+                            <Error :message="form.errors.key_ideas"/>
                         </template>
                     </VerticalGroup>
 
                     <VerticalGroup class="form-field mt-lg">
                         <template #title>
-                            <label for="content_pillar">{{ $t("genie.content_pillar") }}</label>
+                            <label for="media">{{ $t("genie.drafts_media") }}</label>
+                            <LabelSuffix :danger="true">*</LabelSuffix>
                         </template>
 
-                        <Select
-                            v-model="form.content_pillar"
-                            :disabled="isEdit"
-                            id="content_pillar"
-                        >
-                            <option v-for="contentPillar in contentPillars" :value="contentPillar">
-                                {{ contentPillar }}
-                            </option>
-                        </Select>
+                        <Textarea v-model="form.media"
+                                  :error="form.errors.media !== undefined"
+                                  id="media"
+                                  class="w-full"
+                                  rows="10"
+                                  required
+                        />
 
                         <template #footer>
-                            <Error :message="form.errors.content_pillar"/>
+                            <Error :message="form.errors.media"/>
                         </template>
                     </VerticalGroup>
 
@@ -279,6 +325,20 @@ const statusEnabled = () => {
 
                 <div class="flex flex-row items-center justify-between mt-lg">
                     <div class="flex gap-6">
+                        <WarningButton
+                            v-if="currentStatusApproved()"
+                            @click="generatePrePost"
+                            :hiddenTextOnSmallScreen="true"
+                            :disabled="form.processing"
+                            :isLoading="form.processing"
+                            size="sm"
+                        >
+
+                            <template #icon>
+                                <DraftIcon/>
+                            </template>
+                            {{ $t('genie.generate_pre_post') }}
+                        </WarningButton>
 
                         <PrimaryButton
                             type="submit"
@@ -291,6 +351,21 @@ const statusEnabled = () => {
                                 <Save/>
                             </template>
                         </PrimaryButton>
+
+                        <WarningButton
+                            v-if="!currentStatusApproved() && formStatusApproved()"
+                            @click="updateGeneratePrePost"
+                            :hiddenTextOnSmallScreen="true"
+                            :disabled="form.processing"
+                            :isLoading="form.processing"
+                            size="sm"
+                        >
+
+                            <template #icon>
+                                <DraftIcon/>
+                            </template>
+                            {{ $t('genie.update_generate_pre_post') }}
+                        </WarningButton>
 
                         <SecondaryButton
                             @click="attemptClose"

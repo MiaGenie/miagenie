@@ -15,8 +15,9 @@ class StoreDraft extends FormRequest
     public function rules(): array
     {
         return [
-            'goal' => ['required', 'string', 'max:255'],
-            'caption' => ['required', 'string'],
+            'topic' => ['required', 'string', 'max:255'],
+            'goal' => ['required', 'string', 'max:5000'],
+            'key_ideas' => ['required', 'string', 'max:5000'],
             'media' => ['required', 'string'],
             'status' => [ValidationRule::enum(DraftStatus::class)],
         ];
@@ -29,8 +30,9 @@ class StoreDraft extends FormRequest
     {
         return Draft::create([
             'idea_id' => $this->input('idea_id'),
+            'topic' => $this->input('topic'),
             'goal' => $this->input('goal'),
-            'caption' => $this->input('caption'),
+            'key_ideas' => $this->input('key_ideas'),
             'media' => $this->input('media'),
             'status' => $this->input('status'),
         ]);

@@ -31,10 +31,10 @@ return new class extends Migration
     {
         Schema::table('genie_rule_steps', function (Blueprint $table) {
             $table->text('instructions')->change();
-            $table->text('json_schema')->nullable()->change();
+            $table->text('json_schema')->change();
             $table->text('message')->change();
-            $table->text('review_message_user')->nullable()->change();
-            $table->text('review_message_system')->nullable()->change();
+            $table->text('review_message_user')->change();
+            $table->text('review_message_system')->change();
         });
     }
 };

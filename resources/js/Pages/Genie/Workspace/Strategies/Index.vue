@@ -34,7 +34,6 @@ const props = defineProps({
 
 const routePrefix = inject('routePrefix');
 const workspaceCtx = inject('workspaceCtx');
-const confirmation = inject('confirmation');
 
 const identifier = props.fieldList.find( field => field.is_identifier === 1);
 provide('identifier', identifier);

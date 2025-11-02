@@ -22,8 +22,9 @@ class DraftResource extends JsonResource
             'id' => $this->uuid,
             'workspace_id' => $this->workspace_id,
             'idea_id' => $this->idea_id,
+            'topic' => $this->topic,
             'goal' => $this->goal,
-            'caption' => $this->caption,
+            'key_ideas' => $this->key_ideas,
             'media' => $this->media,
             'status' => $this->status,
         ];

@@ -50,7 +50,7 @@ class RulesController extends Controller
         return Inertia::render('Genie/Admin/Versions/Rules/CreateEdit', [
             'mode' => 'create',
             'ruleTypes' => RuleType::withTitle(),
-            'ruleType' => $request->input('rule_type'),
+            'type' => $request->input('rule_type'),
             'version' => new VersionResource($version),
             'statusTypes' => RuleStatus::withTitle(),
             'record' => null
