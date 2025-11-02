@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Builders\RunResponsesQuery;
 use App\Enums\RuleSubType;
 use App\Enums\RunResponseStatus;
 use App\Enums\RunStatus;
@@ -25,25 +24,25 @@ class RunResponsesController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection|Response
     {
-        $runResponsesRecords = RunResponsesQuery::apply($request)
+
+        $run = Run::firstOrFailByUuid($request->route('run'));
+
+        $records = RunResponse::query()
+            ->where('run_id', $run->id)
             ->oldest()
             ->paginate(100)
-            ->onEachSide(1)
-            ->withQueryString();
-
-        $rule = $runResponsesRecords->first()->step->rule;
-        $ruleSteps = RuleStep::where('rule_id', '=', $rule->id)->get();
+            ->onEachSide(1);
 
         return Inertia::render('Genie/Admin/Runs/RunResponses/Index', [
-            'versionName' => Version::find($rule->version_id)->name,
-            'workspaceName' => Workspace::find($runResponsesRecords->first()->run->workspace_id)->name,
-            'ruleName' => $rule->name,
-            'ruleType' => $rule->rule_type->name,
-            'ruleSteps' => $ruleSteps,
+            'versionName' => $run->rule->version->name,
+            'workspaceName' => $run->workspace->name,
+            'ruleName' => $run->rule->name,
+            'ruleType' => $run->rule->rule_type->name,
+            'ruleSteps' => $run->rule->ruleSteps,
             'ruleSubTypes' => RuleSubType::withTitle(),
-            'run' => RunResource::make(Run::find($runResponsesRecords->first()->run->id)),
+            'run' => new RunResource($run),
             'runResponseStatus' => RunStatus::withTitle(),
-            'records' => RunResponseResource::collection($runResponsesRecords),
+            'records' => RunResponseResource::collection($records),
         ]);
     }
 

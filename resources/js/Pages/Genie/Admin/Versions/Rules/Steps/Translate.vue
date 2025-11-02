@@ -14,7 +14,6 @@ import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import X from "@/Icons/X.vue";
-import Input from "@/Components/Form/Input.vue";
 
 defineOptions({layout: AdminLayout});
 
@@ -107,7 +106,6 @@ const backToList = () => {
                     <VerticalGroup class="form-field mt-lg">
                         <template #title>
                             <label for="instructions">{{ $t("genie.step_instructions") }}</label>
-                            <LabelSuffix :danger="true">*</LabelSuffix>
                         </template>
 
                         <Textarea v-model="form.instructions"
@@ -115,7 +113,7 @@ const backToList = () => {
                                   id="instructions"
                                   class="w-full"
                                   rows="10"
-                                  required/>
+                        />
 
                         <template #footer>
                             <Error :message="form.errors.instructions"/>

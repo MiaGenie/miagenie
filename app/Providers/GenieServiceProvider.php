@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use App\Abstracts\GenieData;
 use App\Actions\GenieOutput;
+use App\Actions\GenieOutput\GenieOutputDrafts;
 use App\Actions\GenieOutput\GenieOutputIdeas;
+use App\Actions\GenieOutput\GenieOutputPrePosts;
 use App\Actions\GenieOutput\GenieOutputStrategy;
 use App\Actions\GenieRun\CreateResponse;
 use App\Actions\GenieRun\RetrieveResponse;
@@ -22,12 +24,16 @@ use App\Enums\GenieSyncAction;
 use App\Enums\GenieType;
 use App\Enums\RuleType;
 use App\Genie\Data\GenieDataAssistants;
+use App\Genie\Data\GenieDataDraftsResponses;
 use App\Genie\Data\GenieDataFiles;
 use App\Genie\Data\GenieDataIdeasResponses;
+use App\Genie\Data\GenieDataPrePostsResponses;
 use App\Genie\Data\GenieDataResponses;
 use App\Genie\Data\GenieDataVectors;
 use App\Genie\Data\GenieRunData;
-use App\Genie\Data\GenieRunIdeasData;
+use App\Genie\Data\GenieRunDataDrafts;
+use App\Genie\Data\GenieRunDataIdeas;
+use App\Genie\Data\GenieRunDataPrePosts;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -46,10 +52,6 @@ class GenieServiceProvider extends ServiceProvider
             $type = GenieType::fromName($modelName);
 
             switch ($type) {
-//                case GenieType::RUN:
-//                    return match($action) {
-
-//                    };
                 case GenieType::RUN_RESPONSE:
                     return match($action) {
                         GenieSyncAction::CREATE => new CreateResponse(),
@@ -77,9 +79,11 @@ class GenieServiceProvider extends ServiceProvider
                 case RuleType::STRATEGY:
                     return new GenieRunData($model, $action);
                 case RuleType::IDEAS:
-                    return new GenieRunIdeasData($model, $action);
+                    return new GenieRunDataIdeas($model, $action);
                 case RuleType::DRAFTS:
-                    return new GenieRunIdeasData($model, $action);
+                    return new GenieRunDataDrafts($model, $action);
+                case RuleType::PRE_POSTS:
+                    return new GenieRunDataPrePosts($model, $action);
             }
 
         });
@@ -97,7 +101,11 @@ class GenieServiceProvider extends ServiceProvider
                             return new GenieDataResponses($model, $action);
                         case RuleType::IDEAS:
                             return new GenieDataIdeasResponses($model, $action);
-                            }
+                        case RuleType::DRAFTS:
+                            return new GenieDataDraftsResponses($model, $action);
+                        case RuleType::PRE_POSTS:
+                            return new GenieDataPrePostsResponses($model, $action);
+                    }
                 case GenieType::FILE:
                     return new GenieDataFiles($model, $action);
                 case GenieType::VECTOR:
@@ -119,6 +127,10 @@ class GenieServiceProvider extends ServiceProvider
                             return new GenieOutputStrategy();
                         case RuleType::IDEAS:
                             return new GenieOutputIdeas();
+                        case RuleType::DRAFTS:
+                            return new GenieOutputDrafts();
+                        case RuleType::PRE_POSTS:
+                            return new GenieOutputPrePosts();
                     }
                 case GenieType::FILE:
                 case GenieType::VECTOR:

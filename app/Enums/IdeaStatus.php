@@ -14,7 +14,7 @@ enum IdeaStatus: int
 
     case PENDING_REVIEW = 1;
     case APPROVED = 2;
-    case DISMISSED = 3;
+    case TRASH = 9;
 
     /**
      * @return string
@@ -22,9 +22,9 @@ enum IdeaStatus: int
     public function title(): string
     {
         return match ($this) {
-            self::PENDING_REVIEW => 'pending_review',
             self::APPROVED => 'approved',
-            self::DISMISSED => 'dismissed',
+            self::PENDING_REVIEW => 'pending_review',
+            self::TRASH => 'trash',
         };
     }
 
@@ -34,7 +34,7 @@ enum IdeaStatus: int
     public function isError(): bool
     {
         return match ($this) {
-            self::DISMISSED => true,
+            self::TRASH => true,
             default => false,
         };
     }

@@ -2,15 +2,24 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Concerns\Controller\GenieFields;
+use App\Enums\RuleStatus;
 use App\Enums\RuleSubType;
 use App\Enums\RuleType;
 use App\Enums\VersionGroupType;
 use App\Enums\VersionStatus;
+use App\Http\Requests\Admin\StoreRuleStep;
+use App\Http\Requests\Admin\UpdateRuleStep;
+use App\Http\Requests\Admin\UpdateRuleStepPositions;
 use App\Http\Requests\Admin\UpdateRuleStepTranslations;
+use App\Http\Resources\Admin\RuleResource;
+use App\Http\Resources\Admin\RuleStepResource;
 use App\Http\Resources\Admin\RuleStepTranslationResource;
 use App\Http\Resources\Admin\VersionResource;
 use App\Models\AIModel;
+use App\Models\Draft;
 use App\Models\Idea;
+use App\Models\PrePost;
 use App\Models\Rule;
 use App\Models\RuleStep;
 use App\Models\Vector;
@@ -23,17 +32,12 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
-use App\Enums\RuleStatus;
-use App\Http\Requests\Admin\StoreRuleStep;
-use App\Http\Requests\Admin\UpdateRuleStep;
-use App\Http\Requests\Admin\UpdateRuleStepPositions;
-use App\Http\Resources\Admin\RuleStepResource;
-use App\Http\Resources\Admin\RuleResource;
 use Inertia\Response;
 use Inovector\Mixpost\Util;
 
 class RuleStepsController extends Controller
 {
+    use GenieFields;
 
 
     /**
@@ -111,13 +115,16 @@ class RuleStepsController extends Controller
         return Inertia::render('Genie/Admin/Versions/Rules/Steps/CreateEdit', [
             'mode' => 'create',
             'rule' => new RuleResource($rule),
+            'ruleTypes' => RuleType::withTitle(),
             'ruleSubTypes' => RuleSubType::withTitle('', $rule->rule_type->value),
             'record' => null,
             'version' => new VersionResource($version),
             'models' => AIModel::all(),
             'vectorIds' => Vector::all('id', 'name', 'vector_type'),
             'outputFields' => $outputFields,
-            'outputIdeaFields' => [0 => 'theme', 1 => 'description'],
+            'outputIdeaFields' => (new Idea())->getGenieFields(),
+            'outputDraftFields' => (new Draft())->getGenieFields(),
+            'outputPrePostFields' => (new PrePost())->getGenieFields(),
             'versionStatusTypes' => VersionStatus::withTitle(),
             'ruleStatusTypes' => RuleStatus::withTitle()
         ]);
@@ -165,13 +172,16 @@ class RuleStepsController extends Controller
         return Inertia::render('Genie/Admin/Versions/Rules/Steps/CreateEdit', [
             'mode' => 'edit',
             'rule' => new RuleResource($rule),
-            'ruleSubTypes' => RuleSubType::withTitle(),
+            'ruleTypes' => RuleType::withTitle(),
+            'ruleSubTypes' => RuleSubType::withTitle('', $rule->rule_type->value),
             'record' => new RuleStepResource($record),
             'version' => new VersionResource($version),
             'models' => AIModel::all(),
             'vectorIds' => Vector::all('id', 'name', 'vector_type'),
             'outputFields' => $outputFields,
-            'outputIdeaFields' => [0 => 'theme', 1 => 'description'],
+            'outputIdeaFields' => (new Idea())->getGenieFields(),
+            'outputDraftFields' => (new Draft())->getGenieFields(),
+            'outputPrePostFields' => (new PrePost())->getGenieFields(),
             'versionStatusTypes' => VersionStatus::withTitle(),
             'ruleStatusTypes' => RuleStatus::withTitle()
         ]);

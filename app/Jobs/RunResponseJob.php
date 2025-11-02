@@ -2,23 +2,20 @@
 
 namespace App\Jobs;
 
-use App\Abstracts\GenieData;
 use App\Abstracts\GenieJob;
 use App\Concerns\GenieLogger;
-use App\Contracts\GenieOutputContract;
 use App\Enums\GenieSyncAction;
 use App\Enums\GenieType;
-use App\Enums\RuleSubType;
 use App\Enums\RuleType;
 use App\Models\Rule;
 use App\Models\RunResponse;
+use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -27,6 +24,7 @@ class RunResponseJob extends GenieJob implements ShouldQueue
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
+    use Batchable;
     use SerializesModels;
     use GenieLogger;
 
@@ -101,6 +99,13 @@ class RunResponseJob extends GenieJob implements ShouldQueue
                     break;
                 case RuleType::IDEAS:
                     RunIdeaJob::dispatch($this->runResponse->run, $nextAction);
+                    break;
+                case RuleType::DRAFTS:
+                    RunDraftJob::dispatch($this->runResponse->run, $nextAction);
+                    break;
+                case RuleType::PRE_POSTS:
+                    RunPrePostJob::dispatch($this->runResponse->run, $nextAction);
+                    break;
             }
         }
     }

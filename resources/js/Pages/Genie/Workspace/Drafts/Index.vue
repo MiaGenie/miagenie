@@ -1,13 +1,13 @@
 <script setup>
 import {Head, router} from '@inertiajs/vue3';
-import {inject, ref, watch} from "vue";
+import {inject, onMounted, ref, watch} from "vue";
 import {useI18n} from "vue-i18n";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
 import Table from "@/Components/DataDisplay/Table.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
-import IdeaItem from "@/Components/Genie/Ideas/IdeaItem.vue";
+import DraftItem from "@/Components/Genie/Drafts/DraftItem.vue";
 import Pagination from "@/Components/Navigation/Pagination.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import NoResult from "@/Components/Util/NoResult.vue";
@@ -20,7 +20,14 @@ import SelectableBar from "@/Components/DataDisplay/SelectableBar.vue";
 import PureDangerButton from "@/Components/Button/PureDangerButton.vue";
 import TrashIcon from "@/Icons/Trash.vue";
 import Checkbox from "@/Components/Form/Checkbox.vue";
-
+import ConfirmationModal from "@/Components/Modal/ConfirmationModal.vue";
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
+import DangerButton from "@/Components/Button/DangerButton.vue";
+import useNotifications from "@/Composables/useNotifications.js";
+import Select from "@/Components/Form/Select.vue";
+import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
+import WarningButton from "@/Components/Button/WarningButton.vue";
+import DraftIcon from "mixpost-pro-team/resources/js/Icons/Genie/Draft.vue";
 
 const {t: $t} = useI18n()
 
@@ -50,6 +57,8 @@ const {
     deselectAllRecords
 } = useSelectable();
 
+const {notify} = useNotifications();
+const confirmation = inject('confirmation');
 const workspaceCtx = inject('workspaceCtx');
 
 const filter = ref({
@@ -59,7 +68,15 @@ const filter = ref({
 const currentFilter = ref(cloneDeep(props.filter));
 const isFiltered = ref(false);
 const isLoading = ref(false);
+const confirmationDeletion = ref(false);
 
+const itemsId = () => {
+    return props.records.data.map(item => item.id);
+}
+
+onMounted(() => {
+    putPageRecords(itemsId());
+});
 
 watch(() => cloneDeep(filter.value), throttle(() => {
     router.get(route('genie.drafts.index'), pickBy(filter.value), {
@@ -99,6 +116,38 @@ const createDraft = () => {
     );
 }
 
+const generatePrePosts = () => {
+    confirmation()
+        .title($t('genie.generate_pre_posts'))
+        .description($t('genie.generate_pre_posts_confirm'))
+        .warning()
+        .onConfirm((dialog) => {
+            router.post(route('genie.pre_posts.generateMultiple',{
+                workspace: workspaceCtx.id
+            }),{
+                drafts: selectedRecords.value
+            });
+            dialog.reset();
+        })
+        .show();
+}
+
+const deleteDrafts = () => {
+    router.delete(route('genie.drafts.deleteMultiple', {workspace: workspaceCtx.id}), {
+        data: {
+            drafts: selectedRecords.value,
+            status: filter.value.status
+        },
+        onSuccess() {
+            deselectAllRecords();
+            notify('success',  $t("genie.drafts_deleted"))
+        },
+        onFinish() {
+            confirmationDeletion.value = false;
+        }
+    });
+}
+
 </script>
 <template>
 
@@ -112,7 +161,7 @@ const createDraft = () => {
             </template>
         </PageHeader>
 
-        <div class="w-full row-px row-mb mt-lg flex items-center grow gap-6">
+        <div class="w-full row-px row-mb mt-lg flex justify-between grow gap-6">
 
             <PrimaryButton
                 @click="createDraft"
@@ -127,6 +176,21 @@ const createDraft = () => {
                 </template>
                 {{ $t('genie.create_draft') }}
             </PrimaryButton>
+
+            <WarningButton
+                v-if="selectedRecords.length > 0"
+                @click="generatePrePosts"
+                :hiddenTextOnSmallScreen="true"
+                :disabled="isLoading"
+                :isLoading="isLoading"
+                size="sm"
+            >
+
+                <template #icon>
+                    <DraftIcon/>
+                </template>
+                {{ $t('genie.generate_pre_posts') }}
+            </WarningButton>
 
         </div>
 
@@ -175,7 +239,7 @@ const createDraft = () => {
                                 component="th"
                                 scope="col"
                             >
-                                {{ $t('general.name') }}
+                                {{ $t('genie.drafts_topic') }}
                             </TableCell>
 
                             <TableCell
@@ -184,14 +248,6 @@ const createDraft = () => {
                                 class="hidden sm:table-cell"
                             >
                                 {{ $t('general.status') }}
-                            </TableCell>
-
-                            <TableCell
-                                component="th"
-                                scope="col"
-                                class="hidden md:table-cell"
-                            >
-                                {{ $t('genie.is_default') }}
                             </TableCell>
 
                             <TableCell
@@ -208,11 +264,11 @@ const createDraft = () => {
                             v-for="item in records.data"
                             :key="item.id"
                         >
-                            <IdeaItem :item="item">
+                            <DraftItem :item="item">
                                 <template #checkbox>
                                     <Checkbox v-model:checked="selectedRecords" :value="item.id"/>
                                 </template>
-                            </IdeaItem>
+                            </DraftItem>
                         </template>
                     </template>
 
@@ -236,4 +292,19 @@ const createDraft = () => {
             </div>
         </div>
     </div>
+    <ConfirmationModal :show="confirmationDeletion" variant="danger" @close="confirmationDeletion = false">
+        <template #header>
+            {{ $t("genie.delete_drafts") }}
+        </template>
+        <template #body>
+            {{ $t("genie.confirmation_delete_draft") }}
+        </template>
+        <template #footer>
+            <SecondaryButton @click="confirmationDeletion = false" class="mr-xs rtl:mr-0 rtl:ml-xs">{{
+                    $t("general.cancel")
+                }}
+            </SecondaryButton>
+            <DangerButton @click="deleteDrafts">{{ $t("general.delete") }}</DangerButton>
+        </template>
+    </ConfirmationModal>
 </template>

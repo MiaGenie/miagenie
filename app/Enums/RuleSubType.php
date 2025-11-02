@@ -13,11 +13,14 @@ enum RuleSubType: int
     case COMPETITORS = 11;
     case BRIEFINGS = 12;
     case BRIEFINGS_MULTIPLE = 13;
-
     case CHANNELS = 14;
-    case IDEAS_SIMPLE = 21;
-
-    case IDEAS_MULTIPLE = 22;
+    case IDEAS_INITIAL = 21;
+    case IDEAS_SIMPLE = 22;
+    case IDEAS_MULTIPLE = 23;
+    case DRAFTS_INITIAL = 31;
+    case DRAFTS = 32;
+    case PRE_POSTS_INITIAL = 41;
+    case PRE_POSTS = 42;
 
     /**
      * @return string
@@ -29,8 +32,13 @@ enum RuleSubType: int
             self::BRIEFINGS => 'briefings',
             self::BRIEFINGS_MULTIPLE => 'briefings_multiple',
             self::CHANNELS => 'channels',
+            self::IDEAS_INITIAL => 'ideas_initial',
             self::IDEAS_SIMPLE => 'ideas_simple',
             self::IDEAS_MULTIPLE => 'ideas_multiple',
+            self::DRAFTS_INITIAL => 'drafts_initial',
+            self::DRAFTS => 'drafts',
+            self::PRE_POSTS_INITIAL => 'pre_posts_initial',
+            self::PRE_POSTS => 'pre_posts',
         };
     }
 }

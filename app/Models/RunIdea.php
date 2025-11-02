@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RunIdea extends Model
 {
@@ -12,7 +13,7 @@ class RunIdea extends Model
 
     protected $fillable = [
         'run_id',
-        'strategy_id',
+        'idea_id',
     ];
 
     /**
@@ -20,14 +21,22 @@ class RunIdea extends Model
      */
     public function run(): BelongsTo
     {
-        return $this->belongsTo(Run::class, 'run_id');
+        return $this->belongsTo(Run::class);
     }
 
     /**
      * @return BelongsTo
      */
-    public function strategy(): BelongsTo
+    public function idea(): BelongsTo
     {
-        return $this->belongsTo(Strategy::class, 'strategy_id');
+        return $this->belongsTo(Idea::class);
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function runIdeaResponses(): HasMany
+    {
+        return $this->hasMany(RunIdeaResponse::class);
     }
 }

@@ -43,7 +43,7 @@ const props = defineProps({
         type: Object,
         required: true
     },
-    ruleType: {
+    type: {
         type: String
     },
     statusTypes: {
@@ -61,12 +61,22 @@ const confirmation = inject('confirmation');
 
 const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     version_id: '',
-    rule_type: props.ruleType ?? '',
+    rule_type: props.type ?? '',
     name: '',
     description: '',
     status: '',
     is_default: false
 });
+
+const ruleType = ref({});
+
+onMounted( () => {
+    ruleType.value = find(props.ruleTypes, ['value', parseInt(form.rule_type)]) ?? {}
+})
+
+watch( () => form.rule_type, () => {
+    ruleType.value = find(props.ruleTypes, ['value', parseInt(form.rule_type)]) ?? {};
+})
 
 const store = () => {
     form.post(route('genie.admin.versions.rules.store',
@@ -221,6 +231,24 @@ const statusEnabled = () => {
 
                         <template #footer>
                             <Error :message="form.errors.rule_type"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup
+                        v-if="ruleType['name'] === 'DRAFTS' || ruleType['name'] === 'PRE_POSTS'"
+                        class="form-field"
+                    >
+                        <template #title>
+                            <label for="link_upstream">{{ $t("genie.step_link_upstream") }}</label>
+                        </template>
+
+                        <Switch
+                            v-model="form.link_upstream"
+                            id="link_upstream"
+                        />
+
+                        <template #footer>
+                            <Error :message="form.errors.link_upstream"/>
                         </template>
                     </VerticalGroup>
 

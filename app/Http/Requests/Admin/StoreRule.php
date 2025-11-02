@@ -18,6 +18,7 @@ class StoreRule extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'rule_type' => [ValidationRule::enum(RuleType::class)],
+            'link_upstream' => ['nullable', 'boolean'],
         ];
     }
 
@@ -31,6 +32,7 @@ class StoreRule extends FormRequest
         return Rule::create([
             'version_id' => $version->id,
             'rule_type' => $this->input('rule_type'),
+            'link_upstream' => $this->input('link_upstream'),
             'name' => $this->input('name'),
             'description' => $this->input('description'),
             'status' => $this->input('status'),

@@ -15,7 +15,7 @@ enum DraftStatus: int
     case PENDING_REVIEW = 1;
     case APPROVED = 2;
     case PUBLISHED = 3;
-    case DISMISSED = 4;
+    case TRASH = 9;
 
     /**
      * @return string
@@ -23,10 +23,10 @@ enum DraftStatus: int
     public function title(): string
     {
         return match ($this) {
-            self::PENDING_REVIEW => 'pending_review',
             self::APPROVED => 'approved',
+            self::PENDING_REVIEW => 'pending_review',
             self::PUBLISHED => 'published',
-            self::DISMISSED => 'dismissed',
+            self::TRASH => 'trash',
         };
     }
 
@@ -36,7 +36,7 @@ enum DraftStatus: int
     public function isError(): bool
     {
         return match ($this) {
-            self::DISMISSED => true,
+            self::TRASH => true,
             default => false,
         };
     }

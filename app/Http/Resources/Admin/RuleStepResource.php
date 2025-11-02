@@ -32,6 +32,7 @@ class RuleStepResource extends JsonResource
             'top_p' => $this->top_p,
             'reasoning_effort' => $this->reasoning_effort,
             'vector_id' => $this->vector_id,
+            'link_upstream' => $this->link_upstream,
             'message' => $this->message,
             'output' => $this->output,
             'requires_review' => $this->requires_review,

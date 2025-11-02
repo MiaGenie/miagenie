@@ -17,8 +17,8 @@ return new class extends Migration
             $table->id();
             $table->uuid()->unique();
             $table->foreignId('workspace_id')->constrained('mixpost_workspaces')->onDelete('cascade');
-            $table->foreignId('strategy_id')->nullable()->constrained('genie_strategies')->nullOnDelete();
             $table->foreignId('run_response_id')->nullable()->constrained('genie_run_responses')->nullOnDelete();
+            $table->foreignId('strategy_id')->nullable()->constrained('genie_strategies')->nullOnDelete();
             $table->string('theme');
             $table->text('description');
             $table->tinyInteger('status');
@@ -33,19 +33,35 @@ return new class extends Migration
             $table->id();
             $table->uuid()->unique();
             $table->foreignId('workspace_id')->constrained('mixpost_workspaces')->onDelete('cascade');
-            $table->foreignId('idea_id')->nullable()->constrained('genie_version_fields')->nullOnDelete();
-            $table->string('goal');
-            $table->text('caption');
+            $table->foreignId('run_response_id')->nullable()->constrained('genie_run_responses')->nullOnDelete();
+            $table->foreignId('idea_id')->nullable()->constrained('genie_ideas')->nullOnDelete();
+            $table->string('topic');
+            $table->text('goal');
+            $table->text('key_ideas');
             $table->text('media');
             $table->tinyInteger('status');
             $table->softDeletes();
             $table->timestamps();
         });
 
-        Schema::create('genie_run_ideas', function (Blueprint $table) {
+        Schema::create('genie_run_strategy', function (Blueprint $table) {
             $table->id();
             $table->foreignId('run_id')->constrained('genie_runs')->onDelete('cascade');
             $table->foreignId('strategy_id')->nullable()->constrained('genie_strategies')->nullOnDelete();
+            $table->timestamps();
+        });
+
+        Schema::create('genie_run_ideas', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('run_id')->constrained('genie_runs')->onDelete('cascade');
+            $table->foreignId('idea_id')->nullable()->constrained('genie_ideas')->nullOnDelete();
+            $table->timestamps();
+        });
+
+        Schema::create('genie_run_idea_responses', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('run_idea_id')->constrained('genie_run_ideas')->onDelete('cascade');
+            $table->foreignId('run_response_id')->constrained('genie_run_responses')->onDelete('cascade');
             $table->timestamps();
         });
 
@@ -66,7 +82,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('genie_run_field_iterators');
+        Schema::dropIfExists('genie_run_idea_responses');
         Schema::dropIfExists('genie_run_ideas');
+        Schema::dropIfExists('genie_run_strategy');
         Schema::dropIfExists('genie_drafts');
         Schema::dropIfExists('genie_ideas');
 

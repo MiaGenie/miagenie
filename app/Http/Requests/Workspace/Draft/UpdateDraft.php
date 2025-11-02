@@ -15,8 +15,9 @@ class UpdateDraft extends FormRequest
     public function rules(): array
     {
         return [
-            'goal' => ['required', 'string', 'max:255'],
-            'caption' => ['required', 'string'],
+            'topic' => ['required', 'string', 'max:255'],
+            'goal' => ['required', 'string', 'max:5000'],
+            'key_ideas' => ['required', 'string', 'max:5000'],
             'media' => ['required', 'string'],
             'status' => [ValidationRule::enum(DraftStatus::class)],
         ];
@@ -30,8 +31,9 @@ class UpdateDraft extends FormRequest
         $record = Draft::firstOrFailByUuid($this->route('draft'));
 
         return $record->update([
+            'topic' => $this->input('topic'),
             'goal' => $this->input('goal'),
-            'caption' => $this->input('caption'),
+            'key_ideas' => $this->input('key_ideas'),
             'media' => $this->input('media'),
             'status' => $this->input('status'),
         ]);
