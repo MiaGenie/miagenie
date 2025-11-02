@@ -129,13 +129,26 @@ class IdeasController
 
     public function generate(Request $request)
     {
+        $workspace = WorkspaceManager::current();
+        $workspaceVersion = WorkspaceVersion::where('workspace_id', $workspace->id)->first();
 
-        $record = Draft::where('uuid', $request->input('draft'))->get();
-        $this->prePostGeneration(Draft::where('id', $record->id)->get());
+        $strategy = Strategy::findByUuid(request()->route('strategy'));
 
-        return redirect()
-            ->route('genie.drafts.index', ['workspace' => $request->route('workspace')])
-            ->with('success', __('genie.generating_pre_posts'));
+        $rule = Rule::where('version_id', $workspaceVersion->version_id)->where('rule_type', RuleType::IDEAS)->first();
+
+        $run = Run::create([
+            'workspace_id' => $workspace->id,
+            'rule_id' => $rule->id,
+            'status' => RunStatus::OPEN,
+        ]);
+
+        $run->runStrategy()->create([
+            'strategy_id' => $strategy->id
+        ]);
+
+        RunIdeaJob::dispatch($run, GenieSyncAction::CREATE);
+
+        return redirect()->back()->with('success', __('genie.generating_ideas'));
     }
 
     /**
