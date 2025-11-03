@@ -30,6 +30,7 @@ class UpdatePrePost extends FormRequest
 
         return $record->update([
             'draft_id' => $this->input('draft_id'),
+            'post_id' => $this->input('post_id'),
             'caption' => $this->input('caption'),
             'status' => $this->input('status'),
         ]);

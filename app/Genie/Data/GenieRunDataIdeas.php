@@ -143,7 +143,7 @@ class GenieRunDataIdeas implements GenieRunDataContract
     {
         //TODO - check when both nulls
         $todoIterators = $this->getTodoIterators($this->nextStep);
-        return $todoIterators->first();
+        return (int) $todoIterators->first();
     }
 
     /**

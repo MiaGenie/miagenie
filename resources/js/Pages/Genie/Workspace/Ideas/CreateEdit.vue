@@ -147,7 +147,7 @@ const deleteIdea = () => {
 }
 
 const currentStatus = () => {
-    return find(props.statusTypes, ['value', Number(props.record.status)]);
+    return find(props.statusTypes, ['value', Number(props.record?.status)]);
 }
 
 const formStatus = () => {

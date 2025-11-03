@@ -10,7 +10,10 @@ use App\Enums\PrePostStatus;
 use App\Enums\RunResponseError;
 use App\Enums\RunResponseStatus;
 use App\Models\PrePost;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Inovector\Mixpost\Enums\PostStatus;
+use Inovector\Mixpost\Models\Post;
 
 class GenieOutputPrePosts extends GenieOutput implements GenieOutputContract
 {
@@ -57,9 +60,45 @@ class GenieOutputPrePosts extends GenieOutput implements GenieOutputContract
                 'run_response_id' => $model->id,
             ]);
 
+            $post = DB::transaction(function () use ($prePost, $model) {
+
+                $post = Post::create([
+                    'user_id' => $model->run->workspace->owner_id,
+                    'status' => PostStatus::DRAFT,
+                    'scheduled_at' => null,
+                ]);
+
+                $post->versions()->create([
+                    'account_id' => 0,
+                    'is_original' => 0,
+                    'content' => [[
+                        'body' => $this->lineToDiv($prePost->caption ?? ''),
+                        'media' => [],
+                        'url' => null,
+                    ]],
+                    'options' => []
+                ]);
+
+                return $post;
+            });
+
+            $prePost->update(['post_id' =>  $post->id]);
+
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
         }
+    }
+
+    /**
+     * @param string $text
+     * @return string
+     */
+    private function lineToDiv(string $text): string
+    {
+        $output = "<div>";
+        $output .= str_replace("\n", "</div><div>", $text);
+        $output .= "</div>";
+        return $output;
     }
 
 }

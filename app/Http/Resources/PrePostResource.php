@@ -22,6 +22,7 @@ class PrePostResource extends JsonResource
             'id' => $this->uuid,
             'workspace_id' => $this->workspace_id,
             'draft_id' => $this->draft_id,
+            'post_id' => $this->post_id,
             'caption' => $this->caption,
             'status' => $this->status,
         ];
