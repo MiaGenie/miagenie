@@ -144,11 +144,19 @@ const deletePrePost = () => {
 }
 
 const currentStatus = () => {
+    return find(props.statusTypes, ['value', Number(props.record?.status)]);
+}
+
+const formStatus = () => {
     return find(props.statusTypes, ['value', Number(form.status)]);
 }
 
-const statusEnabled = () => {
-    return currentStatus()?.name === 'ENABLED';
+const formStatusApproved = () => {
+    return formStatus()?.name === 'APPROVED';
+}
+
+const currentStatusApproved = () => {
+    return currentStatus()?.name === 'APPROVED';
 }
 
 </script>

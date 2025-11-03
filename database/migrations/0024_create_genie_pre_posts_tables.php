@@ -19,6 +19,7 @@ return new class extends Migration
             $table->uuid()->unique();
             $table->foreignId('workspace_id')->constrained('mixpost_workspaces')->onDelete('cascade');
             $table->foreignId('draft_id')->nullable()->constrained('genie_drafts')->nullOnDelete();
+            $table->foreignId('post_id')->nullable()->constrained('mixpost_posts')->nullOnDelete();
             $table->text('caption')->nullable();
             $table->tinyInteger('status');
             $table->softDeletes();

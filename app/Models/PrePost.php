@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 use Inovector\Mixpost\Concerns\OwnedByWorkspace;
+use Inovector\Mixpost\Models\Post;
 
 class PrePost extends Model
 {
@@ -25,6 +26,7 @@ class PrePost extends Model
     protected $fillable = [
         'workspace_id',
         'draft_id',
+        'post_id',
         'caption',
         'status'
     ];
@@ -49,6 +51,14 @@ class PrePost extends Model
     public function draft(): BelongsTo
     {
         return $this->belongsTo(Draft::class);
+    }
+
+    /**
+     * @return BelongsTo
+     */
+    public function post(): BelongsTo
+    {
+        return $this->belongsTo(Post::class);
     }
 
     /**
