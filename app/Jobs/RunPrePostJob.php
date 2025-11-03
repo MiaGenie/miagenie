@@ -89,7 +89,7 @@ class RunPrePostJob extends GenieJob implements ShouldQueue
             }
 
             Bus::batch($runJobs)
-                ->finally(function () use ($genieState, $data) {$genieState->handle($data, 'end');})
+//                ->finally(function () use ($genieState, $data) {$genieState->handle($data, 'end');})
                 ->allowFailures()
                 ->dispatch();
 

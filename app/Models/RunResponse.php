@@ -68,6 +68,14 @@ class RunResponse extends Model
     /**
      * @return HasOne
      */
+    public function drafts(): HasOne
+    {
+        return $this->HasOne(Draft::class);
+    }
+
+    /**
+     * @return HasOne
+     */
     public function runCompetitor(): HasOne
     {
         return $this->HasOne(RunCompetitor::class, 'run_response_id');
