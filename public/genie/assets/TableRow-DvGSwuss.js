@@ -1,0 +1,1 @@
+import{c as o,o as r,J as s,I as t}from"./app-BNnGGERt.js";const c={__name:"TableRow",props:{hoverable:{type:Boolean,default:!1}},setup(e){return(a,l)=>(r(),o("tr",{class:t({"bg-white hover:bg-gray-50 transition-colors ease-in-out duration-200":e.hoverable})},[s(a.$slots,"default")],2))}};export{c as _};

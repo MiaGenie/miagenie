@@ -1,13 +1,17 @@
 <script setup>
 import { useI18n } from "vue-i18n";
-import Select from "@/Components/Form/Select.vue";
-import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
-import TableCell from "@/Components/DataDisplay/TableCell.vue";
-import Radio from "@/Components/Form/Radio.vue";
-import TableRow from "@/Components/DataDisplay/TableRow.vue";
-import Flex from "@/Components/Layout/Flex.vue";
-import {inject, provide} from "vue";
+import {usePage} from '@inertiajs/vue3';
+import {inject, provide, ref} from "vue";
 import {find, pick} from "lodash";
+import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
+import Flex from "@/Components/Layout/Flex.vue";
+import PencilSquare from "@/Icons/PencilSquare.vue";
+import X from "@/Icons/X.vue";
+import PureButton from "@/Components/Button/PureButton.vue";
+import StrategySchemaField from "@/Components/Form/Genie/StrategySchemaField.vue";
+import Save from "@/Icons/Genie/Save.vue";
+import StrategySchemaFieldView from "@/Components/Form/Genie/StrategySchemaFieldView.vue";
+import Panel from "@/Components/Surface/Panel.vue";
 
 const {t: $t} = useI18n();
 
@@ -22,12 +26,22 @@ const props = defineProps({
     }
 });
 
+const workspaceCtx = inject('workspaceCtx')
+const confirmation = inject('confirmation');
+const schemas = inject('schemas')
+const form = inject('form')
+provide("fieldForm", form.content[props.field.code_name])
 const fieldList = inject('fieldList')
 const fieldTypes = inject('fieldTypes')
 const record = inject('record')
+const editing = ref(inject('editing'));
 
 const fieldType = (field) => {
     return find(fieldTypes, ['value', Number(field.field_type)]);
+}
+
+const schemaType = () => {
+    return usePage().props.schemas[props.field.code_name]?.type;
 }
 
 const fieldContent = (field, level = 0, keys = '') => {
@@ -52,6 +66,39 @@ const fieldContent = (field, level = 0, keys = '') => {
         return string;
     }
     return field;
+}
+
+const update = () => {
+    form.put(route('genie.strategies.update', {
+        'workspace': workspaceCtx.id,
+        'strategy': record.id
+    }), {
+        preserveScroll: true,
+        onSuccess: () => {
+            editing.value = '';
+        },
+        onError: (errors) => {
+            onError(errors, update);
+        },
+    });
+}
+
+const attemptClose = () => {
+    if (!form.isDirty) {
+        editing.value = '';
+        return;
+    }
+
+    confirmation()
+        .title($t('genie.are_you_sure'))
+        .description($t('genie.unsaved_will_lost'))
+        .btnConfirmName($t('genie.discard'))
+        .onConfirm((dialog) => {
+            editing.value = '';
+            form.reset();
+            dialog.reset();
+        })
+        .show();
 }
 
 </script>
@@ -126,79 +173,78 @@ const fieldContent = (field, level = 0, keys = '') => {
 }
 </style>
 <template>
-    <template slot="title">{{ $t("general.details") }}</template>
 
-
-        <VerticalGroup class="form-field mt-lg">
-            <template #title>
-                {{ field.name }}
-            </template>
-
-            <template #description>
-                {{ field.description }}
-            </template>
-
-            <template v-if="fieldType(field).name === 'INPUT' || fieldType(field).name === 'TEXTAREA'">
-                <span class="bg-gray-100" v-html="fieldContent(record.content[field.code_name])">
-                </span>
-            </template>
-
-            <template v-if="fieldType(field).name === 'CHECKBOX'">
-
-                <span class="bg-gray-100" style="white-space: pre-wrap">
-                    <template v-for="(value, key) in record.content[field.code_name]":key="key">
-                      {{ key }}: {{ value }} {{ "\n" }}
-                    </template>
-                </span>
-
-            </template>
-
-            <template v-if="fieldType(field).name === 'DROP_DOWN'">
-
-                <Flex class="items-start">
-                    <Select v-model="record.content[field.code_name][index]"
-                            id="testing" >
-                        <option></option>
-                        <template v-for="(option, index) in field.options[0]" :key="index">
-                            <option :value="option.code_name">{{ option.name }}</option>
+    <VerticalGroup class="mt-lg">
+        <template #title>
+            <Flex class="justify-between">
+                <Flex>
+                    <PureButton
+                        v-if="editing !== field.code_name"
+                        @click="editing = field.code_name"
+                        v-tooltip="$t('general.edit')"
+                    >
+                        <template #icon>
+                            <PencilSquare/>
                         </template>
-                    </Select>
+                    </PureButton>
+
+                    <PureButton
+                        v-if="editing === field.code_name"
+                        @click="update"
+                        v-tooltip="$t('general.save')"
+                    >
+                        <template #icon>
+                            <Save/>
+                        </template>
+                    </PureButton>
+
+                    {{ field.name }}
                 </Flex>
-
-            </template>
-
-            <template v-if="fieldType(field).name === 'RADIO'">
-
-                <TableCell class="">
-                    <template v-for="(group, index) in field.options" :key="index">
-                        <template v-for="(option, index_option) in field.options[index]" :key="option.code_name">
-                            <Flex class="py-sm">
-                                <Radio v-model:checked="record.content[field.code_name][index]" :value="option.code_name"/>
-                                {{ option.name }}
-                            </Flex>
+                <Flex>
+                    <PureButton
+                        v-if="editing === field.code_name"
+                        @click="attemptClose(editing)"
+                        v-tooltip="$t('general.edit')"
+                    >
+                        <template #icon>
+                            <X/>
                         </template>
-                    </template>
-                </TableCell>
+                    </PureButton>
+                </Flex>
+            </Flex>
+        </template>
 
-            </template>
+        <template #description>
+            {{ field.description }}
+        </template>
+    </VerticalGroup>
 
-            <template v-if="fieldType(field).name === 'RADIO_GROUP'">
+    <Panel>
 
-                <div >
-                    <template v-for="(group, index) in field.options" :key="index">
-                        <TableRow class="">
-                            <template v-for="(option, index_option) in field.options[index]" :key="option.code_name">
-                                <TableCell class="">
-                                    <Radio v-model:checked="record.content[field.code_name][index]" :value="option.code_name"/>
-                                    {{ option.name }}
-                                </TableCell>
-                            </template>
-                        </TableRow>
-                    </template>
-                </div>
+        <template v-if="editing === field.code_name">
 
-            </template>
+            <StrategySchemaField
+                v-model="form.content"
+                :field="field"
+                path=""
+                :name="field.code_name"
+                :schema="schemas[field.code_name]"
+            />
 
-        </VerticalGroup>
+        </template>
+
+        <template v-else-if="editing !== field.code_name">
+
+            <StrategySchemaFieldView
+                v-model="form.content"
+                :field="field"
+                path=""
+                :name="field.code_name"
+                :schema="schemas[field.code_name]"
+            />
+
+        </template>
+
+    </Panel>
 
 </template>

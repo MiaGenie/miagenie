@@ -33,6 +33,10 @@ const fieldType = (field) => {
     return find(props.fieldTypes, ['value', Number(field.field_type)]);
 }
 
+const getKeyByValue = (value) => {
+    return Object.keys(props.record[props.field.code_name]).find((key) => props.record[props.field.code_name][key] === value);
+}
+
 </script>
 <template>
 
@@ -40,12 +44,12 @@ const fieldType = (field) => {
         <template
             class="form-field mt-lg"
             v-if="fieldType(field).name === 'INPUT' || fieldType(field).name === 'TEXTAREA'"
-            v-for="(value, key, index) in props.record[field.code_name]" :key="key"
+            v-for="(value, key) in props.record[field.code_name]" :key="key"
         >
             <VerticalGroup class="form-field mt-lg">
 
                 <template #title>
-                    {{ field.name + ' ' + (index + 1) }}
+                    {{ field.name + ' ' + (key + 1) }}
                 </template>
 
                 <template #default>
@@ -69,9 +73,9 @@ const fieldType = (field) => {
 
                 <VerticalGroup class="form-field mt-sm">
                     <template #default>
-                        <CheckIcon class="text-green-900" v-if="record[field.code_name][option.code_name]" />
-                        <XIcon class="text-red-700" v-if="!record[field.code_name][option.code_name]" />
-                        <span :class="record[field.code_name][option.code_name] ? 'text-green-900, font-semibold' : 'text-red-700'">
+                        <CheckIcon class="text-green-900" v-if="getKeyByValue(option.code_name)" />
+                        <XIcon class="text-red-700" v-if="!getKeyByValue(option.code_name)" />
+                        <span :class="getKeyByValue(option.code_name) ? 'text-green-900, font-semibold' : 'text-red-700'">
                             {{ option.name }}
                         </span>
                     </template>
