@@ -235,7 +235,7 @@ class GenieRunData implements GenieRunDataContract
         $fieldOption = VersionFieldOption::findOrFail($nextStep->depends_on_option)->code_name;
         $fieldOptions = $this->run->strategy->content[$fieldName];
 
-        return $fieldOptions[$fieldOption] ?? false;
+        return in_array($fieldOption, $fieldOptions);
 
     }
 }

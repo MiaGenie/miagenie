@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Workspace;
 
 use App\Concerns\Controller\HasFieldOptions;
+use App\Concerns\StrategySchemas;
 use App\Enums\FormFieldType;
 use App\Enums\GenieSyncAction;
 use App\Enums\RuleType;
 use App\Enums\RunStatus;
 use App\Http\Requests\Workspace\Strategy\StoreStrategy;
 use App\Http\Requests\Workspace\Strategy\ReviewUpdateStrategy;
+use App\Http\Requests\Workspace\Strategy\UpdateStrategy;
 use App\Http\Resources\StrategyResource;
 use App\Jobs\RunJob;
 use App\Models\Rule;
@@ -27,6 +29,7 @@ use Inovector\Mixpost\Facades\WorkspaceManager;
 class StrategiesController extends Controller
 {
     use HasFieldOptions;
+    use StrategySchemas;
 
     /**
      * @return Response
@@ -145,7 +148,18 @@ class StrategiesController extends Controller
             'fieldList' => $fieldList,
             'fieldTypes' => FormFieldType::withFieldOptions(),
             'record' => new StrategyResource($record),
+            'schemas' => $this->getStrategySchemas($record),
         ]);
+    }
+
+    /**
+     * @return RedirectResponse
+     */
+    public function update(UpdateStrategy $updateStrategy)
+    {
+        $record = $updateStrategy->handle();
+
+        return redirect()->back()->with('success', __('genie.strategy_updated'));
     }
 
     /**

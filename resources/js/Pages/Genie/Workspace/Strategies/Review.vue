@@ -43,7 +43,6 @@ const props = defineProps({
     }
 })
 
-const routePrefix = inject('routePrefix');
 const workspaceCtx = inject('workspaceCtx')
 const confirmation = inject('confirmation');
 const editing = ref(false);

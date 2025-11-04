@@ -40,11 +40,11 @@ const fieldType = (field) => {
         <template
             class="form-field mt-lg"
             v-if="fieldType(field).name === 'INPUT'"
-            v-for="(value, key, index) in props.record[field.code_name]" :key="key"
+            v-for="(value, key) in props.record[field.code_name]" :key="key"
         >
             <VerticalGroup class="form-field mt-lg">
                 <template #title>
-                    <label :for="key">{{ field.name + ' ' + (index + 1) }}</label>
+                    <label :for="key">{{ field.name + ' ' + (key + 1) }}</label>
                 </template>
 
                 <template #default>
@@ -63,11 +63,11 @@ const fieldType = (field) => {
         <template
             class="form-field mt-lg"
             v-if="fieldType(field).name === 'TEXTAREA'"
-            v-for="(value, key, index) in props.record[field.code_name]" :key="key"
+            v-for="(value, key) in props.record[field.code_name]" :key="key"
         >
             <VerticalGroup class="form-field mt-lg">
                 <template #title>
-                    <label :for="key">{{ field.name + ' ' + (index + 1) }}</label>
+                    <label :for="key">{{ field.name + ' ' + (key + 1) }}</label>
                 </template>
 
                 <template #default>
@@ -100,7 +100,7 @@ const fieldType = (field) => {
                     <TableCell class="">
                         <template v-for="(option, key) in field.options" :key="option.code_name">
                             <Flex class="py-sm">
-                                <Checkbox v-model="form[field.code_name][option.code_name]" :checked="record[field.code_name][option.code_name]"/>
+                                <Checkbox v-model:checked="form[field.code_name]" :value="option.code_name"/>
                                 {{ option.name }}
                             </Flex>
                         </template>

@@ -41,6 +41,7 @@ class GenieOutputStrategy extends GenieOutput implements GenieOutputContract
             $strategy = $model->run->strategy;
             $content = $strategy->content ?? [];
             $firstOutput = $model->step->output[0];
+            $outpufField = $strategy->run->rule->version->fields->where('code_name', $firstOutput)->first();
             $outputText = $response['output'][0]['content'][0]['text'];
             $outputText = $this->cleanAsterisks($outputText);
             switch ($model->step->rule_sub_type) {
@@ -54,7 +55,11 @@ class GenieOutputStrategy extends GenieOutput implements GenieOutputContract
                             break;
                         case 'json_schema':
                             $responseOutput = json_decode($outputText, true);
-                            $content[$firstOutput] = $responseOutput[$firstOutput];
+                            if ($outpufField->field_type->name === 'CHECKBOX') {
+                                $content[$firstOutput] = array_keys($responseOutput[$firstOutput], true);
+                            } else {
+                                $content[$firstOutput] = $responseOutput[$firstOutput];
+                            }
                             break;
                     }
                     break;
