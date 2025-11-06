@@ -43,6 +43,10 @@ const props = defineProps({
         type: Object,
         required: true
     },
+    contentPillars: {
+        type: Object,
+        required: true
+    },
     filter: {
         type: Object,
         default: {}
@@ -134,6 +138,7 @@ const generateDrafts = () => {
             }),{
                 ideas: selectedRecords.value
             });
+            deselectAllRecords();
             dialog.reset();
         })
         .show();
@@ -143,11 +148,10 @@ const deleteIdeas = () => {
     router.delete(route('genie.ideas.deleteMultiple', {workspace: workspaceCtx.id}), {
         data: {
             ideas: selectedRecords.value,
-            status: filter.value.status
+            filter: currentFilter.value
         },
         onSuccess() {
             deselectAllRecords();
-            notify('success',  $t("genie.ideas_deleted"))
         },
         onFinish() {
             confirmationDeletion.value = false;
@@ -235,11 +239,11 @@ const deleteIdeas = () => {
                             <Select v-model="currentFilter.content_pillar">
                                 <option value=''>{{ $t(`general.all`)}}</option>
                                 <option
-                                    v-for="funnelStage in funnelStages"
-                                    :key="funnelStage.value"
-                                    :value="funnelStage.value"
+                                    v-for="contentPillar in contentPillars"
+                                    :key="contentPillar.value"
+                                    :value="contentPillar.value"
                                 >
-                                    {{ $t(`genie.funnel_stage_${funnelStage.title}`) }}
+                                    {{ contentPillar }}
                                 </option>
                             </Select>
                         </template>

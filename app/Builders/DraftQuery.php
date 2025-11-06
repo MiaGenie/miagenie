@@ -14,9 +14,7 @@ class DraftQuery implements Query
     {
         $query = Draft::query();
 
-        if ($request->has('status') && $request->get('status') !== null) {
-            $query = DraftStatusFilter::apply($query, $request->get('status'));
-        }
+        $query = DraftStatusFilter::apply($query, $request->get('status'));
 
         return $query;
     }

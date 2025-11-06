@@ -62,7 +62,7 @@ const formValue = () => {
 </script>
 <template>
 
-    <template v-if="(schema.type === 'object' || schema.type === 'array') && fieldType(field).name !== 'CHECKBOX'">
+    <template v-if="(schema?.type === 'object' || schema?.type === 'array') && fieldType(field).name !== 'CHECKBOX'">
 
         <VerticalGroup v-if="schema.title ?? false" class="mt-lg">
             <template #title>
@@ -102,7 +102,7 @@ const formValue = () => {
     <template v-else>
 
         <VerticalGroup :class="name">
-            <template v-if="schema.title ?? false" #title>
+            <template v-if="schema?.title ?? false" #title>
                 {{ schema.title }}
             </template>
 
@@ -118,13 +118,13 @@ const formValue = () => {
 
             </template>
 
-            <template v-else-if="schema.type === 'string' && (schema.enum)">
+            <template v-else-if="schema?.type === 'string' && (schema.enum)">
 
                 <span>{{ modelValue[name] }}</span>
 
             </template>
 
-            <template v-else-if="(schema.type === 'string' && Number(schema.maxLength) < 120) || schema.type === 'number' && false">
+            <template v-else-if="(schema?.type === 'string' && Number(schema?.maxLength) < 120) || schema?.type === 'number' && false">
 
                 <Input v-model="modelValue[name]"
                        :placeholder="schema.description"
@@ -134,7 +134,7 @@ const formValue = () => {
 
             </template>
 
-            <template v-else-if="schema.type === 'string' || schema.type === 'integer'">
+            <template v-else-if="schema?.type === 'string' || schema?.type === 'integer'">
 
                 <span>{{ modelValue[name] }}</span>
 

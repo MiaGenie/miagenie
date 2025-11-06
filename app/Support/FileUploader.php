@@ -2,20 +2,24 @@
 
 namespace App\Support;
 
+use App\Enums\WorkspaceFileSource;
+use App\Enums\WorkspaceFileType;
+use App\Models\WorkspaceFile;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use App\Models\File;
 use App\Enums\GenieSyncStatus;
+use Inovector\Mixpost\Facades\WorkspaceManager;
+use Symfony\Component\HttpFoundation\File\UploadedFile as SymfonyUploadedFile;
 
 class FileUploader
 {
 
     /**
-     * @var UploadedFile
+     * @var UploadedFile|SymfonyUploadedFile
      */
-    protected UploadedFile $file;
+    protected UploadedFile|SymfonyUploadedFile $file;
 
     /**
      * @var string
@@ -38,9 +42,9 @@ class FileUploader
     protected array $conversions;
 
     /**
-     * @param UploadedFile $file
+     * @param UploadedFile|SymfonyUploadedFile $file
      */
-    public function __construct(UploadedFile $file)
+    public function __construct(UploadedFile|SymfonyUploadedFile $file)
     {
         $this->setFile($file);
         $this->disk('local');
@@ -56,10 +60,20 @@ class FileUploader
     }
 
     /**
-     * @param UploadedFile $file
+     * @param SymfonyUploadedFile $file
+     * @return static
+     */
+    public static function createFromBase(SymfonyUploadedFile $file): static
+    {
+        $newFile = UploadedFile::createFromBase($file);
+        return new static($newFile);
+    }
+
+    /**
+     * @param UploadedFile|SymfonyUploadedFile $file
      * @return $this
      */
-    public function setFile(UploadedFile $file): static
+    public function setFile(UploadedFile|SymfonyUploadedFile $file): static
     {
         $this->file = $file;
 
@@ -106,7 +120,6 @@ class FileUploader
             'mime_type' => $this->file->getMimeType(),
             'disk' => $this->disk,
             'path' => $path,
-            'status' => GenieSyncStatus::CREATING,
             'size' => $this->file->getSize(),
         ];
     }
@@ -115,10 +128,33 @@ class FileUploader
      * @return File
      * @throws \Exception
      */
-    public function uploadAndInsert(): File
+    public function uploadAndInsertFile(): File
     {
         return File::create(
-            Arr::only($this->upload(), ['name', 'mime_type', 'disk', 'path', 'status', 'size'])
+            array_merge(
+                $this->upload(),
+                ['status' => GenieSyncStatus::CREATING]
+            )
+        );
+    }
+
+    /**
+     * @param WorkspaceFileType $type
+     * @param WorkspaceFileSource $source
+     * @return WorkspaceFile
+     * @throws \Exception
+     */
+    public function uploadAndInsertWorkspaceFile(WorkspaceFileType $type, WorkspaceFileSource $source): WorkspaceFile
+    {
+        return WorkspaceFile::create(
+            array_merge(
+                $this->upload(),
+                [
+                    'workspace_id' => WorkspaceManager::current()->id,
+                    'type' => $type,
+                    'source' => $source
+                ]
+            )
         );
     }
 

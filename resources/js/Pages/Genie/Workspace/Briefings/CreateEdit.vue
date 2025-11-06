@@ -1,5 +1,5 @@
 <script setup>
-import {Head, router, useForm} from '@inertiajs/vue3';
+import {Head, router, useForm, usePage} from '@inertiajs/vue3';
 import {inject, provide} from "vue";
 import {cloneDeep} from "lodash";
 import {useI18n} from "vue-i18n";
@@ -17,6 +17,7 @@ import Save from "@/Icons/Genie/Save.vue";
 import X from "@/Icons/X.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
 import VersionFieldsForm from "@/Components/Form/Genie/FieldsForm.vue";
+import {useAPIForm} from "@/Composables/useAPIForm.js";
 
 const {t: $t} = useI18n()
 
@@ -34,21 +35,22 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    inputTypes: {
+        type: Object,
+        required: true,
+    },
     record: {
         type: Object
     }
 })
 
-const routePrefix = inject('routePrefix');
-const workspaceCtx = inject('workspaceCtx')
+const workspaceCtx = inject('workspaceCtx');
 const confirmation = inject('confirmation');
-const authPasswordConfirmation = inject('authPasswordConfirmation');
-
 const {notify} = useNotifications();
 const {isCreate, isEdit} = usePageMode();
 const {onError} = useRouter();
 
-const briefingsFields =  cloneDeep(props.fieldList.briefings).reduce(
+const briefingFields =  cloneDeep(props.fieldList.briefings).reduce(
     (list, field) => {
         field.name = field.description;
         field.description = field.sub_description;
@@ -57,12 +59,15 @@ const briefingsFields =  cloneDeep(props.fieldList.briefings).reduce(
     }, []
 )
 
-
-const form = useForm(isEdit.value ? cloneDeep(props.record) :
+const form = useAPIForm(isEdit.value ? cloneDeep(props.record) :
 
     cloneDeep(props.fieldList.briefings).reduce(
         (list, field) => {
-            list.content[field.code_name] = props.fieldTypes.find((field_type) => field_type.value === field.field_type  ).hasOptions ? [] : '' ;
+            const hasOptions = (
+                props.fieldTypes.find((field_type) => field_type.value === field.field_type).hasOptions ||
+                props.fieldTypes.find((field_type) => field_type.value === field.field_type).name === "IMAGE"
+            )
+            list.content[field.code_name] = hasOptions ? [] : '' ;
             if(Array.isArray(list.content[field.code_name])) {
                 field.options.forEach(function(group, indexGroup){
                     const nextGroup = group.filter(option => option.checked === 1);
@@ -79,12 +84,13 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) :
     )
 );
 
+provide("form", form);
+
 const store = () => {
     form.transform((data) => ({
-        ...data,
-        'version' : props.fieldList.uuid
+        ...data
     })).post(route(`genie.briefings.store`, {
-        'workspace': workspaceCtx.id
+        workspace: workspaceCtx.id
     }), {
         onError: (errors) => {
             onError(errors, store);
@@ -93,11 +99,8 @@ const store = () => {
 }
 
 const update = () => {
-    form.transform((data) => ({
-        ...data,
-        'version' : props.fieldList.uuid
-    })).put(route(`genie.briefings.update`, {
-        'workspace': workspaceCtx.id,
+    form.post(route(`genie.briefings.update`, {
+        workspace: workspaceCtx.id,
         briefing: props.record.id
     }), {
         preserveScroll: true,
@@ -181,7 +184,11 @@ provide(/* key */ 'form', /* value */ form);
             <form method="post" @submit.prevent="submit">
 
                 <Panel>
-                    <VersionFieldsForm :fieldTypes="props.fieldTypes" :fields="briefingsFields"></VersionFieldsForm>
+                    <template v-for="(field) in briefingFields">
+
+                        <VersionFieldsForm :field="field"></VersionFieldsForm>
+
+                    </template>
                 </Panel>
 
                 <Flex

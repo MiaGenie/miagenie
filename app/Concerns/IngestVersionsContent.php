@@ -5,6 +5,7 @@ namespace App\Concerns;
 use App\Enums\FormFieldType;
 use App\Enums\FormInputType;
 use App\Models\VersionField;
+use App\Models\WorkspaceVersion;
 use Illuminate\Support\Collection;
 use App\Models\Version;
 
@@ -27,7 +28,10 @@ trait IngestVersionsContent
      */
     protected function getVersionId(): int
     {
-        return Version::firstOrFailByUuid($this->input('version'))->id;
+        return WorkspaceVersion::whereHas('workspace', function ($query) {
+            $query->where('uuid', $this->route('workspace'));
+        })->firstOrFail()->version_id;
+
     }
 
     /**

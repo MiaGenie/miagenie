@@ -157,18 +157,26 @@ class DraftsController
      */
     public function destroy(Request $request)
     {
-        $query = Draft::byWorkspace(WorkspaceManager::current())
-            ->where('uuid', $request->route('draft'))
-            ->delete();
+        $record = Draft::firstOrFailByUuid($request->route('draft'))->byWorkspace(WorkspaceManager::current())->first();
 
-        if (!$query) {
-            return redirect()
-                ->route('genie.drafts.index', ['workspace' => $request->route('workspace')])
-                ->with('error', __('genie.draft_not_found'));
+        $redirect = redirect()->route('genie.drafts.index', ['workspace' => $request->route('workspace')]);
+
+        if ($record->status === DraftStatus::TRASH) {
+
+            $result = $record->delete();
+            if ($result) {
+                return $redirect->with('success', __('genie.draft_deleted'));
+            }
+
+        } else {
+
+            $result = $record->update(['status' => DraftStatus::TRASH]);
+            if ($result) {
+                return $redirect->with('success', __('genie.draft_trashed'));
+            }
         }
 
-        return redirect()->route('genie.drafts.index', ['workspace' => $request->route('workspace')])
-            ->with('success', __('genie.draft_deleted'));
+        return $redirect->with('error', __('genie.draft_not_found'));
     }
 
 }

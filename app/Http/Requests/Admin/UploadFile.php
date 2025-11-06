@@ -30,7 +30,7 @@ class UploadFile extends FormRequest
 
         $file = FileUploader::fromFile($this->file('file'))
             ->path('genie')
-            ->uploadAndInsert();
+            ->uploadAndInsertFile();
 
         FileJob::dispatch($file, GenieSyncAction::CREATE);
 

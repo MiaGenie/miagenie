@@ -127,6 +127,7 @@ const generatePrePosts = () => {
             }),{
                 drafts: selectedRecords.value
             });
+            deselectAllRecords();
             dialog.reset();
         })
         .show();
@@ -136,11 +137,10 @@ const deleteDrafts = () => {
     router.delete(route('genie.drafts.deleteMultiple', {workspace: workspaceCtx.id}), {
         data: {
             drafts: selectedRecords.value,
-            status: filter.value.status
+            filter: currentFilter.value
         },
         onSuccess() {
             deselectAllRecords();
-            notify('success',  $t("genie.drafts_deleted"))
         },
         onFinish() {
             confirmationDeletion.value = false;

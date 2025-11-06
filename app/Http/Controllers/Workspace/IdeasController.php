@@ -43,15 +43,19 @@ class IdeasController
             ->onEachSide(1)
             ->withQueryString();
 
+        $contentPillars = Idea::groupBy('content_pillar')->pluck('content_pillar');
+
 
         return Inertia::render('Genie/Workspace/Ideas/Index', [
             'filter' => [
                 'funnel_stage' => $request->query('funnel_stage', ''),
+                'content_pillar' => $request->query('content_pillar', ''),
                 'status' => $request->query('status', '')
             ],
             'records' => fn () => IdeaResource::collection($records),
             'statusTypes' => IdeaStatus::withTitle(),
-            'funnelStages' => FunnelStage::withTitle()
+            'funnelStages' => FunnelStage::withTitle(),
+            'contentPillars' => $contentPillars,
         ]);
     }
 
@@ -166,17 +170,25 @@ class IdeasController
      */
     public function destroy(Request $request)
     {
-        $query = Idea::byWorkspace(WorkspaceManager::current())
-            ->where('uuid', $request->route('idea'))
-            ->delete();
+        $record = Idea::firstOrFailByUuid($request->route('idea'))->byWorkspace(WorkspaceManager::current())->first();
 
-        if (!$query) {
-            return redirect()
-                ->route('genie.ideas.index', ['workspace' => $request->route('workspace')])
-                ->with('error', __('genie.idea_not_found'));
+        $redirect = redirect()->route('genie.ideas.index', ['workspace' => $request->route('workspace')]);
+
+        if ($record->status === IdeaStatus::TRASH) {
+
+            $result = $record->delete();
+            if ($result) {
+                return $redirect->with('success', __('genie.idea_deleted'));
+            }
+
+        } else {
+
+            $result = $record->update(['status' => IdeaStatus::TRASH]);
+            if ($result) {
+                return $redirect->with('success', __('genie.idea_trashed'));
+            }
         }
 
-        return redirect()->route('genie.ideas.index', ['workspace' => $request->route('workspace')])
-            ->with('success', __('genie.idea_deleted'));
+        return $redirect->with('error', __('genie.idea_not_found'));
     }
 }

@@ -18,7 +18,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
-use Inovector\MixpostEnterprise\Models\Workspace;
+use Inovector\Mixpost\Models\Workspace;
 
 class RunResponsesController extends Controller
 {

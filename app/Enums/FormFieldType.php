@@ -16,6 +16,7 @@ enum FormFieldType: int
     case CHECKBOX = 4;
     case RADIO = 5;
     case RADIO_GROUP = 6;
+    case IMAGE = 7;
 
     /**
      * @return string
@@ -28,7 +29,8 @@ enum FormFieldType: int
             self::DROP_DOWN => 'drop_down',
             self::CHECKBOX => 'checkbox',
             self::RADIO => 'radio',
-            self::RADIO_GROUP => 'radio_group'
+            self::RADIO_GROUP => 'radio_group',
+            self::IMAGE => 'image'
         };
     }
 
@@ -43,7 +45,8 @@ enum FormFieldType: int
             self::DROP_DOWN => false,
             self::CHECKBOX => false,
             self::RADIO => false,
-            self::RADIO_GROUP => true
+            self::RADIO_GROUP => true,
+            self::IMAGE => false
         };
     }
 
@@ -58,7 +61,8 @@ enum FormFieldType: int
             self::DROP_DOWN => false,
             self::CHECKBOX => false,
             self::RADIO => false,
-            self::RADIO_GROUP => false
+            self::RADIO_GROUP => false,
+            self::IMAGE => false
         };
     }
 
@@ -73,7 +77,8 @@ enum FormFieldType: int
             self::DROP_DOWN => false,
             self::CHECKBOX => true,
             self::RADIO => false,
-            self::RADIO_GROUP => false
+            self::RADIO_GROUP => false,
+            self::IMAGE => false
         };
     }
 
@@ -88,7 +93,8 @@ enum FormFieldType: int
             self::DROP_DOWN => true,
             self::CHECKBOX => true,
             self::RADIO => true,
-            self::RADIO_GROUP => true
+            self::RADIO_GROUP => true,
+            self::IMAGE => false
         };
     }
 
@@ -103,7 +109,8 @@ enum FormFieldType: int
             self::DROP_DOWN => false,
             self::CHECKBOX => false,
             self::RADIO => false,
-            self::RADIO_GROUP => false
+            self::RADIO_GROUP => false,
+            self::IMAGE => false
         };
     }
 
@@ -118,7 +125,8 @@ enum FormFieldType: int
             self::DROP_DOWN => false,
             self::CHECKBOX => false,
             self::RADIO => false,
-            self::RADIO_GROUP => false
+            self::RADIO_GROUP => false,
+            self::IMAGE => false
         };
     }
 
@@ -133,7 +141,8 @@ enum FormFieldType: int
             self::DROP_DOWN => false,
             self::CHECKBOX => false,
             self::RADIO => true,
-            self::RADIO_GROUP => true
+            self::RADIO_GROUP => true,
+            self::IMAGE => false
         };
     }
 }

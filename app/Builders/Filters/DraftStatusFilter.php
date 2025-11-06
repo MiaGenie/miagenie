@@ -11,7 +11,9 @@ class DraftStatusFilter implements Filter
     public static function apply(Builder $builder, $value): Builder
     {
         if (DraftStatus::tryFrom($value)) {
-            return $builder->where('status', $value);
+            $builder->where('status', $value);
+        } else {
+            $builder->whereNot('status', DraftStatus::TRASH);
         }
 
         return $builder;

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Inovector\Mixpost\Concerns\OwnedByWorkspace;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Inovector\Mixpost\Models\Workspace;
+
 
 class WorkspaceVersion extends Model
 {
@@ -30,6 +32,14 @@ class WorkspaceVersion extends Model
         'workspace_id',
         'version_id'
     ];
+
+    /**
+     * @return HasOne
+     */
+    public function workspace(): HasOne
+    {
+        return $this->hasOne(Workspace::class, 'id', 'workspace_id');
+    }
 
     /**
      * @return HasOne
