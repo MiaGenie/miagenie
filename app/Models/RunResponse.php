@@ -121,4 +121,12 @@ class RunResponse extends Model
     {
         return $this->HasOne(RunResponseReview::class, 'run_response_id');
     }
+
+    /**
+     * @return HasOne
+     */
+    public function runResponseWorkspaceFile(): HasOne
+    {
+        return $this->HasOne(RunResponseWorkspaceFile::class, 'run_response_id');
+    }
 }
