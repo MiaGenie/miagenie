@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Workspace;
 
 use App\Concerns\Controller\HasFieldOptions;
 use App\Enums\FormFieldType;
+use App\Enums\FormInputType;
 use App\Http\Requests\Workspace\Briefing\StoreBriefing;
 use App\Http\Requests\Workspace\Briefing\UpdateBriefing;
 use App\Http\Resources\BriefingResource;
@@ -41,7 +42,7 @@ class BriefingsController extends Controller
             'filter' => [
                 'keyword' => $request->query('keyword', ''),
             ],
-            'records' => fn () => BriefingResource::collection($records),
+            'records' => BriefingResource::collection($records),
             'fieldList' => $fieldList
         ]);
     }
@@ -60,6 +61,7 @@ class BriefingsController extends Controller
             'mode' => 'create',
             'fieldList' => $fieldList,
             'fieldTypes' => FormFieldType::withFieldOptions(),
+            'inputTypes' => FormInputType::withInputOptions(),
             'record' => null
         ]);
     }
@@ -99,6 +101,7 @@ class BriefingsController extends Controller
             'mode' => 'edit',
             'fieldList' => $fieldList,
             'fieldTypes' => FormFieldType::withFieldOptions(),
+            'inputTypes' => FormInputType::withInputOptions(),
             'record' => new BriefingResource($record)
         ]);
     }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Workspace\CompetitorsController;
 use App\Http\Controllers\Workspace\BriefingsController;
+use App\Http\Controllers\Workspace\DeleteDraftsController;
 use App\Http\Controllers\Workspace\DeleteIdeasController;
 use App\Http\Controllers\Workspace\DraftsController;
 use App\Http\Controllers\Workspace\IdeasController;
@@ -38,7 +39,7 @@ Route::middleware(array_merge([
             Route::get('create', [BriefingsController::class, 'create'])->name('create');
             Route::post('store', [BriefingsController::class, 'store'])->name('store');
             Route::get('{briefing}', [BriefingsController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
-            Route::put('{briefing}', [BriefingsController::class, 'update'])->name('update');
+            Route::post('update/{briefing}', [BriefingsController::class, 'update'])->name('update');
             Route::delete('{briefing}', [BriefingsController::class, 'destroy'])->name('delete');
         });
 
@@ -77,6 +78,7 @@ Route::middleware(array_merge([
             Route::put('{draft}', [DraftsController::class, 'update'])->name('update');
             Route::delete('{draft}', [DraftsController::class, 'destroy'])->name('delete');
             Route::post('generateMultiple', [DraftsController::class, 'generateMultiple'])->name('generateMultiple');
+            Route::delete('/', DeleteDraftsController::class)->name('deleteMultiple');
         });
 
         Route::prefix('pre_posts')->name('pre_posts.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {

@@ -1,5 +1,8 @@
 <script setup>
 import { useI18n } from "vue-i18n";
+import { inject } from "vue";
+import {cloneDeep, find} from "lodash";
+import {usePage} from "@inertiajs/vue3";
 import LabelSuffix from "@/Components/Form/LabelSuffix.vue";
 import Error from "@/Components/Form/Error.vue";
 import Textarea from "@/Components/Form/Textarea.vue";
@@ -11,34 +14,29 @@ import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import Checkbox from "@/Components/Form/Checkbox.vue";
 import Flex from "@/Components/Layout/Flex.vue";
 import Input from "@/Components/Form/Input.vue";
-import { inject } from "vue";
-import {find} from "lodash";
+import DangerButton from "@/Components/Button/DangerButton.vue";
+import ImageUploadButton from "@/Components/Media/Genie/ImageUploadButton.vue";
+import X from "@/Icons/X.vue";
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 
 const {t: $t} = useI18n();
 
 const props = defineProps({
-    fields: {
+    field: {
         type: Object,
         required: true,
-    },
-    fieldTypes: {
-        type: Object,
-        required: true,
-    },
-
+    }
 });
 
 const form = inject('form');
 
 const fieldType = (field) => {
-    return find(props.fieldTypes, ['value', Number(field.field_type)]);
+    return find(usePage().props.fieldTypes, ['value', Number(field.field_type)]);
 }
 
 </script>
 <template>
-    <template slot="title">{{ $t("general.details") }}</template>
 
-    <template v-for="(field, index) in props.fields" :key="index">
         <VerticalGroup class="form-field mt-lg">
             <template #title>
                 <label :for="field.code_name">{{ field.name }}</label>
@@ -47,18 +45,29 @@ const fieldType = (field) => {
 
             <template v-if="fieldType(field).name === 'INPUT'">
 
-                <Input v-model="form.content[field.code_name]"
-                       type="text"
-                       :id="field.code_name"
-                       @keydown.enter.prevent=""
-                       :placeholder="field.description"
-                       :error="form.errors[field.code_name] !== undefined"
-                       :required="field.required"
+                <Input
+                    v-model="form.content[field.code_name]"
+                    type="text"
+                    :id="field.code_name"
+                    @keydown.enter.prevent=""
+                    :placeholder="field.description"
+                    :error="form.errors[field.code_name] !== undefined"
+                    :required="field.required"
                 />
 
             </template>
 
-            <template v-if="fieldType(field).name === 'TEXTAREA'">
+            <template v-else-if="fieldType(field).name === 'IMAGE'">
+
+                <ImageUploadButton
+                    v-model="form.content[field.code_name]"
+                    :fieldName="field.code_name"
+                    :caption="field.description"
+                />
+
+            </template>
+
+            <template v-else-if="fieldType(field).name === 'TEXTAREA'">
 
                 <Textarea v-model="form.content[field.code_name]"
                           :placeholder="field.description"
@@ -70,7 +79,7 @@ const fieldType = (field) => {
 
             </template>
 
-            <template #description v-if="fieldType(field).name === 'DROP_DOWN'">
+            <template #description v-if="fieldType(field).name === 'CHECKBOX'">
                 {{ field.description }}
             </template>
 
@@ -149,5 +158,5 @@ const fieldType = (field) => {
                 <Error :message="form.errors.content?.field.code_name"/>
             </template>
         </VerticalGroup>
-    </template>
+
 </template>
