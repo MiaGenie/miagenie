@@ -63,37 +63,41 @@ const formValue = () => {
 
     <template v-if="(schema.type === 'object' || schema.type === 'array') && fieldType(field).name !== 'CHECKBOX'">
 
-        <VerticalGroup v-if="schema.title ?? false" class="form-field mt-lg">
-            <template #title>
-                <label :for="field.code_name">{{ schema.title }}</label>
-                <LabelSuffix :danger="true">*</LabelSuffix>
-            </template>
-        </VerticalGroup>
+        <div :class="'c_' + name">
 
-        <StrategySchemaField
-            v-if="schema.type === 'object'"
-            v-for="(property, propKey) in schema.properties" :key="propKey"
-            v-model="modelValue[name]"
-            :field="field"
-            :path="path + '.' + propKey"
-            :name="propKey"
-            :schema="property"
-        />
+            <VerticalGroup v-if="schema.title ?? false" class="mt-lg">
+                <template #title>
+                    <label :for="field.code_name">{{ schema.title }}</label>
+                    <LabelSuffix :danger="true">*</LabelSuffix>
+                </template>
+            </VerticalGroup>
 
-        <StrategySchemaField
-            v-if="schema.type === 'array'"
-            v-for="(item, key) in arrayItems()" :key="key"
-            v-model="modelValue[name]"
-            :field="field"
-            :path="path + '.' + key"
-            :name="key.toString()"
-            :schema="schema.items"
-        />
+            <StrategySchemaField
+                v-if="schema.type === 'object'"
+                v-for="(property, propKey) in schema.properties" :key="propKey"
+                v-model="modelValue[name]"
+                :field="field"
+                :path="path + '.' + propKey"
+                :name="propKey"
+                :schema="property"
+            />
+
+            <StrategySchemaField
+                v-if="schema.type === 'array'"
+                v-for="(item, key) in arrayItems()" :key="key"
+                v-model="modelValue[name]"
+                :field="field"
+                :path="path + '.' + key"
+                :name="key.toString()"
+                :schema="schema.items"
+            />
+
+        </div>
     </template>
 
     <template v-else>
 
-        <VerticalGroup class="form-field mt-lg">
+        <VerticalGroup class="mt-lg">
             <template v-if="schema.title ?? false" #title>
                 <label :for="field.code_name">{{ schema.title }}</label>
                 <LabelSuffix :danger="true">*</LabelSuffix>

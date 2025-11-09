@@ -101,7 +101,7 @@ provide(/* key */ 'form', /* value */ form);
 
     <Head :title="$t('genie.strategy_review')"/>
 
-    <div class="w-full mx-auto row-py">
+    <div class="w-full max-w-[1200px] mx-auto row-py">
         <PageHeader :title="$t('genie.strategy_review')" />
 
         <div class="row-px">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Workspace;
 
 use App\Concerns\Controller\HasFieldOptions;
+use App\Enums\FormFieldFileType;
 use App\Enums\FormFieldType;
 use App\Enums\FormInputType;
 use App\Http\Requests\Workspace\Briefing\StoreBriefing;
@@ -61,6 +62,7 @@ class BriefingsController extends Controller
             'mode' => 'create',
             'fieldList' => $fieldList,
             'fieldTypes' => FormFieldType::withFieldOptions(),
+            'fileTypes' => FormFieldFileType::withTitle(),
             'inputTypes' => FormInputType::withInputOptions(),
             'record' => null
         ]);
@@ -101,6 +103,7 @@ class BriefingsController extends Controller
             'mode' => 'edit',
             'fieldList' => $fieldList,
             'fieldTypes' => FormFieldType::withFieldOptions(),
+            'fileTypes' => FormFieldFileType::withTitle(),
             'inputTypes' => FormInputType::withInputOptions(),
             'record' => new BriefingResource($record)
         ]);

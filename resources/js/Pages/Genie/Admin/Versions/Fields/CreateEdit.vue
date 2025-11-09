@@ -26,6 +26,7 @@ import Trash from "@/Icons/Trash.vue";
 import X from "@/Icons/X.vue";
 import Switch from "@/Components/Form/Switch.vue";
 import Flex from "@/Components/Layout/Flex.vue";
+import EditorClassic from "@/Components/Package/EditorClassic.vue";
 
 
 defineOptions({layout: AdminLayout});
@@ -56,6 +57,10 @@ const props = defineProps({
         type: Object,
         required: true
     },
+    fileTypes: {
+        type: Object,
+        required: true
+    },
     inputTypes: {
         type: Object,
         required: true
@@ -79,6 +84,7 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     sub_description: '',
     field_type: '',
     input_type: '',
+    file_type: '',
     options : [],
     min_length: '',
     max_length: '',
@@ -91,6 +97,13 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     genie_required: true,
     is_identifier: false,
     hidden: false,
+    is_linkable: false,
+    display_title: true,
+    display_grouped: false,
+    display_field_title: false,
+    display_item_title: false,
+    display_faq_title: '',
+    display_faq_text: '',
     position: '',
 });
 
@@ -100,6 +113,7 @@ const {
     currentGroupType,
     currentFieldType,
     currentInputType,
+    currentFileType,
     setCodeName,
     checkForm,
 } = useVersionField(form);
@@ -275,83 +289,6 @@ const deleteField = () => {
 
                     <VerticalGroup class="form-field mt-lg">
                         <template #title>
-                            <label for="name">{{ $t("general.name") }}
-                                <LabelSuffix :danger="true">*</LabelSuffix>
-                            </label>
-                        </template>
-
-                        <Input
-                            v-model="form.name"
-                            type="text"
-                            id="name"
-                            :autofocus="isCreate"
-                            @focusout="setCodeName"
-                            required
-                        />
-
-                        <template #footer>
-                            <Error :message="form.errors.name"/>
-                        </template>
-                    </VerticalGroup>
-
-                    <VerticalGroup class="form-field mt-lg">
-                        <template #title>
-                            <label for="code_name">{{ $t("genie.code_name") }}
-                                <LabelSuffix :danger="true">*</LabelSuffix>
-                            </label>
-                        </template>
-
-                        <Input
-                            v-model="form.code_name"
-                            type="text"
-                            id="code_name"
-                            :placeholder="'(snake_case)'"
-                            required
-                        />
-
-                        <template #footer>
-                            <Error :message="form.errors.code_name"/>
-                        </template>
-                    </VerticalGroup>
-
-                    <VerticalGroup class="form-field mt-lg">
-                        <template #title>
-                            <label for="description">{{ $t("genie.description") }}</label>
-                        </template>
-
-                        <Textarea
-                            v-model="form.description"
-                            :error="form.errors.description !== undefined"
-                            id="description"
-                            class="w-full placeholder:italic placeholder:text-sm"
-                            rows="5"
-                        />
-
-                        <template #footer>
-                            <Error :message="form.errors.description"/>
-                        </template>
-                    </VerticalGroup>
-
-                    <VerticalGroup class="form-field mt-lg">
-                        <template #title>
-                            <label for="sub_description">{{ $t("genie.sub_description") }}</label>
-                        </template>
-
-                        <Textarea
-                            v-model="form.sub_description"
-                            :error="form.errors.sub_description !== undefined"
-                            id="sub_description"
-                            class="w-full placeholder:italic placeholder:text-sm"
-                            rows="5"
-                        />
-
-                        <template #footer>
-                            <Error :message="form.errors.sub_description"/>
-                        </template>
-                    </VerticalGroup>
-
-                    <VerticalGroup class="form-field mt-lg">
-                        <template #title>
                             <label for="field_type">{{ $t("genie.field_type") }}
                                 <LabelSuffix :danger="true">*</LabelSuffix>
                             </label>
@@ -399,6 +336,132 @@ const deleteField = () => {
 
                         <template #footer>
                             <Error :message="form.errors.input_type"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup
+                        v-if="currentFieldType?.isFile"
+                        class="form-field mt-lg"
+                    >
+                        <template #title>
+                            <label for="file_type">{{ $t("genie.field_file_type") }}
+                                <LabelSuffix :danger="true">*</LabelSuffix>
+                            </label>
+                        </template>
+
+                        <Select
+                            v-model="form.file_type"
+                            id="file_type"
+                        >
+                            <option
+                                v-for="option in props.fileTypes"
+                                :value="option.value"
+                            >
+                                {{ option.title }}
+                            </option>
+                        </Select>
+
+                        <template #footer>
+                            <Error :message="form.errors.input_type"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="name">{{ $t("general.name") }}
+                                <LabelSuffix :danger="true">*</LabelSuffix>
+                            </label>
+                        </template>
+
+                        <Input
+                            v-model="form.name"
+                            type="text"
+                            id="name"
+                            :autofocus="isCreate"
+                            @focusout="setCodeName"
+                            required
+                        />
+
+                        <template #footer>
+                            <Error :message="form.errors.name"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="code_name">{{ $t("genie.code_name") }}
+                                <LabelSuffix :danger="true">*</LabelSuffix>
+                            </label>
+                        </template>
+
+                        <Input
+                            v-model="form.code_name"
+                            type="text"
+                            id="code_name"
+                            :placeholder="'(snake_case)'"
+                            required
+                        />
+
+                        <template #footer>
+                            <Error :message="form.errors.code_name"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="description">{{ $t("genie.description") }}</label>
+                        </template>
+
+                        <Textarea
+                            v-if="!currentFieldType?.isOutput"
+                            v-model="form.description"
+                            :error="form.errors.description !== undefined"
+                            id="description"
+                            class="w-full placeholder:italic placeholder:text-sm"
+                            rows="5"
+                        />
+
+                        <EditorClassic
+                            v-else
+                            :value="form.description"
+                            @update="form.description = $event"
+                            :error="form.errors.description !== undefined"
+                            id="description"
+                            class="w-full placeholder:italic placeholder:text-sm"
+                            rows="5"
+                        />
+
+                        <template #footer>
+                            <Error :message="form.errors.description"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="sub_description">{{ $t("genie.sub_description") }}</label>
+                        </template>
+
+                        <Textarea
+                            v-if="!currentFieldType?.isOutput"
+                            v-model="form.sub_description"
+                            :error="form.errors.sub_description !== undefined"
+                            id="sub_description"
+                            class="w-full placeholder:italic placeholder:text-sm"
+                            rows="5"
+                        />
+
+                        <EditorClassic
+                            v-else
+                            :value="form.sub_description"
+                            @update="form.sub_description = $event"
+                            :error="form.errors.sub_description !== undefined"
+                            id="sub_description"
+                            class="w-full placeholder:italic placeholder:text-sm"
+                            rows="5"
+                        />
+
+                        <template #footer>
+                            <Error :message="form.errors.sub_description"/>
                         </template>
                     </VerticalGroup>
 
@@ -562,6 +625,7 @@ const deleteField = () => {
                     </Flex>
 
                     <Flex
+                        v-if="!currentFieldType?.isOutput"
                         :responsive="false"
                         class="form-field mt-lg"
                     >
@@ -634,6 +698,29 @@ const deleteField = () => {
 
                         <VerticalGroup class="form-field basis-1/3">
                             <template #title>
+                                <label for="is_linkable">{{ $t("genie.field_is_linkable") }}</label>
+                            </template>
+
+                            <Switch
+                                v-model="form.is_linkable"
+                                id="is_linkable"
+                                :disabled="form.is_identifier"
+                            />
+
+                            <template #footer>
+                                <Error :message="form.errors.is_linkable"/>
+                            </template>
+                        </VerticalGroup>
+
+                    </Flex>
+
+                    <Flex
+                        :responsive="false"
+                        class="form-field mt-lg"
+                    >
+
+                        <VerticalGroup class="form-field basis-1/3">
+                            <template #title>
                                 <label for="hidden">{{ $t("genie.field_hidden") }}</label>
                             </template>
 
@@ -648,7 +735,116 @@ const deleteField = () => {
                             </template>
                         </VerticalGroup>
 
+                        <VerticalGroup class="form-field basis-1/3">
+                            <template #title>
+                                <label for="display_title">{{ $t("genie.field_display_title") }}</label>
+                            </template>
+
+                            <Switch
+                                v-model="form.display_title"
+                                id="display_title"
+
+                            />
+
+                            <template #footer>
+                                <Error :message="form.errors.display_title"/>
+                            </template>
+                        </VerticalGroup>
+
+                        <VerticalGroup v-if="!currentFieldType?.isOutput" class="form-field basis-1/3">
+                            <template #title>
+                                <label for="display_grouped">{{ $t("genie.field_display_grouped") }}</label>
+                            </template>
+
+                            <Switch
+                                v-model="form.display_grouped"
+                                id="display_grouped"
+                                :disabled="form.is_identifier"
+                            />
+
+                            <template #footer>
+                                <Error :message="form.errors.display_grouped"/>
+                            </template>
+                        </VerticalGroup>
+
                     </Flex>
+
+                    <Flex
+                        v-if="!currentFieldType?.isOutput"
+                        :responsive="false"
+                        class="form-field mt-lg"
+                    >
+
+
+                    <VerticalGroup class="form-field">
+                            <template #title>
+                                <label for="display_field_title">{{ $t("genie.field_display_field_title") }}</label>
+                            </template>
+
+                            <Switch
+                                v-model="form.display_field_title"
+                                id="display_field_title"
+
+                            />
+
+                            <template #footer>
+                                <Error :message="form.errors.display_field_title"/>
+                            </template>
+                        </VerticalGroup>
+
+                        <VerticalGroup class="form-field">
+                            <template #title>
+                                <label for="display_item_title">{{ $t("genie.field_display_item_title") }}</label>
+                            </template>
+
+                            <Switch
+                                v-model="form.display_item_title"
+                                id="display_item_title"
+
+                            />
+
+                            <template #footer>
+                                <Error :message="form.errors.display_item_title"/>
+                            </template>
+                        </VerticalGroup>
+
+                    </Flex>
+
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="display_faq_title">{{ $t("genie.field_display_faq_title") }}
+                            </label>
+                        </template>
+
+                        <Input
+                            v-model="form.display_faq_title"
+                            type="text"
+                            id="display_faq_title"
+                        />
+
+                        <template #footer>
+                            <Error :message="form.errors.display_faq_title"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="display_faq_text">{{ $t("genie.field_display_faq_text") }}</label>
+                        </template>
+
+                        <EditorClassic
+                            :value="form.display_faq_text"
+                            @update="form.display_faq_text = $event"
+                            :error="form.errors.display_faq_text !== undefined"
+                            id="display_faq_text"
+                            class="w-full placeholder:italic placeholder:text-sm"
+                            rows="5"
+                        />
+
+                        <template #footer>
+                            <Error :message="form.errors.display_faq_text"/>
+                        </template>
+                    </VerticalGroup>
 
                 </Panel>
 

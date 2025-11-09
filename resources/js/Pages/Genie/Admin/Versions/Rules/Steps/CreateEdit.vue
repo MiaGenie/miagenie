@@ -294,7 +294,7 @@ const deleteStep = () => {
                             required
                         >
                             <template v-for="(field) in outputFields">
-                                <option v-if="field.field_type == 4 || field.is_multiple" :value="field.id">
+                                <option v-if="field.is_linkable" :value="field.id">
                                     {{field.code_name }} - {{ field.name}}
                                 </option>
                             </template>

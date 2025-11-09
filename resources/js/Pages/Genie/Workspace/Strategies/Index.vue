@@ -44,7 +44,7 @@ provide('runStatus', props.runStatus);
 <template>
     <Head :title="$t('genie.strategies')"/>
 
-    <div class="w-full mx-auto row-py">
+    <div class="w-full max-w-[1200px] mx-auto row-py">
         <PageHeader :title="$t('genie.strategies')">
             <template #description>
                 {{ $t('genie.strategies_desc') }}
