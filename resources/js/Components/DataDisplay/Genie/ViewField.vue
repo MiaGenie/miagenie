@@ -207,7 +207,7 @@ const attemptClose = () => {
                                 :path="field.code_name + '.' + key"
                                 :name="key.toString()"
                                 :schema="schemas[field.code_name]['items']"
-                                :titled="false"
+                                :grouped="true"
                             />
 
                     </Collapse>
@@ -220,7 +220,7 @@ const attemptClose = () => {
                             :path="field.code_name + '.' + key"
                             :name="key.toString()"
                             :schema="schemas[field.code_name]['items']"
-                            :titled="false"
+                            :grouped="false"
                         />
 
                     </template>
