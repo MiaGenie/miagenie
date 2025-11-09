@@ -49,9 +49,13 @@
         }
     }
 
+    #unique_positioning, #unique_value_proposition, #biggest_transformation {
+        @apply mt-md;
+    }
+
     #big_idea {
         & > div {
-            @apply px-md pt-md text-lg font-medium;
+            @apply px-md pt-lg text-lg font-medium;
         }
     }
 
@@ -62,6 +66,10 @@
     }
 
     #tone_of_voice {
+
+        &  > div[class^="c_"] {
+            @apply pt-lg pb-sm;
+        }
 
         & div[class="c_1_personality_archetype"] {
             @apply pt-lg pb-sm;
@@ -99,7 +107,7 @@
             @apply mt-lg;
 
             & span {
-                @apply mt-sm font-medium;
+                @apply mt-sm text-lg font-medium;
             }
         }
     }
@@ -258,8 +266,9 @@
     #visual_guidelines {
 
         & div[class="c_visual_guidelines"] {
+            @apply mt-lg;
 
-            & > div[class^="c_"]:not(:first-child) {
+            & > div[class^="c_"] {
                 @apply mt-md;
             }
         }
