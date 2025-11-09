@@ -27,6 +27,8 @@ trait WithFieldOptions
                     'hasOptions' => $enum->hasOptions(),
                     'hasRows' => $enum->hasRows(),
                     'isInput' => $enum->isInput(),
+                    'isFile' => $enum->isFile(),
+                    'isOutput' => $enum->isOutput(),
                     'isRadio' => $enum->isRadio(),
                 ]);
             })->filter(function ($item) use ($value) {
@@ -65,6 +67,16 @@ trait WithFieldOptions
      * @return bool
      */
     abstract public function isInput(): bool;
+
+    /**
+     * @return bool
+     */
+    abstract public function isOutput(): bool;
+
+    /**
+     * @return bool
+     */
+    abstract public function isFile(): bool;
 
     /**
      * @return bool

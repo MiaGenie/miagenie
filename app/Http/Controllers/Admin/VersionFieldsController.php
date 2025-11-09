@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\FormFieldFileType;
 use App\Http\Requests\Admin\UpdateVersionFieldTranslations;
 use Arr;
 use Illuminate\Http\JsonResponse;
@@ -100,6 +101,7 @@ class VersionFieldsController extends Controller
             'groupType' => $request->input('group_type'),
             'groupTypes' => VersionGroupType::withGroupOptions(),
             'fieldTypes' => FormFieldType::withFieldOptions(),
+            'fileTypes' => FormFieldFileType::withTitle(),
             'inputTypes' => FormInputType::withInputOptions(),
             'statusTypes' => VersionStatus::withTitle()
         ]);
@@ -142,6 +144,7 @@ class VersionFieldsController extends Controller
             'record' => new VersionFieldResource($record),
             'groupTypes' => VersionGroupType::withGroupOptions(),
             'fieldTypes' => FormFieldType::withFieldOptions(),
+            'fileTypes' => FormFieldFileType::withTitle(),
             'inputTypes' => FormInputType::withInputOptions(),
             'statusTypes' => VersionStatus::withTitle()
         ]);

@@ -28,6 +28,7 @@ class VersionFieldResource extends JsonResource
             'sub_description' => $this->sub_description,
             'field_type' => $this->field_type,
             'input_type' => $this->input_type,
+            'file_type' => $this->file_type,
             'options' => VersionFieldOptionResource::collection($this->options),
             'min_length' => $this->min_length,
             'max_length' => $this->max_length,
@@ -40,6 +41,13 @@ class VersionFieldResource extends JsonResource
             'genie_required' => $this->genie_required,
             'is_identifier' => $this->is_identifier,
             'hidden' => $this->hidden,
+            'is_linkable' => $this->is_linkable,
+            'display_title' => $this->display_title,
+            'display_grouped' => $this->display_grouped,
+            'display_field_title' => $this->display_field_title,
+            'display_item_title' => $this->display_item_title,
+            'display_faq_title' => $this->display_faq_title,
+            'display_faq_text' => $this->display_faq_text,
             'position' => $this->position,
         ];
 

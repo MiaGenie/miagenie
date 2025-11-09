@@ -16,6 +16,9 @@ import {cloneDeep, find, get} from "lodash";
 import {usePage} from "@inertiajs/vue3";
 import PageHeader from "@/Components/DataDisplay/PageHeader.vue";
 import Panel from "@/Components/Surface/Panel.vue";
+import Collapse from "@/Components/Surface/Collapse.vue";
+import ListGroup from "@/Components/DataDisplay/ListGroup.vue";
+import ListItem from "@/Components/DataDisplay/ListItem.vue";
 
 const {t: $t} = useI18n();
 
@@ -40,6 +43,10 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    titled: {
+        type: Boolean,
+        default: true,
+    }
 });
 
 const form = inject('form');
@@ -55,8 +62,23 @@ const arrayItems = () => {
     return get(cloneDeep(props.modelValue), props.name, []);
 }
 
+const sortedFirstKey = (obj) => {
+    return Object.keys(obj)
+        .sort()
+        .slice(0, 1)
+        .pop()
+}
+
+const titleKey = () => {
+    return sortedFirstKey(props.schema.properties)
+}
+
 const formValue = () => {
     return get(props.modelValue, props.name);
+}
+
+const isObject = (field) => {
+    return typeof field === "object";
 }
 
 </script>
@@ -64,29 +86,67 @@ const formValue = () => {
 
     <template v-if="(schema?.type === 'object' || schema?.type === 'array') && fieldType(field).name !== 'CHECKBOX'">
 
-        <VerticalGroup v-if="schema.title ?? false" class="mt-lg">
+        <VerticalGroup :forceFullWidth="true" v-if="titled && (schema.title ?? false) && !(schema['x-group'] ?? false)" class="mt-lg">
             <template #title>
                 <label :for="field.code_name">{{ schema.title }}</label>
-                <LabelSuffix :danger="true">*</LabelSuffix>
             </template>
         </VerticalGroup>
 
 
 
-        <div :class="name">
+        <div :class="'c_' + name">
+
+            <template v-if="schema.type === 'object' && !Boolean(field.is_multiple)" v-for="(property, propKey) in schema.properties" :key="propKey">
+
+                <StrategySchemaFieldView
+
+                    v-if="!(props.field.display_grouped && props.field.display_item_title && (propKey === titleKey()))"
+                    v-model="modelValue[name]"
+                    :field="field"
+                    :path="path + '.' + propKey"
+                    :name="propKey"
+                    :schema="property"
+                />
+
+            </template>
+            <template
+                v-else-if="Boolean(field.is_multiple)"
+            >
+
+                <StrategySchemaFieldView
+                    v-for="(property, propKey) in schema.properties" :key="propKey"
+                    v-model="modelValue[name]"
+                    :field="field"
+                    :path="path + '.' + propKey"
+                    :name="propKey"
+                    :schema="property"
+                />
+
+            </template>
+
+            <Collapse colorClass="mt-md" v-if="schema.type === 'array' && (schema['x-group'] ?? false)">
+
+                <template #title>
+                    {{  schema.title  }}
+                </template>
+
+
+                <div>
+                    <StrategySchemaFieldView
+                        v-for="(item, key) in arrayItems()" :key="key"
+                        v-model="modelValue[name]"
+                        :field="field"
+                        :path="path + '.' + key"
+                        :name="key.toString()"
+                        :schema="schema.items"
+                    />
+                </div>
+
+
+            </Collapse>
 
             <StrategySchemaFieldView
-                v-if="schema.type === 'object'"
-                v-for="(property, propKey) in schema.properties" :key="propKey"
-                v-model="modelValue[name]"
-                :field="field"
-                :path="path + '.' + propKey"
-                :name="propKey"
-                :schema="property"
-            />
-
-            <StrategySchemaFieldView
-                v-if="schema.type === 'array'"
+                v-else-if="schema.type === 'array'"
                 v-for="(item, key) in arrayItems()" :key="key"
                 v-model="modelValue[name]"
                 :field="field"
@@ -101,7 +161,7 @@ const formValue = () => {
 
     <template v-else>
 
-        <VerticalGroup :class="name">
+        <VerticalGroup :forceFullWidth="true" :class="'c_' + name">
             <template v-if="schema?.title ?? false" #title>
                 {{ schema.title }}
             </template>
@@ -111,7 +171,7 @@ const formValue = () => {
                 <TableCell class="">
                     <template v-for="(value) in modelValue[name]" :key="value">
                         <Flex class="py-sm">
-                            {{ value }}
+                            {{ schema['properties'][value].title }}
                         </Flex>
                     </template>
                 </TableCell>
@@ -143,7 +203,7 @@ const formValue = () => {
             <template v-else>
 
                 <span>SOMETHING SHOULD BE HERE!</span>
-                <span>{{ modelValue[name] }}</span>
+                <span>{{ modelValue }}</span>
 
             </template>
 

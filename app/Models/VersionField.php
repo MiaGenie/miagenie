@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\FormFieldFileType;
 use App\Enums\FormFieldType;
 use App\Enums\FormInputType;
 use App\Enums\VersionGroupType;
@@ -14,7 +15,6 @@ use App\Concerns\Models\HasTranslations;
 
 class VersionField extends Model
 {
-    use HasFactory;
     use HasUuid;
     use HasTranslations;
 
@@ -36,6 +36,7 @@ class VersionField extends Model
         'sub_description',
         'field_type',
         'input_type',
+        'file_type',
         'min_length',
         'max_length',
         'min_value',
@@ -47,6 +48,13 @@ class VersionField extends Model
         'genie_required',
         'is_identifier',
         'hidden',
+        'is_linkable',
+        'display_title',
+        'display_grouped',
+        'display_field_title',
+        'display_item_title',
+        'display_faq_title',
+        'display_faq_text',
         'position',
     ];
 
@@ -56,6 +64,7 @@ class VersionField extends Model
     protected $casts = [
         'field_type' => FormFieldType::class,
         'input_type' => FormInputType::class,
+        'file_type' => FormFieldFileType::class,
         'group_type' => VersionGroupType::class,
         'name' => 'array',
         'description' => 'array',
@@ -65,7 +74,13 @@ class VersionField extends Model
     /**
      * @var array|string[]
      */
-    public array $translatable = ['name', 'description', 'sub_description'];
+    public array $translatable = [
+        'name',
+        'description',
+        'sub_description',
+        'display_faq_title',
+        'display_faq_text'
+    ];
 
     /**
      * @return BelongsTo

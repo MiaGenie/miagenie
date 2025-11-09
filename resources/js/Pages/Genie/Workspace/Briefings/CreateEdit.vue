@@ -35,6 +35,10 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    fileTypes: {
+        type: Object,
+        required: true,
+    },
     inputTypes: {
         type: Object,
         required: true,
@@ -65,7 +69,7 @@ const form = useAPIForm(isEdit.value ? cloneDeep(props.record) :
         (list, field) => {
             const hasOptions = (
                 props.fieldTypes.find((field_type) => field_type.value === field.field_type).hasOptions ||
-                props.fieldTypes.find((field_type) => field_type.value === field.field_type).name === "IMAGE"
+                props.fieldTypes.find((field_type) => field_type.value === field.field_type).name === "FILE"
             )
             list.content[field.code_name] = hasOptions ? [] : '' ;
             if(Array.isArray(list.content[field.code_name])) {
@@ -120,6 +124,17 @@ const submit = () => {
     }
 }
 
+const removePreventNavigation = router.on('before', (event) => {
+    if (!form.isDirty) {
+        return true;
+    }
+    if (!confirm($t('genie.are_you_sure') + "\n" + $t('genie.unsaved_will_lost'))) {
+        event.preventDefault()
+    } else {
+        removePreventNavigation()
+    }
+})
+
 const attemptClose = () => {
     if (!form.isDirty) {
         backToList();
@@ -137,6 +152,7 @@ const attemptClose = () => {
 }
 
 const backToList = () => {
+    removePreventNavigation()
     router.get(route('genie.briefings.index', {
         workspace: workspaceCtx.id
     }));
@@ -169,14 +185,14 @@ const deleteBriefing = () => {
         .show();
 }
 
-provide(/* key */ 'form', /* value */ form);
+provide('form', form);
 
 </script>
 <template>
 
     <Head :title="mode === 'create' ? $t('genie.create_briefing') : $t('genie.edit_briefing')"/>
 
-    <div class="w-full mx-auto row-py">
+    <div class="w-full max-w-[1200px] mx-auto row-py">
 
         <PageHeader :title="mode === 'create' ? $t('genie.create_briefing') : $t('genie.edit_briefing')"/>
 

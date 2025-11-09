@@ -158,10 +158,12 @@ const changeValue = (event) => {
                 {{ $t('genie.load_image') }}
             </PureButton>
 
-            <div class="h-auto p-2 border rounded-md">
+            <div
+                v-if="withPreview && previewImage"
+                class="h-auto p-2 border rounded-md"
+            >
                 <div class="w-full h-full inset-0 relative">
                     <img
-                        v-if="withPreview && previewImage"
                         :src="previewImage"
                         class="max-w-64 max-h-64"
                         alt="preview"

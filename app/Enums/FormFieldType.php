@@ -16,7 +16,8 @@ enum FormFieldType: int
     case CHECKBOX = 4;
     case RADIO = 5;
     case RADIO_GROUP = 6;
-    case IMAGE = 7;
+    case FILE = 7;
+    case OUTPUT = 8;
 
     /**
      * @return string
@@ -30,7 +31,8 @@ enum FormFieldType: int
             self::CHECKBOX => 'checkbox',
             self::RADIO => 'radio',
             self::RADIO_GROUP => 'radio_group',
-            self::IMAGE => 'image'
+            self::FILE => 'file',
+            self::OUTPUT => 'output'
         };
     }
 
@@ -46,7 +48,8 @@ enum FormFieldType: int
             self::CHECKBOX => false,
             self::RADIO => false,
             self::RADIO_GROUP => true,
-            self::IMAGE => false
+            self::FILE => false,
+            self::OUTPUT => false
         };
     }
 
@@ -62,7 +65,8 @@ enum FormFieldType: int
             self::CHECKBOX => false,
             self::RADIO => false,
             self::RADIO_GROUP => false,
-            self::IMAGE => false
+            self::FILE => false,
+            self::OUTPUT => false
         };
     }
 
@@ -78,7 +82,8 @@ enum FormFieldType: int
             self::CHECKBOX => true,
             self::RADIO => false,
             self::RADIO_GROUP => false,
-            self::IMAGE => false
+            self::FILE => false,
+            self::OUTPUT => false
         };
     }
 
@@ -94,7 +99,8 @@ enum FormFieldType: int
             self::CHECKBOX => true,
             self::RADIO => true,
             self::RADIO_GROUP => true,
-            self::IMAGE => false
+            self::FILE => false,
+            self::OUTPUT => false
         };
     }
 
@@ -110,7 +116,8 @@ enum FormFieldType: int
             self::CHECKBOX => false,
             self::RADIO => false,
             self::RADIO_GROUP => false,
-            self::IMAGE => false
+            self::FILE => false,
+            self::OUTPUT => false
         };
     }
 
@@ -126,7 +133,42 @@ enum FormFieldType: int
             self::CHECKBOX => false,
             self::RADIO => false,
             self::RADIO_GROUP => false,
-            self::IMAGE => false
+            self::FILE => false,
+            self::OUTPUT => false
+        };
+    }
+
+    /**
+     * @return bool
+     */
+    public function isOutput(): bool
+    {
+        return match ($this) {
+            self::INPUT => false,
+            self::TEXTAREA => false,
+            self::DROP_DOWN => false,
+            self::CHECKBOX => false,
+            self::RADIO => false,
+            self::RADIO_GROUP => false,
+            self::FILE => false,
+            self::OUTPUT => true
+        };
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFile(): bool
+    {
+        return match ($this) {
+            self::INPUT => false,
+            self::TEXTAREA => false,
+            self::DROP_DOWN => false,
+            self::CHECKBOX => false,
+            self::RADIO => false,
+            self::RADIO_GROUP => false,
+            self::FILE => true,
+            self::OUTPUT => false
         };
     }
 
@@ -142,7 +184,8 @@ enum FormFieldType: int
             self::CHECKBOX => false,
             self::RADIO => true,
             self::RADIO_GROUP => true,
-            self::IMAGE => false
+            self::FILE => false,
+            self::OUTPUT => false
         };
     }
 }

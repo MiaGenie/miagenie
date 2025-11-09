@@ -1,0 +1,58 @@
+@layer components {
+
+    #brand_values {
+
+        & > div {
+            @apply flex flex-wrap justify-center;
+        }
+        & div:not([class^="c_"]) > div[class^="c_"] {
+            @apply flex flex-wrap flex-row justify-center;
+            @apply max-w-[46%] p-3 m-[1%];
+            @apply border border-gray-300 rounded-lg;
+            @apply text-justify hyphens-auto
+        }
+
+        & div[class^="c_"] > div[class$="name"] {
+            @apply font-medium;
+        }
+
+        & div[class^="c_"] > div[class^="c_"]:not([class$="name"]) {
+            @apply text-sm;
+        }
+
+
+    }
+
+    #secondary_goals {
+        & > div {
+            @apply p-lg;
+        }
+    }
+
+    #secondary_ideas {
+        & > div {
+            @apply p-lg;
+        }
+    }
+
+    #target_audiences {
+        & > div {
+            @apply p-lg;
+        }
+    }
+
+    #tone_of_voice {
+        & .c_3_dos {
+            @apply p-lg;
+        }
+
+        & div[class="c_0_adjectives"] {
+            @apply p-lg;
+        }
+
+        & div[class="c_1_personality_archetype"] {
+            @apply p-lg;
+        }
+    }
+
+}

@@ -41,9 +41,10 @@ class GenieOutputStrategy extends GenieOutput implements GenieOutputContract
             $strategy = $model->run->strategy;
             $content = $strategy->content ?? [];
             $firstOutput = $model->step->output[0];
-            $outpufField = $strategy->run->rule->version->fields->where('code_name', $firstOutput)->first();
+            $outputField = $strategy->run->rule->version->fields->where('code_name', $firstOutput)->first();
             $outputText = $response['output'][0]['content'][0]['text'];
             $outputText = $this->cleanAsterisks($outputText);
+            $responseOutput = json_decode($outputText, true);
             switch ($model->step->rule_sub_type) {
                 default:
                 case RuleSubType::BRIEFINGS:
@@ -54,8 +55,7 @@ class GenieOutputStrategy extends GenieOutput implements GenieOutputContract
                             $content[$firstOutput] = $outputText;
                             break;
                         case 'json_schema':
-                            $responseOutput = json_decode($outputText, true);
-                            if ($outpufField->field_type->name === 'CHECKBOX') {
+                            if ($outputField->field_type->name === 'CHECKBOX') {
                                 $content[$firstOutput] = array_keys($responseOutput[$firstOutput], true);
                             } else {
                                 $content[$firstOutput] = $responseOutput[$firstOutput];
@@ -64,7 +64,6 @@ class GenieOutputStrategy extends GenieOutput implements GenieOutputContract
                     }
                     break;
                 case RuleSubType::BRIEFINGS_MULTIPLE:
-                    $responseOutput = json_decode($outputText, true);
                     foreach ($model->step->output as $output) {
                         $content[$output] = $responseOutput[$output];
                     }
@@ -76,8 +75,7 @@ class GenieOutputStrategy extends GenieOutput implements GenieOutputContract
                             $content[$firstOutput][$model->runCompetitor->competitor_id] = $outputText;
                             break;
                         case 'json_schema':
-                            $responseOutput = json_decode($outputText, true);
-                            $content[$firstOutput][$model->runCompetitor->competitor_id] = $responseOutput;
+                            $content[$firstOutput][$model->runCompetitor->competitor_id] =  $responseOutput[$firstOutput];
                             break;
                     }
                     break;

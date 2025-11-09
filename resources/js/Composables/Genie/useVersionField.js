@@ -93,6 +93,10 @@ const useVersionField = (form) => {
         return find(inputTypes, ['value', Number(form.input_type)]);
     });
 
+    const currentFileType = computed (() => {
+        return find(fileTypes, ['value', Number(form.file_type)]);
+    });
+
     const optionsErrors = () => {
 
         const errors = filter(form.errors, (error, key) => {
@@ -111,6 +115,7 @@ const useVersionField = (form) => {
         currentGroupType,
         currentFieldType,
         currentInputType,
+        currentFileType,
         optionsErrors
     }
 }

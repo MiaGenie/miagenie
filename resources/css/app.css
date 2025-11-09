@@ -1,6 +1,7 @@
 @import "fonts.css";
 @import "transition.css";
 @import "custom.css";
+@import "genie.css";
 
 @tailwind base;
 @tailwind components;

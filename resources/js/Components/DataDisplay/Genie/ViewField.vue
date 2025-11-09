@@ -12,6 +12,12 @@ import StrategySchemaField from "@/Components/Form/Genie/StrategySchemaField.vue
 import Save from "@/Icons/Genie/Save.vue";
 import StrategySchemaFieldView from "@/Components/Form/Genie/StrategySchemaFieldView.vue";
 import Panel from "@/Components/Surface/Panel.vue";
+import ListGroup from "@/Components/DataDisplay/ListGroup.vue";
+import ListItem from "@/Components/DataDisplay/ListItem.vue";
+import Collapse from "@/Components/Surface/Collapse.vue";
+import CollapseSmall from "@/Components/Surface/Genie/CollapseSmall.vue";
+import VerticalGroupClass from "@/Components/Layout/Genie/VerticalGroupClass.vue";
+import Group from "@/Components/Surface/Genie/Group.vue";
 
 const {t: $t} = useI18n();
 
@@ -19,6 +25,9 @@ const props = defineProps({
     index: {
         type: Number,
         required: true,
+    },
+    id: {
+        type: String
     },
     field: {
         type: Object,
@@ -44,28 +53,30 @@ const schemaType = () => {
     return usePage().props.schemas[props.field.code_name]?.type;
 }
 
-const fieldContent = (field, level = 0, keys = '') => {
-    if (typeof(field) === "object") {
+const sortedFirstKey = (obj) => {
+    return Object.keys(obj)
+        .sort()
+        .slice(0, 1)
+        .pop()
+}
 
-        let string = '';
+const titleKey = () => {
+    return sortedFirstKey(schemas[props.field.code_name].items.properties)
+}
 
-        const ordered = pick(field, Object.keys(field).sort());
-
-        Object.keys(ordered).forEach(key => {
-            if (typeof(field[key]) === "string") {
-                let fieldClass = 'strat_lvl_' + level + '.' + key;
-                string += '<span class="' + fieldClass + '">' + field[key] + '</span>';
-            } else if (typeof(field[key]) === "object") {
-                keys += key + ".";
-                string += fieldContent(field[key], level + 1, keys);
-            } else {
-                string += field[key];
-            }
-        });
-        string = string.replace(/(?:\r\n|\r|\n)/g, '<br>');
-        return string;
+const groupedTitle = (item, key) => {
+    if (props.field.display_item_title) {
+        return item[titleKey()];
     }
-    return field;
+    if (props.field.display_field_title) {
+        return (schemas[props.field.code_name]['items']?.title ?? '').replace('#', (key + 1));
+    }
+    return '# ' + (key + 1);
+}
+
+const multipleTitle = (item, key) => {
+    const titleKey = sortedFirstKey(schemas[props.field.code_name].properties);
+    return props.field.display_item_title ? item[titleKey] : props.field.display_field_title ? schemas[props.field.code_name]?.title ?? '' + ' #' + (key + 1) : '';
 }
 
 const update = () => {
@@ -102,81 +113,16 @@ const attemptClose = () => {
 }
 
 </script>
-<style>
-
-[class^='strat_lvl_'] {
-    display: block;
-}
-
-[class^='strat_lvl_1'] {
-    margin-left: 15px;
-}
-
-[class^='strat_lvl_2'] {
-    margin-left: 30px;
-}
-
-[class^='strat_lvl_3'] {
-    margin-left: 40px;
-}
-
-[class^='strat_lvl_4'] {
-    margin-left: 50px;
-}
-
-[class^='strat_lvl_5'] {
-    margin-left: 50px;
-}
-
-[class^='strat_lvl_5'][class$='_subtopics'] {
-    margin-left: 60px;
-}
-
-[class^='strat_lvl_3'][class$='_subtopics'] {
-    margin-left: 60px;
-}
-
-[class*='0_content_pillar_title'] {
-    color: red;
-}
-
-[class^='strat_lvl_1.'][class$='_title'] {
-    color: blue;
-    margin: 20px 0 5px 10px;
-}
-
-[class^='strat_lvl_0.'][class$='_name']{
-    color: green;
-    margin: 20px 0 5px 0;
-}
-
-[class$='_subtopics'] {
-    margin-bottom: 5px;
-    color: blueviolet
-}
-
-[class$='recommended_digital_channels'] {
-    margin-bottom: 10px
-}
-
-[class^='strat_lvl_1'][class$='_channels_title'], [class^='strat_lvl_1'][class$='_touchpoints_title'] {
-    margin-left: 20px;
-}
-
-[class^='strat_lvl_1'][class$='_channels'], [class^='strat_lvl_1'][class$='_touchpoints'] {
-    margin-left: 30px;
-}
-
-[class^='strat_lvl_0.'][class$='_title'] {
-    color: green;
-    margin: 20px 0 5px 0;
-}
-</style>
 <template>
 
-    <VerticalGroup class="mt-lg">
+    <VerticalGroupClass bodyClass="text-lg" :forceFullWidth="true" class="mt-lg">
         <template #title>
             <Flex class="justify-between">
+                <Flex>
+                    <span v-if="field.display_title">
+                        {{ field.name }}
+                    </span>
+                </Flex>
                 <Flex>
                     <PureButton
                         v-if="editing !== field.code_name"
@@ -198,9 +144,6 @@ const attemptClose = () => {
                         </template>
                     </PureButton>
 
-                    {{ field.name }}
-                </Flex>
-                <Flex>
                     <PureButton
                         v-if="editing === field.code_name"
                         @click="attemptClose(editing)"
@@ -217,9 +160,22 @@ const attemptClose = () => {
         <template #description>
             {{ field.description }}
         </template>
-    </VerticalGroup>
+    </VerticalGroupClass>
 
-    <Panel>
+    <template v-if="field.display_faq_title">
+
+        <CollapseSmall>
+
+            <template #title>{{  field.display_faq_title  }}</template>
+            <template #default>
+                <span v-html="field.display_faq_text"></span>
+            </template>
+
+        </CollapseSmall>
+
+    </template>
+
+    <div :id="props.id">
 
         <template v-if="editing === field.code_name">
 
@@ -235,16 +191,100 @@ const attemptClose = () => {
 
         <template v-else-if="editing !== field.code_name">
 
-            <StrategySchemaFieldView
-                v-model="form.content"
-                :field="field"
-                path=""
-                :name="field.code_name"
-                :schema="schemas[field.code_name]"
-            />
+            <template v-if="schemas[field.code_name]?.type === 'array'">
+
+                <Group>
+
+                    <Collapse v-if="field.display_grouped" v-for="(item, key) in form.content[field.code_name]" :key="key">
+
+                        <template #title>
+                            {{ groupedTitle(item, key) }}
+                        </template>
+
+                            <StrategySchemaFieldView
+                                v-model="form.content[field.code_name]"
+                                :field="field"
+                                :path="field.code_name + '.' + key"
+                                :name="key.toString()"
+                                :schema="schemas[field.code_name]['items']"
+                                :titled="false"
+                            />
+
+                    </Collapse>
+
+                    <template v-else v-for="(item, key) in form.content[field.code_name]">
+
+                        <StrategySchemaFieldView
+                            v-model="form.content[field.code_name]"
+                            :field="field"
+                            :path="field.code_name + '.' + key"
+                            :name="key.toString()"
+                            :schema="schemas[field.code_name]['items']"
+                            :titled="false"
+                        />
+
+                    </template>
+
+                </Group>
+
+            </template>
+            <template v-else-if="Boolean(field.is_multiple)">
+
+                <Group>
+
+                    <Collapse v-for="(item, key) in form.content[field.code_name]" :key="key">
+
+                        <template #title>
+                            {{ multipleTitle(item, key) }}
+                        </template>
+
+                            <StrategySchemaFieldView
+                                v-model="form.content[field.code_name]"
+                                :field="field"
+                                :path="field.code_name + '.' + key"
+                                :name="key.toString()"
+                                :schema="schemas[field.code_name]"
+                                :titled="false"
+                            />
+
+                    </Collapse>
+
+                </Group>
+
+
+            </template>
+            <template v-else-if="schemas[field.code_name]?.type !== 'array' && !Boolean(field.is_multiple)">
+
+                <Panel>
+
+                    <StrategySchemaFieldView
+                        v-model="form.content"
+                        :field="field"
+                        path=""
+                        :name="field.code_name"
+                        :schema="schemas[field.code_name]"
+                    />
+
+                </Panel>
+
+            </template>
+            <template
+                v-else
+            >
+
+                <StrategySchemaFieldView
+                    v-for="(item, itemKey) in form.content[field.code_name]"
+                    v-model="form.content[field.code_name][itemKey]"
+                    :field="field"
+                    path=""
+                    :name="field.code_name"
+                    :schema="schemas[field.code_name]"
+                />
+
+            </template>
 
         </template>
 
-    </Panel>
+    </div>
 
 </template>

@@ -34,6 +34,10 @@ const fieldType = (field) => {
     return find(usePage().props.fieldTypes, ['value', Number(field.field_type)]);
 }
 
+const fileType = (field) => {
+    return find(usePage().props.fileTypes, ['value', Number(field.file_type)]);
+}
+
 </script>
 <template>
 
@@ -57,7 +61,7 @@ const fieldType = (field) => {
 
             </template>
 
-            <template v-else-if="fieldType(field).name === 'IMAGE'">
+            <template v-else-if="fileType(field)?.name === 'IMAGE'">
 
                 <ImageUploadButton
                     v-model="form.content[field.code_name]"

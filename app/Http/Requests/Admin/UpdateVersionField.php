@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use App\Concerns\Requests\IngestVersionFields;
 use App\Constants\FormTypeDefaults;
+use App\Enums\FormFieldFileType;
 use App\Enums\FormFieldType;
 use App\Enums\FormInputType;
 use App\Enums\VersionGroupType;
@@ -37,6 +38,7 @@ class UpdateVersionField extends FormRequest
             'group_type' => ['required', Rule::enum(VersionGroupType::class)],
             'field_type' => ['required', Rule::enum(FormFieldType::class)],
             'input_type' => ['nullable', Rule::enum(FormInputType::class)],
+            'file_type' => ['nullable', Rule::enum(FormFieldFileType::class)],
             'name' => ['required', 'string', 'max:500'],
             'code_name' => [
                 'required',
@@ -64,6 +66,16 @@ class UpdateVersionField extends FormRequest
                     ->where('version_id', $this->version->id)
                     ->whereNot('uuid', $this->route('field'))
             ],
+            'required' => ['nullable', 'boolean'],
+            'genie_required' => ['nullable', 'boolean'],
+            'hidden' => ['nullable', 'boolean'],
+            'is_linkable' => ['nullable', 'boolean'],
+            'display_title' => ['nullable', 'boolean'],
+            'display_grouped' => ['nullable', 'boolean'],
+            'display_field_title' => ['nullable', 'boolean'],
+            'display_item_title' => ['nullable', 'boolean'],
+            'display_faq_title' => ['nullable', 'string', 'max:5000'],
+            'display_faq_text' => ['nullable', 'string', 'max:5000'],
         ];
     }
 
@@ -86,6 +98,7 @@ class UpdateVersionField extends FormRequest
                 'sub_description' => $this->input('sub_description'),
                 'field_type' => $this->input('field_type'),
                 'input_type' => $this->input('input_type'),
+                'file_type' => $this->input('file_type'),
                 'min_length' => $this->input('min_length'),
                 'max_length' => $this->input('max_length'),
                 'min_value' => $this->input('min_value'),
@@ -96,7 +109,15 @@ class UpdateVersionField extends FormRequest
                 'required' => $this->input('required'),
                 'genie_required' => $this->input('genie_required'),
                 'is_identifier' => $this->input('is_identifier'),
-                'hidden' => $this->input('hidden')
+                'hidden' => $this->input('hidden'),
+                'is_linkable' => $this->input('is_linkable'),
+                'display_title' => $this->input('display_title'),
+                'display_grouped' => $this->input('display_grouped'),
+
+                'display_field_title' => $this->input('display_field_title'),
+                'display_item_title' => $this->input('display_item_title'),
+                'display_faq_title' => $this->input('display_faq_title'),
+                'display_faq_text' => $this->input('display_faq_text')
             ]);
 
             $this->handleChildren($record);
