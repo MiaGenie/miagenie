@@ -19,9 +19,85 @@
         & div[class^="c_"] > div[class^="c_"]:not([class$="name"]) {
             @apply text-sm;
         }
+    }
 
+    #content_pillars {
+
+
+        & div[class="c_0"], div[class="c_1"], div[class="c_2"], div[class="c_3"], div[class="c_4"], div[class="c_5"] {
+            @apply flex flex-wrap;
+
+            & div[class="c_1_importance"] {
+                @apply flex flex-wrap justify-center;
+                @apply max-w-[46%] p-3 m-[1%];
+            }
+
+            & div[class="c_2_style"] {
+                @apply flex flex-wrap justify-center;
+                @apply max-w-[46%] p-3 m-[1%];
+            }
+
+            & div[class="c_4_topics"] {
+                @apply flex flex-wrap justify-center;
+
+                & > div[class^="c_"] {
+                    @apply flex flex-wrap justify-center;
+                    @apply max-w-[46%] p-3 m-[1%];
+                    @apply border border-gray-300 rounded-lg;
+                    @apply text-justify hyphens-auto;
+
+                    & > div[class="c_topic_name"] {
+                        @apply w-full;
+
+                        &  div {
+                            @apply justify-center;
+                            @apply text-center font-medium;
+                        }
+                    }
+
+                }
+
+                & div[class="c_topic_subtopics"] {
+                    @apply flex flex-col flex-wrap justify-center items-center;
+                }
+
+            }
+        }
 
     }
+
+    #customer_journey {
+/*        & div:not([class^="c_"]) > div[class^="c_"] {
+            @apply flex flex-wrap flex-row justify-center;
+            @apply max-w-[46%] p-3 m-[1%];
+            @apply border border-gray-300 rounded-lg;
+            @apply text-justify hyphens-auto
+        }*/
+
+        & div[class="c_persona"] {
+            @apply flex flex-wrap;
+        }
+
+        & div[class="c_70_key_offline_touchpoints"] {
+            @apply w-[66%] p-3 m-[1%];
+            @apply flex flex-col justify-start;
+
+            & div {
+                @apply flex flex-col items-center;
+            }
+        }
+
+        & div[class="c_60_key_digital_channels"] {
+            @apply w-[26%] p-3 m-[1%];
+            @apply flex flex-col content-start items-center;
+
+            & div {
+                @apply flex flex-col items-center;
+            }
+        }
+    }
+
+
 
     #secondary_goals {
         & > div {
@@ -42,9 +118,6 @@
     }
 
     #tone_of_voice {
-        & .c_3_dos {
-            @apply p-lg;
-        }
 
         & div[class="c_0_adjectives"] {
             @apply p-lg;

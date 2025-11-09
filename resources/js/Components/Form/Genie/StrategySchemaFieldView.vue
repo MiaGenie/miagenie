@@ -19,6 +19,7 @@ import Panel from "@/Components/Surface/Panel.vue";
 import Collapse from "@/Components/Surface/Collapse.vue";
 import ListGroup from "@/Components/DataDisplay/ListGroup.vue";
 import ListItem from "@/Components/DataDisplay/ListItem.vue";
+import DigitalChannel from "@/Components/DataDisplay/Genie/DigitalChannel.vue";
 
 const {t: $t} = useI18n();
 
@@ -43,9 +44,9 @@ const props = defineProps({
         type: Object,
         required: true,
     },
-    titled: {
+    grouped: {
         type: Boolean,
-        default: true,
+        default: false,
     }
 });
 
@@ -86,21 +87,18 @@ const isObject = (field) => {
 
     <template v-if="(schema?.type === 'object' || schema?.type === 'array') && fieldType(field).name !== 'CHECKBOX'">
 
-        <VerticalGroup :forceFullWidth="true" v-if="titled && (schema.title ?? false) && !(schema['x-group'] ?? false)" class="mt-lg">
+        <div :class="'c_' + name">
+
+        <VerticalGroup :forceFullWidth="true" v-if="!grouped && (schema['x-title'] ?? false) && !(schema['x-group'] ?? false)" class="w-full">
             <template #title>
-                <label :for="field.code_name">{{ schema.title }}</label>
+                <label :for="field.code_name">{{ schema['x-title'] }}</label>
             </template>
         </VerticalGroup>
 
-
-
-        <div :class="'c_' + name">
-
-            <template v-if="schema.type === 'object' && !Boolean(field.is_multiple)" v-for="(property, propKey) in schema.properties" :key="propKey">
+             <template v-if="schema.type === 'object' && !Boolean(field.is_multiple)" v-for="(property, propKey) in schema.properties" :key="propKey">
 
                 <StrategySchemaFieldView
-
-                    v-if="!(props.field.display_grouped && props.field.display_item_title && (propKey === titleKey()))"
+                    v-if="!grouped || !(props.field.display_grouped && props.field.display_item_title && (propKey === titleKey()))"
                     v-model="modelValue[name]"
                     :field="field"
                     :path="path + '.' + propKey"
@@ -162,19 +160,18 @@ const isObject = (field) => {
     <template v-else>
 
         <VerticalGroup :forceFullWidth="true" :class="'c_' + name">
-            <template v-if="schema?.title ?? false" #title>
-                {{ schema.title }}
+            <template v-if="schema['x-title'] ?? false" #title>
+                {{ schema['x-title'] }}
             </template>
 
             <template v-if="fieldType(field).name === 'CHECKBOX'">
 
-                <TableCell class="">
                     <template v-for="(value) in modelValue[name]" :key="value">
-                        <Flex class="py-sm">
+                        <Flex class="px-lg">
+                            <DigitalChannel :provider="value"></DigitalChannel>
                             {{ schema['properties'][value].title }}
                         </Flex>
                     </template>
-                </TableCell>
 
             </template>
 
