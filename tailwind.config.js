@@ -11,6 +11,18 @@ module.exports = {
         './resources/lang/**/*.php',
     ],
     theme: {
+        fontSize: {
+            xs: '0.6rem',
+            sm: '0.75rem',
+            base: '0.9rem',
+            md: '0.9rem',
+            lg: '1.1rem',
+            xl: '1.25rem',
+            '2xl': '1.563rem',
+            '3xl': '1.953rem',
+            '4xl': '2.441rem',
+            '5xl': '3.052rem',
+        },
         extend: {
             fontFamily: {
                 sans: ['Inter', ...defaultTheme.fontFamily.sans],

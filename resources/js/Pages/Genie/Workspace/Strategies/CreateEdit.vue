@@ -62,7 +62,7 @@ const fieldType = (field) => {
 
     <Head :title="$t('genie.strategy')"/>
 
-    <div class="w-full max-w-[1200px] mx-auto row-py whitespace-pre-wrap">
+    <div class="w-full max-w-[1200px] mx-auto row-py whitespace-pre-wrap text-base">
 
         <PageHeader :title="$t('genie.strategy')"/>
 

@@ -39,14 +39,14 @@ const props = defineProps({
 </script>
 <template>
 
-    <div class="mt-xl">
-        <div v-if="field.display_title" class="row-px mb-xl">
+    <div class="mt-xl italic">
+        <div v-if="field.display_title" class="mb-md">
             <span class="font-medium text-2xl">
                 {{ field.name  }}
             </span>
         </div>
 
-        <div class="row-px mb-xl" v-html="field.description"/>
+        <div class="mb-md" v-html="field.description"/>
     </div>
 
     <template v-if="field.display_faq_title">

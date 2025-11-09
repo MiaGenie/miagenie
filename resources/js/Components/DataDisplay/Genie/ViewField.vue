@@ -2,8 +2,7 @@
 import { useI18n } from "vue-i18n";
 import {usePage} from '@inertiajs/vue3';
 import {inject, provide, ref} from "vue";
-import {find, pick} from "lodash";
-import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
+import {find} from "lodash";
 import Flex from "@/Components/Layout/Flex.vue";
 import PencilSquare from "@/Icons/PencilSquare.vue";
 import X from "@/Icons/X.vue";
@@ -12,12 +11,11 @@ import StrategySchemaField from "@/Components/Form/Genie/StrategySchemaField.vue
 import Save from "@/Icons/Genie/Save.vue";
 import StrategySchemaFieldView from "@/Components/Form/Genie/StrategySchemaFieldView.vue";
 import Panel from "@/Components/Surface/Panel.vue";
-import ListGroup from "@/Components/DataDisplay/ListGroup.vue";
-import ListItem from "@/Components/DataDisplay/ListItem.vue";
 import Collapse from "@/Components/Surface/Collapse.vue";
 import CollapseSmall from "@/Components/Surface/Genie/CollapseSmall.vue";
 import VerticalGroupClass from "@/Components/Layout/Genie/VerticalGroupClass.vue";
 import Group from "@/Components/Surface/Genie/Group.vue";
+import StrategyFieldIcon from "@/Components/DataDisplay/Genie/StrategyFieldIcon.vue";
 
 const {t: $t} = useI18n();
 
@@ -119,7 +117,7 @@ const attemptClose = () => {
         <template #title>
             <Flex class="justify-between">
                 <Flex>
-                    <span v-if="field.display_title">
+                    <span v-if="field.display_title && !(schemas[field.code_name]?.type === 'object' && field.display_grouped && !field.is_multiple)">
                         {{ field.name }}
                     </span>
                 </Flex>
@@ -193,26 +191,11 @@ const attemptClose = () => {
 
             <template v-if="schemas[field.code_name]?.type === 'array'">
 
-                <Group>
+                <Collapse v-if="field.display_grouped" v-for="(item, key) in form.content[field.code_name]" :key="key">
 
-                    <Collapse v-if="field.display_grouped" v-for="(item, key) in form.content[field.code_name]" :key="key">
-
-                        <template #title>
-                            {{ groupedTitle(item, key) }}
-                        </template>
-
-                            <StrategySchemaFieldView
-                                v-model="form.content[field.code_name]"
-                                :field="field"
-                                :path="field.code_name + '.' + key"
-                                :name="key.toString()"
-                                :schema="schemas[field.code_name]['items']"
-                                :grouped="true"
-                            />
-
-                    </Collapse>
-
-                    <template v-else v-for="(item, key) in form.content[field.code_name]">
+                    <template #title>
+                        {{ groupedTitle(item, key) }}
+                    </template>
 
                         <StrategySchemaFieldView
                             v-model="form.content[field.code_name]"
@@ -220,61 +203,79 @@ const attemptClose = () => {
                             :path="field.code_name + '.' + key"
                             :name="key.toString()"
                             :schema="schemas[field.code_name]['items']"
-                            :grouped="false"
+                            :grouped="true"
                         />
 
-                    </template>
+                </Collapse>
 
-                </Group>
+                <template v-else v-for="(item, key) in form.content[field.code_name]">
+
+                    <StrategySchemaFieldView
+                        v-model="form.content[field.code_name]"
+                        :field="field"
+                        :path="field.code_name + '.' + key"
+                        :name="key.toString()"
+                        :schema="schemas[field.code_name]['items']"
+                        :grouped="false"
+                    />
+
+                </template>
 
             </template>
             <template v-else-if="Boolean(field.is_multiple)">
 
-                <Group>
+                <Collapse v-for="(item, key) in form.content[field.code_name]" :key="key">
 
-                    <Collapse v-for="(item, key) in form.content[field.code_name]" :key="key">
+                    <template #title>
+                        {{ multipleTitle(item, key) }}
+                    </template>
 
-                        <template #title>
-                            {{ multipleTitle(item, key) }}
-                        </template>
+                        <StrategySchemaFieldView
+                            v-model="form.content[field.code_name]"
+                            :field="field"
+                            :path="field.code_name + '.' + key"
+                            :name="key.toString()"
+                            :schema="schemas[field.code_name]"
+                            :titled="false"
+                        />
 
-                            <StrategySchemaFieldView
-                                v-model="form.content[field.code_name]"
-                                :field="field"
-                                :path="field.code_name + '.' + key"
-                                :name="key.toString()"
-                                :schema="schemas[field.code_name]"
-                                :titled="false"
+                </Collapse>
+
+
+            </template>
+            <template v-else-if="field.display_grouped">
+
+                <Collapse>
+
+                    <template #title>
+                        <Flex>
+                            <StrategyFieldIcon
+                                v-if="schemas[field.code_name]['x-icon']"
+                                :field="field.code_name"
+                                :icon="schemas[field.code_name]['x-icon']"
                             />
+                            {{ schemas[field.code_name]['x-title'] }}
+                        </Flex>
+                    </template>
 
-                    </Collapse>
-
-                </Group>
-
-
-            </template>
-            <template v-else-if="schemas[field.code_name]?.type !== 'array' && !Boolean(field.is_multiple)">
-
-                <Panel>
-
-                    <StrategySchemaFieldView
-                        v-model="form.content"
-                        :field="field"
-                        path=""
-                        :name="field.code_name"
-                        :schema="schemas[field.code_name]"
-                    />
-
-                </Panel>
-
-            </template>
-            <template
-                v-else
-            >
 
                 <StrategySchemaFieldView
-                    v-for="(item, itemKey) in form.content[field.code_name]"
-                    v-model="form.content[field.code_name][itemKey]"
+                    v-model="form.content"
+                    :field="field"
+                    path=""
+                    :name="field.code_name"
+                    :schema="schemas[field.code_name]"
+                    :grouped="true"
+                />
+
+
+                </Collapse>
+
+            </template>
+            <template v-else>
+
+                <StrategySchemaFieldView
+                    v-model="form.content"
                     :field="field"
                     path=""
                     :name="field.code_name"

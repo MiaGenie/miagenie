@@ -12,7 +12,7 @@ defineProps({
 const state = ref(false);
 </script>
 <template>
-    <div :class="colorClass" class="border rounded-lg transition-colors ease-in-out duration-200 mt-xs text-sm italic">
+    <div :class="colorClass" class="border rounded-lg transition-colors ease-in-out duration-200 mt-xs italic">
         <div @click="state = !state"
              role="button"
              class="cursor-pointer p-xs flex justify-start items-center">

@@ -4,13 +4,10 @@ defineProps({
         type: Boolean,
         default: false,
     },
-    bodyClass: {
-        type: String,
-    }
 })
 </script>
 <template>
-    <div :class="bodyClass" class="mt-xl mb-xs">
+    <div>
         <div :class="{'w-full': forceFullWidth,  'form-field': !forceFullWidth}" class="flex justify-between items-center">
             <div class="w-full flex flex-col sm:items-center sm:justify-between">
                 <div v-if="$slots.title || $slots.description" class="flex flex-col justify-start w-full">
@@ -24,13 +21,10 @@ defineProps({
                     </div>
                 </div>
 
-                <div v-if="$slots.default" class="w-full flex justify-start mt-xs">
+                <div v-if="$slots.default" class="w-full flex justify-start">
                     <slot/>
                 </div>
             </div>
-        </div>
-        <div v-if="$slots.footer" class="mt-xs">
-            <slot name="footer"/>
         </div>
     </div>
 </template>

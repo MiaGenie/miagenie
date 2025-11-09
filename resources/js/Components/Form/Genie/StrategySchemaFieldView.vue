@@ -1,25 +1,14 @@
 <script setup>
 import { useI18n } from "vue-i18n";
-import LabelSuffix from "@/Components/Form/LabelSuffix.vue";
 import Error from "@/Components/Form/Error.vue";
-import Textarea from "@/Components/Form/Textarea.vue";
-import Select from "@/Components/Form/Select.vue";
 import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
-import TableCell from "@/Components/DataDisplay/TableCell.vue";
-import Radio from "@/Components/Form/Radio.vue";
-import TableRow from "@/Components/DataDisplay/TableRow.vue";
-import Checkbox from "@/Components/Form/Checkbox.vue";
 import Flex from "@/Components/Layout/Flex.vue";
 import Input from "@/Components/Form/Input.vue";
 import { inject } from "vue";
 import {cloneDeep, find, get} from "lodash";
 import {usePage} from "@inertiajs/vue3";
-import PageHeader from "@/Components/DataDisplay/PageHeader.vue";
-import Panel from "@/Components/Surface/Panel.vue";
 import Collapse from "@/Components/Surface/Collapse.vue";
-import ListGroup from "@/Components/DataDisplay/ListGroup.vue";
-import ListItem from "@/Components/DataDisplay/ListItem.vue";
-import DigitalChannel from "@/Components/DataDisplay/Genie/DigitalChannel.vue";
+import StrategyGroup from "@/Components/Form/Genie/StrategyGroup.vue";
 
 const {t: $t} = useI18n();
 
@@ -89,11 +78,11 @@ const isObject = (field) => {
 
         <div :class="'c_' + name">
 
-        <VerticalGroup :forceFullWidth="true" v-if="!grouped && (schema['x-title'] ?? false) && !(schema['x-group'] ?? false)" class="w-full">
+        <StrategyGroup :forceFullWidth="true" v-if="!grouped && (schema['x-title'] ?? false) && !(schema['x-group'] ?? false)" class="w-full">
             <template #title>
                 <label :for="field.code_name">{{ schema['x-title'] }}</label>
             </template>
-        </VerticalGroup>
+        </StrategyGroup>
 
              <template v-if="schema.type === 'object' && !Boolean(field.is_multiple)" v-for="(property, propKey) in schema.properties" :key="propKey">
 
@@ -122,10 +111,10 @@ const isObject = (field) => {
 
             </template>
 
-            <Collapse colorClass="mt-md" v-if="schema.type === 'array' && (schema['x-group'] ?? false)">
+            <Collapse v-if="schema.type === 'array' && (schema['x-group'] ?? false)">
 
                 <template #title>
-                    {{  schema.title  }}
+                    <span  class="font-medium">{{  schema.title  }}</span>
                 </template>
 
 
@@ -159,17 +148,16 @@ const isObject = (field) => {
 
     <template v-else>
 
-        <VerticalGroup :forceFullWidth="true" :class="'c_' + name">
-            <template v-if="schema['x-title'] ?? false" #title>
-                {{ schema['x-title'] }}
+        <StrategyGroup :forceFullWidth="true" :class="'c_' + name">
+            <template v-if="schema && Object.keys(schema).includes('x-title')" #title>
+                {{ schema['x-title'] ?? '' }}
             </template>
 
             <template v-if="fieldType(field).name === 'CHECKBOX'">
 
                     <template v-for="(value) in modelValue[name]" :key="value">
                         <Flex class="px-lg">
-                            <DigitalChannel :provider="value"></DigitalChannel>
-                            {{ schema['properties'][value].title }}
+                            {{ schema['properties'][value]?.title }}
                         </Flex>
                     </template>
 
@@ -208,7 +196,7 @@ const isObject = (field) => {
             <template #footer>
                 <Error :message="form.errors.content?.field.code_name"/>
             </template>
-        </VerticalGroup>
+        </StrategyGroup>
 
     </template>
 
