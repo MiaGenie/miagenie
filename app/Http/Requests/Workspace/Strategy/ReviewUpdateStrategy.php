@@ -45,6 +45,7 @@ class ReviewUpdateStrategy extends FormRequest
         $original = array_map('trim', $strategy->content[$field]);
         $reviewed = array_map('trim', $this->input($field));
         $diff = array_diff_assoc($original, $reviewed);
+        $diff = empty($diff) ? array_diff_assoc($reviewed, $original) : $diff;
 
         $run = $strategy->run;
         $response = $run->runResponses->last();
@@ -68,17 +69,4 @@ class ReviewUpdateStrategy extends FormRequest
         RunJob::dispatch($run, GenieSyncAction::UPDATE);
     }
 
-    /**
-     * @return void
-     * @throws \Exception
-     */
-/*    protected function prepareForValidation(): void
-    {
-        $this->fieldList = Version::findByUuid($this->input('version'))
-            ->with(['strategies' => ['options']])
-            ->firstOrFail()
-            ->strategies;
-
-        $this->validationRules = $this->getValidationRules()->toArray();
-    }*/
 }
