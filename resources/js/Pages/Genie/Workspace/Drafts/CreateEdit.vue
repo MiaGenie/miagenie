@@ -206,7 +206,7 @@ const generatePrePost = () => {
 <template>
     <Head :title="mode === 'create' ? $t('genie.create_draft') : $t('genie.edit_draft')"/>
 
-    <div class="w-full mx-auto row-py">
+    <div class="w-full max-w-[1200px] mx-auto row-py">
 
         <PageHeader :title="mode === 'create' ? $t('genie.create_draft') : $t('genie.edit_draft')" />
 
@@ -215,7 +215,7 @@ const generatePrePost = () => {
                 <Panel>
                     <template #title>{{ $t("general.details") }}</template>
 
-                    <VerticalGroup class="form-field mt-lg">
+                    <VerticalGroup class="form-field mt-lg mx-auto">
                         <template #title>
                             <label for="topic">{{ $t("genie.drafts_topic") }}
                                 <LabelSuffix :danger="true">*</LabelSuffix>
@@ -235,7 +235,7 @@ const generatePrePost = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup class="form-field mt-lg">
+                    <VerticalGroup class="form-field mt-lg  mx-auto">
                         <template #title>
                             <label for="goal">{{ $t("genie.drafts_goal") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
@@ -254,7 +254,7 @@ const generatePrePost = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup class="form-field mt-lg">
+                    <VerticalGroup class="form-field mt-lg  mx-auto">
                         <template #title>
                             <label for="key_ideas">{{ $t("genie.drafts_key_ideas") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
@@ -273,7 +273,7 @@ const generatePrePost = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup class="form-field mt-lg">
+                    <VerticalGroup class="form-field mt-lg  mx-auto">
                         <template #title>
                             <label for="media">{{ $t("genie.drafts_media") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
@@ -292,7 +292,7 @@ const generatePrePost = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup class="form-field mt-lg">
+                    <VerticalGroup class="form-field mt-lg  mx-auto">
                         <template #title>
                             <label for="status">{{ $t('general.status') }}
                                 <LabelSuffix :danger="true">*</LabelSuffix>

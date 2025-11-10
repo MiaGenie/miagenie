@@ -14,10 +14,7 @@ import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import Checkbox from "@/Components/Form/Checkbox.vue";
 import Flex from "@/Components/Layout/Flex.vue";
 import Input from "@/Components/Form/Input.vue";
-import DangerButton from "@/Components/Button/DangerButton.vue";
 import ImageUploadButton from "@/Components/Media/Genie/ImageUploadButton.vue";
-import X from "@/Icons/X.vue";
-import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 
 const {t: $t} = useI18n();
 
@@ -41,7 +38,7 @@ const fileType = (field) => {
 </script>
 <template>
 
-        <VerticalGroup class="form-field mt-lg">
+        <VerticalGroup class="form-field mx-auto mt-2xl">
             <template #title>
                 <label :for="field.code_name">{{ field.name }}</label>
                 <LabelSuffix v-if="field.required" :danger="true">*</LabelSuffix>
