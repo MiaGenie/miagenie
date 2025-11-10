@@ -204,7 +204,7 @@ const generateDraft = () => {
 <template>
     <Head :title="mode === 'create' ? $t('genie.create_idea') : $t('genie.edit_idea')"/>
 
-    <div class="w-full mx-auto row-py">
+    <div class="w-full max-w-[1200px] mx-auto row-py">
 
         <PageHeader :title="mode === 'create' ? $t('genie.create_idea') : $t('genie.edit_idea')" />
 
@@ -213,7 +213,7 @@ const generateDraft = () => {
                 <Panel>
                     <template #title>{{ $t("general.details") }}</template>
 
-                    <VerticalGroup class="form-field mt-lg">
+                    <VerticalGroup class="form-field mt-lg  mx-auto">
                         <template #title>
                             <label for="theme">{{ $t("genie.ideas_theme") }}
                                 <LabelSuffix :danger="true">*</LabelSuffix>
@@ -233,7 +233,7 @@ const generateDraft = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup class="form-field mt-lg">
+                    <VerticalGroup class="form-field mt-lg  mx-auto">
                         <template #title>
                             <label for="description">{{ $t("genie.description") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
@@ -252,7 +252,7 @@ const generateDraft = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup class="form-field mt-lg">
+                    <VerticalGroup class="form-field mt-lg  mx-auto">
                         <template #title>
                             <label for="funnel_stage">{{ $t("genie.funnel_stage") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
@@ -274,7 +274,7 @@ const generateDraft = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup class="form-field mt-lg">
+                    <VerticalGroup class="form-field mt-lg  mx-auto">
                         <template #title>
                             <label for="content_pillar">{{ $t("genie.content_pillar") }}</label>
                         </template>
@@ -294,7 +294,7 @@ const generateDraft = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup class="form-field mt-lg">
+                    <VerticalGroup class="form-field mt-lg  mx-auto">
                         <template #title>
                             <label for="status">{{ $t('general.status') }}
                                 <LabelSuffix :danger="true">*</LabelSuffix>

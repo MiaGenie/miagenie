@@ -156,15 +156,19 @@ provide(/* key */ 'form', /* value */ form);
 
     <Head :title="mode === 'create' ? $t('genie.create_competitor') : $t('genie.edit_competitor')"/>
 
-    <div class="w-full mx-auto row-py">
+    <div class="w-full max-w-[1200px] mx-auto row-py">
 
         <PageHeader :title="mode === 'create' ? $t('genie.create_competitor') : $t('genie.edit_competitor')"/>
 
         <div class="row-px">
             <form method="post" @submit.prevent="submit">
 
-                <Panel>
-                    <VersionFieldsForm :fieldTypes="props.fieldTypes" :fields="props.fieldList.competitors"></VersionFieldsForm>
+                <Panel class="mx-auto">
+                    <template v-for="(field) in fieldList.competitors">
+
+                        <VersionFieldsForm :field="field"></VersionFieldsForm>
+
+                    </template>
                 </Panel>
 
                 <Flex

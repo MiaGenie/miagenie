@@ -199,7 +199,7 @@ provide('form', form);
         <div class="row-px">
             <form method="post" @submit.prevent="submit">
 
-                <Panel>
+                <Panel class="mx-auto">
                     <template v-for="(field) in briefingFields">
 
                         <VersionFieldsForm :field="field"></VersionFieldsForm>

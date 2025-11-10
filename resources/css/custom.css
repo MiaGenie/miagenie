@@ -24,7 +24,7 @@
     }
 
     .form-field {
-        @apply max-w-xl;
+        @apply max-w-3xl;
     }
 
     .link {
