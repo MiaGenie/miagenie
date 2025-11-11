@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {inject, onMounted, ref} from "vue";
 import useNotifications from "@/Composables/useNotifications";
 import {clone, cloneDeep} from "lodash";
 import Flex from "@/Components/Layout/Flex.vue";
@@ -7,7 +7,6 @@ import Plus from "@/Icons/Plus.vue";
 import X from "@/Icons/X.vue";
 import PureButton from "@/Components/Button/PureButton.vue";
 import {useI18n} from "vue-i18n";
-import OneImage from "@/Components/ProviderGallery/Instagram/OneImage.vue";
 
 const {t: $t} = useI18n()
 
@@ -29,7 +28,7 @@ const props = defineProps({
     },
     maxSize: {
         type: Number,
-        default: 1048576
+        default: 1048576 / 2
     },
     maxHeight: {
         type: Number,
@@ -50,6 +49,7 @@ const {notify} = useNotifications();
 const initialValue = cloneDeep(props.modelValue);
 const input = ref(null);
 
+
 const mimeTypes = [
     'image/jpg',
     'image/jpeg',
@@ -57,6 +57,8 @@ const mimeTypes = [
 ];
 
 const previewImage = ref(initialValue ? clone(initialValue.path) : '') ;
+
+
 
 const filterFiles = (files) => {
     return Array.from(files).filter((file) => {
@@ -127,6 +129,7 @@ const changeValue = (event) => {
                 return;
             }
             previewImage.value = e.target.result;
+
             emit('update:modelValue', {file: file});
         }
         reader.readAsDataURL(file);
