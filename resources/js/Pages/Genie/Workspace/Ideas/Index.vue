@@ -79,6 +79,18 @@ onMounted(() => {
     putPageRecords(itemsId());
 });
 
+const sortOrder = ref('desc');
+const sortFilter = ref('id');
+
+const sortedQuotes = computed(() => {
+    const quotesCopy = [...quotes.value];
+    if (sortOrder.value === 'desc') {
+        return quotesCopy.sort((a, b) => b.rating - a.rating);
+    } else {
+        return quotesCopy.sort((a, b) => a.rating - b.rating);
+    }
+});
+
 watch(() => cloneDeep(filter.value), throttle(() => {
     router.get(route('genie.ideas.index'), pickBy(filter.value), {
         preserveState: true,

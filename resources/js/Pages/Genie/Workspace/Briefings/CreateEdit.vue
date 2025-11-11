@@ -1,6 +1,6 @@
 <script setup>
 import {Head, router, useForm, usePage} from '@inertiajs/vue3';
-import {inject, provide} from "vue";
+import {inject, provide, ref, watch} from "vue";
 import {cloneDeep} from "lodash";
 import {useI18n} from "vue-i18n";
 import useNotifications from "@/Composables/useNotifications";
@@ -18,6 +18,7 @@ import X from "@/Icons/X.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
 import VersionFieldsForm from "@/Components/Form/Genie/FieldsForm.vue";
 import {useAPIForm} from "@/Composables/useAPIForm.js";
+import {hasFiles} from "@/Composables/Genie/useMultiPartForm.js";
 
 const {t: $t} = useI18n()
 
@@ -63,7 +64,7 @@ const briefingFields =  cloneDeep(props.fieldList.briefings).reduce(
     }, []
 )
 
-const form = useAPIForm(isEdit.value ? cloneDeep(props.record) :
+const form = useForm(isEdit.value ? cloneDeep(props.record) :
 
     cloneDeep(props.fieldList.briefings).reduce(
         (list, field) => {
@@ -90,9 +91,40 @@ const form = useAPIForm(isEdit.value ? cloneDeep(props.record) :
 
 provide("form", form);
 
+const removePreventNavigation = ref(null);
+const reloadPreventNavigation = ref(false);
+
+watch( () => [form.isDirty, reloadPreventNavigation.value], () => {
+    if (form.isDirty && removePreventNavigation.value === null) {
+        removePreventNavigation.value = router.on('before', (event) => {
+            if (!form.isDirty) {
+                removePreventNavigation.value();
+                return;
+            }
+            if (!confirm($t('genie.are_you_sure') + "\n" + $t('genie.unsaved_will_lost'))) {
+                event.preventDefault();
+                removePreventNavigation.value();
+                removePreventNavigation.value = null;
+                reloadPreventNavigation.value = true;
+            } else {
+                removePreventNavigation.value();
+            }
+        })
+    } else if (reloadPreventNavigation.value) {
+        if (removePreventNavigation.value) {
+            removePreventNavigation.value();
+            removePreventNavigation.value = null;
+        }
+    }
+    reloadPreventNavigation.value = false;
+})
+
 const store = () => {
     form.transform((data) => ({
-        ...data
+        ...data,
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
     })).post(route(`genie.briefings.store`, {
         workspace: workspaceCtx.id
     }), {
@@ -103,7 +135,12 @@ const store = () => {
 }
 
 const update = () => {
-    form.post(route(`genie.briefings.update`, {
+    form.transform((data) => ({
+        ...data,
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })).post(route(`genie.briefings.update`, {
         workspace: workspaceCtx.id,
         briefing: props.record.id
     }), {
@@ -115,6 +152,10 @@ const update = () => {
 }
 
 const submit = () => {
+    if (removePreventNavigation.value) {
+        removePreventNavigation.value();
+        removePreventNavigation.value = null;
+    }
     if (isCreate.value) {
         store();
     }
@@ -124,16 +165,6 @@ const submit = () => {
     }
 }
 
-const removePreventNavigation = router.on('before', (event) => {
-    if (!form.isDirty) {
-        return true;
-    }
-    if (!confirm($t('genie.are_you_sure') + "\n" + $t('genie.unsaved_will_lost'))) {
-        event.preventDefault()
-    } else {
-        removePreventNavigation()
-    }
-})
 
 const attemptClose = () => {
     if (!form.isDirty) {
@@ -152,7 +183,9 @@ const attemptClose = () => {
 }
 
 const backToList = () => {
-    removePreventNavigation()
+    if (removePreventNavigation.value) {
+        removePreventNavigation.value();
+    }
     router.get(route('genie.briefings.index', {
         workspace: workspaceCtx.id
     }));
@@ -197,7 +230,7 @@ provide('form', form);
         <PageHeader :title="mode === 'create' ? $t('genie.create_briefing') : $t('genie.edit_briefing')"/>
 
         <div class="row-px">
-            <form method="post" @submit.prevent="submit">
+            <form method="post" @submit.prevent="submit()">
 
                 <Panel class="mx-auto">
                     <template v-for="(field) in briefingFields">
