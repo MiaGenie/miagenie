@@ -6,6 +6,8 @@ return [
     'status' => 'Status',
     'language' => 'Language',
 
+    'date' => 'Date',
+
     'genie' => 'Genie',
     'ai_provider' => 'AI Provider',
     'open_ai' => 'Open AI',
@@ -17,10 +19,13 @@ return [
     'not_found' => 'Not Found',
     'description' => 'Description',
     'sub_description' => 'Sub Description',
+    'display_faq_title' => 'FAQ Title',
+    'display_faq_text' => 'FAQ Text',
     'position' => 'Position',
     'is_default' => 'Default',
     'active' => 'Active',
     'checked' => 'Checked',
+    'support' => 'Support',
 
     'close' => 'Close',
     'save' => 'Save',
@@ -35,12 +40,16 @@ return [
     'discard' => 'Discard',
     'back' => 'Back',
 
+    'next_posts' => 'Next Posts',
+
     'pending_review' => 'Pending Review',
     'approved' => 'Approved',
     'dismissed' => 'Dismissed',
     'trash' => 'Trash',
     'published' => 'Published',
     'publishing' => 'Publishing',
+
+    'analytics' => 'Analytics',
 
     'rules' => 'Rules',
     'create_rule' => 'Create Rule',

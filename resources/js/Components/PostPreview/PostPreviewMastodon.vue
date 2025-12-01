@@ -3,12 +3,12 @@ import useEditor from "@/Composables/useEditor";
 import Panel from "@/Components/Surface/Panel.vue";
 import Gallery from "@/Components/ProviderGallery/Mastodon/MastodonGallery.vue"
 import EditorReadOnly from "@/Components/Package/EditorReadOnly.vue";
-import GlobeImg from "@img/social-icons/mastodon/globe.svg"
-import ReplyImg from "@img/social-icons/mastodon/reply.svg"
-import RetweetImg from "@img/social-icons/mastodon/retweet.svg"
-import StarImg from "@img/social-icons/mastodon/star.svg"
-import BookmarkImg from "@img/social-icons/mastodon/bookmark.svg"
-import EllipsisImg from "@img/social-icons/mastodon/ellipsis.svg"
+import GlobeImg from "@mimg/social-icons/mastodon/globe.svg"
+import ReplyImg from "@mimg/social-icons/mastodon/reply.svg"
+import RetweetImg from "@mimg/social-icons/mastodon/retweet.svg"
+import StarImg from "@mimg/social-icons/mastodon/star.svg"
+import BookmarkImg from "@mimg/social-icons/mastodon/bookmark.svg"
+import EllipsisImg from "@mimg/social-icons/mastodon/ellipsis.svg"
 
 const props = defineProps({
     name: {

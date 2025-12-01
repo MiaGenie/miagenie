@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Workspace\CompetitorsController;
 use App\Http\Controllers\Workspace\BriefingsController;
+use App\Http\Controllers\Workspace\DashboardController;
 use App\Http\Controllers\Workspace\DeleteDraftsController;
 use App\Http\Controllers\Workspace\DeleteIdeasController;
 use App\Http\Controllers\Workspace\DraftsController;
@@ -22,6 +23,12 @@ Route::middleware(array_merge([
     ->group(function () {
 
         $editorMiddleware = CheckWorkspaceUser::class . ':' . WorkspaceUserRole::ADMIN->name . '|' . WorkspaceUserRole::MEMBER->name;
+
+        // dashboard
+        Route::prefix('dashboard')->name('dashboard.')->group(function () {
+            Route::get('/', DashboardController::class)->name('dashboard');
+        });
+
 
         // competitor
         Route::prefix('competitors')->name('competitors.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {

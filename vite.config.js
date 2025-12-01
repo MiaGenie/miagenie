@@ -32,6 +32,7 @@ export default defineConfig(({command, mode}) => {
                 '@mRs': '/vendor/inovector/mixpost-pro-team/resources',
                 '@mJs': '/vendor/inovector/mixpost-pro-team/resources/js',
                 '@mCss': '/vendor/inovector/mixpost-pro-team/resources/css',
+                '@mimg': '/vendor/inovector/mixpost-pro-team/resources/img',
                 '@meRs': '/vendor/inovector/mixpost-enterprise/resources',
                 '@meJs': '/vendor/inovector/mixpost-enterprise/resources/js',
                 '@meCss': '/vendor/inovector/mixpost-enterprise/resources/css',

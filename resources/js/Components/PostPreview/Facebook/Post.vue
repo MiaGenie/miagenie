@@ -4,7 +4,7 @@ import useEditor from "@/Composables/useEditor";
 import Gallery from "@/Components/ProviderGallery/Facebook/FacebookGallery.vue"
 import EditorReadOnly from "@/Components/Package/EditorReadOnly.vue";
 
-import fbIconsImgUrl from "@img/fb-icons.png"
+import fbIconsImgUrl from "@mimg/fb-icons.png"
 import URLPreview from "./URLPreview.vue";
 
 const {isDocEmpty} = useEditor();
@@ -36,8 +36,8 @@ const data = inject('facebookCtx');
     <div class="mt-5 flex items-center justify-between">
         <div v-tooltip="$t('service.representative_data')" class="flex items-center">
             <div class="flex mr-xs">
-                <img src="@img/fb-like.svg" class="w-5 h-5 z-10" alt=""/>
-                <img src="@img/fb-wow.svg" class="w-5 h-5 -ml-1" alt=""/>
+                <img src="@mimg/fb-like.svg" class="w-5 h-5 z-10" alt=""/>
+                <img src="@mimg/fb-wow.svg" class="w-5 h-5 -ml-1" alt=""/>
             </div>
             <div class="text-gray-500">116</div>
         </div>
