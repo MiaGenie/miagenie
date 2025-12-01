@@ -18,6 +18,7 @@ import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import X from "@/Icons/X.vue";
 import Flex from "@/Components/Layout/Flex.vue";
+import EditorClassic from "@/Components/Package/EditorClassic.vue";
 
 
 defineOptions({layout: AdminLayout});
@@ -48,7 +49,9 @@ const {onError} = useRouter();
 const form = useForm({
     name: props.record.name,
     description: props.record.description,
-    sub_description: props.record.sub_description
+    sub_description: props.record.sub_description,
+    display_faq_title: props.record.display_faq_title,
+    display_faq_text: props.record.display_faq_text
 });
 
 
@@ -171,6 +174,50 @@ const backToList = () => {
 
                         <template #footer>
                             <Error :message="form.errors.sub_description"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup
+                        v-if="props.record.display_faq_title !== ''"
+                        class="form-field mt-lg"
+                    >
+                        <template #title>
+                            <label for="display_faq_title">{{ $t("genie.display_faq_title") }}</label>
+                        </template>
+
+                        <Textarea
+                            v-model="form.display_faq_title"
+                            :error="form.errors.display_faq_title !== undefined"
+                            id="display_faq_title"
+                            class="w-full placeholder:italic placeholder:text-sm"
+                            rows="5"
+                        />
+
+                        <template #footer>
+                            <Error :message="form.errors.display_faq_title"/>
+                        </template>
+                    </VerticalGroup>
+
+
+                    <VerticalGroup
+                        v-if="props.record.display_faq_text !== ''"
+                        class="form-field mt-lg"
+                    >
+                        <template #title>
+                            <label for="display_faq_text">{{ $t("genie.display_faq_text") }}</label>
+                        </template>
+
+                        <EditorClassic
+                            :value="form.display_faq_text"
+                            @update="form.display_faq_text = $event"
+                            :error="form.errors.display_faq_text !== undefined"
+                            id="display_faq_text"
+                            class="w-full placeholder:italic placeholder:text-sm"
+                            rows="5"
+                        />
+
+                        <template #footer>
+                            <Error :message="form.errors.display_faq_text"/>
                         </template>
                     </VerticalGroup>
 

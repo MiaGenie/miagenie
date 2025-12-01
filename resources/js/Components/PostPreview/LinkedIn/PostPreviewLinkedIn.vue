@@ -4,9 +4,9 @@ import useEditor from "@/Composables/useEditor";
 import Panel from "@/Components/Surface/Panel.vue";
 import Gallery from "@/Components/ProviderGallery/Linkedin/LinkedinGallery.vue"
 import EditorReadOnly from "@/Components/Package/EditorReadOnly.vue";
-import LikeImg from "@img/social-icons/linkedin/like.svg"
-import LightImg from "@img/social-icons/linkedin/light.svg"
-import HeartImg from "@img/social-icons/linkedin/heart.svg"
+import LikeImg from "@mimg/social-icons/linkedin/like.svg"
+import LightImg from "@mimg/social-icons/linkedin/light.svg"
+import HeartImg from "@mimg/social-icons/linkedin/heart.svg"
 import Avatar from "../../DataDisplay/Avatar.vue";
 import URLPreview from "../LinkedIn/URLPreview.vue";
 

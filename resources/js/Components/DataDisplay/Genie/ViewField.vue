@@ -73,7 +73,7 @@ const groupedTitle = (item, key) => {
 }
 
 const multipleTitle = (item, key) => {
-    const titleKey = sortedFirstKey(schemas[props.field.code_name].properties);
+    const titleKey = sortedFirstKey(schemas[props.field.code_name]?.properties);
     return props.field.display_item_title ? item[titleKey] : props.field.display_field_title ? schemas[props.field.code_name]?.title ?? '' + ' #' + (key + 1) : '';
 }
 
@@ -86,7 +86,7 @@ const update = () => {
         onSuccess: () => {
             editing.value = '';
         },
-        onError: (errors) => {
+        onError: (errors) => {``
             onError(errors, update);
         },
     });
@@ -116,8 +116,12 @@ const attemptClose = () => {
     <VerticalGroupClass bodyClass="text-lg" :forceFullWidth="true" class="mt-lg">
         <template #title>
             <Flex class="justify-between">
-                <Flex>
-                    <span v-if="field.display_title && !(schemas[field.code_name]?.type === 'object' && field.display_grouped && !field.is_multiple)">
+                <Flex :responsive="false" v-if="field.display_title && !(schemas[field.code_name]?.type === 'object' && field.display_grouped && !field.is_multiple)">
+                    <StrategyFieldIcon
+                        :field="field.code_name"
+                        :icon="field.code_name"
+                    />
+                    <span>
                         {{ field.name }}
                     </span>
                 </Flex>

@@ -6,7 +6,7 @@ import {utcToZonedTime} from "date-fns-tz";
 import CalendarPostItem from "@/Components/Calendar/CalendarPostItem.vue";
 import useWorkspace from "../../../Composables/useWorkspace.js";
 import PlusIcon from "@/Icons/Plus.vue"
-import DisabledItemImg from "@img/calendar-disabled-item.svg"
+import DisabledItemImg from "@mimg/calendar-disabled-item.svg"
 
 const workspaceCtx = inject('workspaceCtx');
 

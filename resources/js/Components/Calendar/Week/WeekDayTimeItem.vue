@@ -6,7 +6,7 @@ import {addMinutes, format, getHours, parseISO} from "date-fns";
 import {utcToZonedTime} from "date-fns-tz";
 import CalendarPostItem from "@/Components/Calendar/CalendarPostItem.vue";
 import PlusIcon from "@/Icons/Plus.vue"
-import DisabledItemImg from "@img/calendar-disabled-item.svg"
+import DisabledItemImg from "@mimg/calendar-disabled-item.svg"
 import useDateLocalize from "../../../Composables/useDateLocalize";
 import useWorkspace from "../../../Composables/useWorkspace.js";
 

@@ -19,6 +19,7 @@ import CollapseSmall from "@/Components/Surface/Genie/CollapseSmall.vue";
 import VerticalGroupClass from "@/Components/Layout/Genie/VerticalGroupClass.vue";
 import Group from "@/Components/Surface/Genie/Group.vue";
 import PageHeader from "@/Components/DataDisplay/PageHeader.vue";
+import StrategyFieldIcon from "@/Components/DataDisplay/Genie/StrategyFieldIcon.vue";
 
 const {t: $t} = useI18n();
 
@@ -40,11 +41,17 @@ const props = defineProps({
 <template>
 
     <div class="mt-xl italic">
-        <div v-if="field.display_title" class="mb-md">
-            <span class="font-medium text-2xl">
-                {{ field.name  }}
+        <Flex class="mb-md items-center " :responsive="false">
+            <span>
+                <StrategyFieldIcon
+                    :field="field.code_name"
+                    :icon="field.code_name"
+                />
             </span>
-        </div>
+            <span class="font-medium text-2xl">
+                {{ field.name }}
+            </span>
+        </Flex>
 
         <div class="mb-md" v-html="field.description"/>
     </div>
