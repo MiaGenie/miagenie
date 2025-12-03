@@ -6,6 +6,7 @@ use App\Http\Controllers\Workspace\DashboardController;
 use App\Http\Controllers\Workspace\DeleteDraftsController;
 use App\Http\Controllers\Workspace\DeleteIdeasController;
 use App\Http\Controllers\Workspace\DraftsController;
+use App\Http\Controllers\Workspace\IdeaDraftsController;
 use App\Http\Controllers\Workspace\IdeasController;
 use App\Http\Controllers\Workspace\PrePostsController;
 use App\Http\Controllers\Workspace\StrategiesController;
@@ -73,6 +74,7 @@ Route::middleware(array_merge([
             Route::put('{idea}', [IdeasController::class, 'update'])->name('update');
             Route::delete('{idea}', [IdeasController::class, 'destroy'])->name('delete');
             Route::delete('/', DeleteIdeasController::class)->name('deleteMultiple');
+            Route::get('{idea}/ideaDrafts', IdeaDraftsController::class)->name('ideaDrafts');
         });
 
         Route::prefix('drafts')->name('drafts.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {

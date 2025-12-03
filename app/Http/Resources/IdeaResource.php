@@ -26,7 +26,8 @@ class IdeaResource extends JsonResource
             'source' => $this->source,
             'run_response_id' => $this->run_response_id,
             'funnel_stage' => $this->funnel_stage,
-            'content_pillar' => $this->content_pillar
+            'content_pillar' => $this->content_pillar,
+            'drafts' => $this->drafts
         ];
 
     }

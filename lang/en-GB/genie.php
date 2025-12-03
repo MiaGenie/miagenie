@@ -34,6 +34,7 @@ return [
     'reordering' => 'Reordering',
 
     'translations' => 'Translations',
+    'uses' => 'Uses',
 
     'are_you_sure' => 'Are you sure?',
     'unsaved_will_lost' => 'Unsaved changes will be lost.',
@@ -313,6 +314,8 @@ return [
     'trash_ideas_success' => 'Ideas moved to Trash',
     'delete_ideas_failed' => 'Ideas deletion failed',
     'confirmation_delete_idea' => 'Are you sure you want to delete this ideas?',
+    'approve_idea' => 'Approve Idea',
+    'approve_idea_confirm' => 'Are you sure you want to approve this Idea?',
 
     'drafts' => 'Drafts',
     'drafts_desc' => 'Your Post drafts. This description needs rewriting',
@@ -340,6 +343,9 @@ return [
     'drafts_goal' => 'Goal',
     'drafts_key_ideas' => 'Key Ideas',
     'drafts_media' => 'Media',
+    'approve_draft' => 'Approve Draft',
+    'approve_draft_confirm' => 'Are you sure you want to approve this Draft?',
+    'error_retrieving_drafts' => 'Error retrieving drafts.',
 
     'pre_posts' => 'Pre Posts',
     'pre_posts_desc' => 'Your Post pre posts. This description needs rewriting',
@@ -356,6 +362,13 @@ return [
     'pre_post_deleted' => 'Pre Post deleted successfully',
     'pre_post_created' => 'Pre Post created successfully',
     'delete_pre_post_confirm' => 'Are you sure you want to delete this pre post?',
+
+    'generate_posts' => 'Generate Posts',
+    'generate_post' => 'Generate Post',
+    'update_generate_post' => 'Update and Generate Post',
+    'generate_posts_confirm' => 'Are you sure you want to Generate Posts for the chosen Drafts?',
+    'generate_post_confirm' => 'Are you sure you want to Generate a Post for this Draft?',
+    'generating_posts' => 'Generating Posts',
 
     'funnel_stage_awareness' => 'Awareness',
     'funnel_stage_problem_awareness' => 'Problem Awareness',

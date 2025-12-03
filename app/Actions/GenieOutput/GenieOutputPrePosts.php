@@ -6,6 +6,7 @@ use App\Abstracts\GenieData;
 use App\Actions\GenieOutput;
 use App\Concerns\CleanAsterisks;
 use App\Contracts\GenieOutputContract;
+use App\Enums\DraftStatus;
 use App\Enums\PrePostStatus;
 use App\Enums\RunResponseError;
 use App\Enums\RunResponseStatus;
@@ -42,6 +43,8 @@ class GenieOutputPrePosts extends GenieOutput implements GenieOutputContract
             if (empty($model->step->output)) {
                 return;
             }
+
+            $model->runDraftResponse->runDraft->draft->update(['status' => DraftStatus::PUBLISHED]);
 
             $prePostData = [
                 'draft_id' => $model->runDraftResponse->runDraft->draft_id,

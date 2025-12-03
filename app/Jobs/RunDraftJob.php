@@ -8,7 +8,6 @@ use App\Contracts\GenieRunDataContract;
 use App\Enums\GenieSyncAction;
 use App\Models\Rule;
 use App\Models\Run;
-use App\Models\RunIdea;
 use App\Models\RunIdeaResponse;
 use Bus;
 use Illuminate\Bus\Queueable;

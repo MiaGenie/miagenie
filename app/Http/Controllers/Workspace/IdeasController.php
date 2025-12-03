@@ -6,6 +6,7 @@ use App\Builders\IdeaQuery;
 use App\Concerns\Controller\DraftGeneration;
 use App\Concerns\Controller\HasFieldOptions;
 use App\Concerns\Controller\PrePostGeneration;
+use App\Enums\DraftStatus;
 use App\Enums\FunnelStage;
 use App\Enums\GenieSyncAction;
 use App\Enums\IdeaStatus;
@@ -43,8 +44,7 @@ class IdeasController
             ->onEachSide(1)
             ->withQueryString();
 
-        $contentPillars = Idea::groupBy('content_pillar')->pluck('content_pillar');
-
+        $contentPillars = Idea::whereNotNull('content_pillar')->groupBy('content_pillar')->pluck('content_pillar');
 
         return Inertia::render('Genie/Workspace/Ideas/Index', [
             'filter' => [
@@ -53,7 +53,7 @@ class IdeasController
                 'status' => $request->query('status', '')
             ],
             'records' => fn () => IdeaResource::collection($records),
-            'statusTypes' => IdeaStatus::withTitle(),
+            'ideaStatusTypes' => IdeaStatus::withTitle(),
             'funnelStages' => FunnelStage::withTitle(),
             'contentPillars' => $contentPillars,
         ]);
@@ -69,7 +69,8 @@ class IdeasController
 
         return Inertia::render('Genie/Workspace/Ideas/CreateEdit', [
             'mode' => 'create',
-            'statusTypes' => IdeaStatus::withTitle(),
+            'ideaStatusTypes' => IdeaStatus::withTitle(),
+            'draftStatusTypes' => DraftStatus::withTitle(),
             'funnelStages' => FunnelStage::withTitle(),
             'funnelStage' => $request->input('funnel_stage'),
             'contentPillars' => $contentPillars ?? [],
@@ -123,7 +124,8 @@ class IdeasController
 
         return Inertia::render('Genie/Workspace/Ideas/CreateEdit', [
             'mode' => 'edit',
-            'statusTypes' => IdeaStatus::withTitle(),
+            'ideaStatusTypes' => IdeaStatus::withTitle(),
+            'draftStatusTypes' => DraftStatus::withTitle(),
             'funnelStages' => FunnelStage::withTitle(),
             'funnelStage' => $request->input('funnel_stage'),
             'contentPillars' => $contentPillars ?? [],

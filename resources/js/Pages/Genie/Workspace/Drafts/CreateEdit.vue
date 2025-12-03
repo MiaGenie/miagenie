@@ -12,18 +12,17 @@ import PageHeader from "@/Components/DataDisplay/PageHeader.vue";
 import Error from "@/Components/Form/Error.vue";
 import Input from "@/Components/Form/Input.vue";
 import LabelSuffix from "@/Components/Form/LabelSuffix.vue";
-import Select from "@/Components/Form/Select.vue";
 import Textarea from "@/Components/Form/Textarea.vue";
 import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import Trash from "@/Icons/Trash.vue";
 import X from "@/Icons/X.vue";
-import Label from "@/Components/Form/Label.vue";
-import Flex from "@/Components/Layout/Flex.vue";
-import Switch from "@/Components/Form/Switch.vue";
 import DraftIcon from "mixpost-pro-team/resources/js/Icons/Genie/Draft.vue";
 import WarningButton from "@/Components/Button/WarningButton.vue";
+import SuccessButton from "@/Components/Button/SuccessButton.vue";
+import Check from "@/Icons/Check.vue";
+import Badge from "@/Components/DataDisplay/Badge.vue";
 
 
 const {t: $t} = useI18n()
@@ -41,7 +40,7 @@ const props = defineProps({
     funnelStage: {
         type: String
     },
-    statusTypes: {
+    draftStatusTypes: {
         type: Object,
         required: true
     },
@@ -148,48 +147,62 @@ const deleteDraft = () => {
         }).show();
 }
 
-const currentStatus = () => {
-    return find(props.statusTypes, ['value', Number(props.record?.status)]);
+const formStatus = () => {
+    return find(props.draftStatusTypes, ['value', Number(form.status)]);
 }
 
-const formStatus = () => {
-    return find(props.statusTypes, ['value', Number(form.status)]);
+const approvedStatus = () => {
+    return find(props.draftStatusTypes, ['name', 'APPROVED']).value;
 }
 
 const formStatusApproved = () => {
     return formStatus()?.name === 'APPROVED';
 }
 
-const currentStatusApproved = () => {
-    return currentStatus()?.name === 'APPROVED';
+const statusBadge = () => {
+    switch (formStatus().name) {
+        case 'APPROVED':
+            return 'success';
+        case 'PENDING_REVIEW':
+            return 'warning';
+        case 'PUBLISHED':
+            return 'info';
+        case 'DISMISSED':
+            return 'error';
+        default:
+            return '';
+    }
 }
 
-const updateGeneratePrePost = () => {
+const approveDraft = () => {
     confirmation()
-        .title($t('genie.generate_pre_post'))
-        .description($t('genie.generate_pre_post_confirm'))
+        .title($t('genie.approve_draft'))
+        .description($t('genie.approve_draft_confirm'))
         .warning()
         .onConfirm((dialog) => {
             dialog.isLoading(true);
 
-            form.put(route('genie.drafts.updateGenerate', {
+            form.status = approvedStatus();
+
+            form.put(route('genie.drafts.update', {
                 draft: props.record.id,
                 workspace: workspaceCtx.id
             }), {
                 preserveScroll: true,
                 onError: (errors) => {
                     onError(errors, update);
-                },
+                }
             });
 
+            dialog.reset();
         })
         .show();
 }
 
 const generatePrePost = () => {
     confirmation()
-        .title($t('genie.generate_pre_post'))
-        .description($t('genie.generate_pre_post_confirm'))
+        .title($t('genie.generate_post'))
+        .description($t('genie.generate_post_confirm'))
         .warning()
         .onConfirm((dialog) => {
             dialog.isLoading(true);
@@ -299,22 +312,9 @@ const generatePrePost = () => {
                             </label>
                         </template>
 
-                        <Flex class="items-start">
-
-                            <Select
-                                v-model="form.status"
-                                id="status"
-                                required
-                            >
-                                <option
-                                    v-for="status in props.statusTypes"
-                                    :value="status.value"
-                                >
-                                    {{ $t(`genie.${status.title}`) }}
-                                </option>
-                            </Select>
-
-                        </Flex>
+                        <Badge :variant="statusBadge()">
+                            {{ $t(`genie.${formStatus().title}`) }}
+                        </Badge>
 
                         <template #footer>
                             <Error :message="form.errors.status"/>
@@ -326,7 +326,7 @@ const generatePrePost = () => {
                 <div class="flex flex-row items-center justify-between mt-lg">
                     <div class="flex gap-6">
                         <WarningButton
-                            v-if="currentStatusApproved()"
+                            v-if="formStatusApproved()"
                             @click="generatePrePost"
                             :hiddenTextOnSmallScreen="true"
                             :disabled="form.processing"
@@ -337,10 +337,23 @@ const generatePrePost = () => {
                             <template #icon>
                                 <DraftIcon/>
                             </template>
-                            {{ $t('genie.generate_pre_post') }}
+                            {{ $t('genie.generate_post') }}
                         </WarningButton>
 
+                        <SuccessButton
+                            v-if="isEdit && !formStatusApproved()"
+                            @click="approveDraft"
+                            :isLoading="form.processing"
+                            :hidden-text-on-small-screen=true
+                        >
+                            {{ $t("post.approve") }}
+                            <template #icon>
+                                <Check/>
+                            </template>
+                        </SuccessButton>
+
                         <PrimaryButton
+                            v-if="!formStatusApproved()"
                             type="submit"
                             :isLoading="form.processing"
                             :disabled="form.processing"
@@ -351,21 +364,6 @@ const generatePrePost = () => {
                                 <Save/>
                             </template>
                         </PrimaryButton>
-
-                        <WarningButton
-                            v-if="!currentStatusApproved() && formStatusApproved()"
-                            @click="updateGeneratePrePost"
-                            :hiddenTextOnSmallScreen="true"
-                            :disabled="form.processing"
-                            :isLoading="form.processing"
-                            size="sm"
-                        >
-
-                            <template #icon>
-                                <DraftIcon/>
-                            </template>
-                            {{ $t('genie.update_generate_pre_post') }}
-                        </WarningButton>
 
                         <SecondaryButton
                             @click="attemptClose"
@@ -383,6 +381,7 @@ const generatePrePost = () => {
                     <div v-if="isEdit">
 
                         <DangerButton
+                            v-if="!formStatusApproved()"
                             @click="deleteDraft"
                             :disabled="form.processing"
                             :hidden-text-on-small-screen=true

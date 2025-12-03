@@ -6,9 +6,11 @@ use App\Concerns\Controller\GenieFields;
 use App\Enums\DraftStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 use Inovector\Mixpost\Concerns\OwnedByWorkspace;
+use Inovector\Mixpost\Models\Post;
 
 class Draft extends Model
 {
@@ -57,11 +59,19 @@ class Draft extends Model
     }
 
     /**
-     * @return HasMany
+     * @return HasOne
      */
-    public function prePosts(): HasMany
+    public function prePost(): HasOne
     {
-        return $this->HasMany(PrePost::class);
+        return $this->HasOne(PrePost::class);
+    }
+
+    /**
+     * @return HasOneThrough
+     */
+    public function draftPost(): HasOneThrough
+    {
+        return $this->HasOneThrough(Post::class, PrePost::class, 'draft_id', 'id', 'id', 'post_id');
     }
 
     /**

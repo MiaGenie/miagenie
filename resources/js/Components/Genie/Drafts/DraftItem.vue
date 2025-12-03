@@ -1,6 +1,5 @@
 <script setup>
 import {useI18n} from "vue-i18n";
-import {inject} from "vue";
 import {find} from "lodash";
 import {usePage} from "@inertiajs/vue3";
 import DraftItemAction from "./DraftItemAction.vue";
@@ -18,10 +17,10 @@ const props = defineProps({
     }
 })
 
-const statusTypes = usePage().props.statusTypes;
+const draftStatusTypes = usePage().props.draftStatusTypes;
 
 const draftStatus = () => {
-    return find(statusTypes, ['value', Number(props.item.status)]);
+    return find(draftStatusTypes, ['value', Number(props.item.status)]);
 }
 
 const statusBadge = () => {
@@ -30,6 +29,8 @@ const statusBadge = () => {
             return 'success';
         case 'PENDING_REVIEW':
             return 'warning';
+        case 'PUBLISHED':
+            return 'info';
         case 'DISMISSED':
             return 'error';
         default:
@@ -64,7 +65,10 @@ const statusBadge = () => {
 
 
         <TableCell>
-            <DraftItemAction :itemId="item.id"/>
+            <DraftItemAction
+                :item="item"
+                :status="draftStatus()"
+            />
         </TableCell>
 
     </TableRow>

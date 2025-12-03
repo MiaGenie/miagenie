@@ -24,8 +24,6 @@ import ConfirmationModal from "@/Components/Modal/ConfirmationModal.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
 import useNotifications from "@/Composables/useNotifications.js";
-import Select from "@/Components/Form/Select.vue";
-import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
 import WarningButton from "@/Components/Button/WarningButton.vue";
 import DraftIcon from "mixpost-pro-team/resources/js/Icons/Genie/Draft.vue";
 
@@ -35,7 +33,7 @@ const props = defineProps({
     records: {
         type: Object,
     },
-    statusTypes: {
+    draftStatusTypes: {
         type: Object,
         required: true
     },
@@ -118,8 +116,8 @@ const createDraft = () => {
 
 const generatePrePosts = () => {
     confirmation()
-        .title($t('genie.generate_pre_posts'))
-        .description($t('genie.generate_pre_posts_confirm'))
+        .title($t('genie.generate_posts'))
+        .description($t('genie.generate_posts_confirm'))
         .warning()
         .onConfirm((dialog) => {
             router.post(route('genie.pre_posts.generateMultiple',{
@@ -189,7 +187,7 @@ const deleteDrafts = () => {
                 <template #icon>
                     <DraftIcon/>
                 </template>
-                {{ $t('genie.generate_pre_posts') }}
+                {{ $t('genie.generate_posts') }}
             </WarningButton>
 
         </div>
@@ -204,7 +202,7 @@ const deleteDrafts = () => {
                 </Tab>
 
                 <Tab
-                    v-for="statusType in statusTypes"
+                    v-for="statusType in draftStatusTypes"
                     :key="statusType.value"
                     @click="currentFilter.status = statusType.value"
                     :active="currentFilter.status == statusType.value"

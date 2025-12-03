@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 use Inovector\Mixpost\Concerns\OwnedByWorkspace;
 use Inovector\Mixpost\Models\Post;
@@ -54,11 +55,11 @@ class PrePost extends Model
     }
 
     /**
-     * @return BelongsTo
+     * @return HasOne
      */
-    public function post(): BelongsTo
+    public function post(): HasOne
     {
-        return $this->belongsTo(Post::class);
+        return $this->HasOne(Post::class);
     }
 
     /**

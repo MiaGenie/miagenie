@@ -7,6 +7,7 @@ use App\Contracts\Query;
 use App\Models\Draft;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Inovector\Mixpost\Facades\WorkspaceManager;
 
 class DraftQuery implements Query
 {
