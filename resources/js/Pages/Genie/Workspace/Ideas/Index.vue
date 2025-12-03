@@ -12,7 +12,7 @@ import Pagination from "@/Components/Navigation/Pagination.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import NoResult from "@/Components/Util/NoResult.vue";
 import Plus from "@/Icons/Plus.vue";
-import {cloneDeep, pickBy, throttle} from "lodash";
+import {cloneDeep, pickBy, size, throttle} from "lodash";
 import useSelectable from "@/Composables/useSelectable";
 import Tabs from "@/Components/Navigation/Tabs.vue";
 import Tab from "@/Components/Navigation/Tab.vue";
@@ -35,7 +35,7 @@ const props = defineProps({
     records: {
         type: Object,
     },
-    statusTypes: {
+    ideaStatusTypes: {
         type: Object,
         required: true
     },
@@ -261,7 +261,7 @@ const deleteIdeas = () => {
                 </Tab>
 
                 <Tab
-                    v-for="statusType in statusTypes"
+                    v-for="statusType in ideaStatusTypes"
                     :key="statusType.value"
                     @click="currentFilter.status = statusType.value"
                     :active="currentFilter.status == statusType.value"
@@ -305,6 +305,14 @@ const deleteIdeas = () => {
                                 class="hidden sm:table-cell"
                             >
                                 {{ $t('general.status') }}
+                            </TableCell>
+
+                            <TableCell
+                                component="th"
+                                scope="col"
+                                class="hidden sm:table-cell"
+                            >
+                                {{ $t('genie.uses') }}
                             </TableCell>
 
                             <TableCell

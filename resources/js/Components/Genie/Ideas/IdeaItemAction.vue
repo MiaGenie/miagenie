@@ -5,15 +5,20 @@ import PureButtonLink from "@/Components/Button/PureButtonLink.vue";
 import PencilSquare from "@/Icons/PencilSquare.vue";
 import QueueList from "@/Icons/QueueList.vue";
 import RulesIcon from "@/Icons/Genie/Rules.vue";
+import Eye from "@/Icons/Eye.vue";
+import {find} from "lodash";
 
 const {t: $t} = useI18n()
-const routePrefix = inject('routePrefix');
 const workspaceCtx = inject('workspaceCtx');
 
 const props = defineProps({
-    itemId: {
-        type: String,
+    item: {
+        type: Object,
         required: true,
+    },
+    status: {
+        type: Object,
+        required: true
     }
 })
 
@@ -22,13 +27,16 @@ const getRoute = (name) => {
         case 'edit':
             return route('genie.ideas.edit', {
                 workspace: workspaceCtx.id,
-                idea: props.itemId,
+                idea: props.item.id,
             });
         default:
             return '';
     }
 }
 
+const ideaStatus = () => {
+    return find(ideaStatusTypes, ['value', Number(props.item.status)]);
+}
 </script>
 <template>
     <div>
@@ -39,10 +47,11 @@ const getRoute = (name) => {
                 v-tooltip="$t('general.edit')"
             >
                 <template #icon>
-                    <PencilSquare/>
+                    <PencilSquare v-if="status.name !== 'APPROVED'"/>
+                    <Eye v-if="status.name === 'APPROVED'" />
                 </template>
                 <template #default>
-                    {{ $t('general.edit') }}
+                    {{ status.name !== 'APPROVED' ? $t('general.edit') : $t('general.view') }}
                 </template>
             </PureButtonLink>
         </div>

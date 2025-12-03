@@ -10,7 +10,7 @@ class IdeaStatusFilter implements Filter
 {
     public static function apply(Builder $builder, $value): Builder
     {
-        if (IdeaStatus::tryFrom($value)) {
+        if ($value && IdeaStatus::tryFrom($value)) {
             $builder->where('status', $value);
         } else {
             $builder->whereNot('status', IdeaStatus::TRASH);

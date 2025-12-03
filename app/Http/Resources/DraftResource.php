@@ -27,6 +27,7 @@ class DraftResource extends JsonResource
             'key_ideas' => $this->key_ideas,
             'media' => $this->media,
             'status' => $this->status,
+            'post' => $this->draftPost?->uuid
         ];
     }
 }

@@ -19,11 +19,15 @@ import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import Trash from "@/Icons/Trash.vue";
 import X from "@/Icons/X.vue";
-import Label from "@/Components/Form/Label.vue";
 import Flex from "@/Components/Layout/Flex.vue";
-import Switch from "@/Components/Form/Switch.vue";
 import DraftIcon from "mixpost-pro-team/resources/js/Icons/Genie/Draft.vue";
 import WarningButton from "@/Components/Button/WarningButton.vue";
+import NProgress from "nprogress";
+import useNotifications from "@/Composables/useNotifications";
+import IdeaDrafts from "@/Components/Genie/Drafts/IdeaDrafts.vue";
+import SuccessButton from "@/Components/Button/SuccessButton.vue";
+import Check from "@/Icons/Check.vue";
+import Badge from "@/Components/DataDisplay/Badge.vue";
 
 
 const {t: $t} = useI18n()
@@ -41,7 +45,11 @@ const props = defineProps({
     funnelStage: {
         type: String
     },
-    statusTypes: {
+    ideaStatusTypes: {
+        type: Object,
+        required: true
+    },
+    draftStatusTypes: {
         type: Object,
         required: true
     },
@@ -59,12 +67,17 @@ const workspaceCtx = inject('workspaceCtx');
 const {isCreate, isEdit} = usePageMode();
 const {onError} = useRouter();
 const confirmation = inject('confirmation');
+const {notify} = useNotifications();
+const isLoading = ref(false);
+const data = ref({});
+
 
 const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     funnel_stage: props.funnelStage ?? '',
     theme: '',
     description: '',
-    status: '1'
+    status: '1',
+    source: '2'
 });
 
 const store = () => {
@@ -146,40 +159,54 @@ const deleteIdea = () => {
         }).show();
 }
 
-const currentStatus = () => {
-    return find(props.statusTypes, ['value', Number(props.record?.status)]);
+const formStatus = () => {
+    return find(props.ideaStatusTypes, ['value', Number(form.status)]);
 }
 
-const formStatus = () => {
-    return find(props.statusTypes, ['value', Number(form.status)]);
+const approvedStatus = () => {
+    return find(props.ideaStatusTypes, ['name', 'APPROVED']).value;
 }
 
 const formStatusApproved = () => {
     return formStatus()?.name === 'APPROVED';
 }
 
-const currentStatusApproved = () => {
-    return currentStatus()?.name === 'APPROVED';
+const statusBadge = () => {
+    switch (formStatus().name) {
+        case 'APPROVED':
+            return 'success';
+        case 'PENDING_REVIEW':
+            return 'warning';
+        case 'PUBLISHED':
+            return 'info';
+        case 'DISMISSED':
+            return 'error';
+        default:
+            return '';
+    }
 }
 
-const updateGenerateDraft = () => {
+const approveIdea = () => {
     confirmation()
-        .title($t('genie.generate_draft'))
-        .description($t('genie.generate_draft_confirm'))
+        .title($t('genie.approve_idea'))
+        .description($t('genie.approve_idea_confirm'))
         .warning()
         .onConfirm((dialog) => {
             dialog.isLoading(true);
 
-            form.put(route('genie.ideas.updateGenerate', {
+            form.status = approvedStatus();
+
+            form.put(route('genie.ideas.update', {
                 idea: props.record.id,
                 workspace: workspaceCtx.id
             }), {
                 preserveScroll: true,
                 onError: (errors) => {
                     onError(errors, update);
-                },
+                }
             });
 
+            dialog.reset();
         })
         .show();
 }
@@ -199,6 +226,27 @@ const generateDraft = () => {
         })
         .show();
 }
+
+const fetch = () => {
+    isLoading.value = true;
+    NProgress.start();
+
+    axios.get(route('genie.ideas.ideaDrafts', {workspace: workspaceCtx.id, idea: props.record.id})
+    ).then(function (response) {
+        data.value = response.data;
+    }).catch(() => {
+        notify('error', $t('genie.error_retrieving_drafts'));
+    }).finally(() => {
+        isLoading.value = false;
+        NProgress.done();
+    });
+}
+
+onMounted(() => {
+    if (formStatusApproved()) {
+        fetch();
+    }
+})
 
 </script>
 <template>
@@ -252,83 +300,84 @@ const generateDraft = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup class="form-field mt-lg  mx-auto">
-                        <template #title>
-                            <label for="funnel_stage">{{ $t("genie.funnel_stage") }}</label>
-                            <LabelSuffix :danger="true">*</LabelSuffix>
-                        </template>
+                    <div  class="form-field flex mt-lg justify-between mx-auto flex-col sm:flex-row">
 
-                        <Select
-                            v-model="form.funnel_stage"
-                            :disabled="isEdit"
-                            id="funnel_stage"
-                            required
-                        >
-                            <option v-for="funnelStage in funnelStages" :value="funnelStage.value">
-                                {{ $t(`genie.funnel_stage_${funnelStage.title}`) }}
-                            </option>
-                        </Select>
+                        <VerticalGroup class="form-field mt-lg">
+                            <template #title>
+                                <label for="funnel_stage">{{ $t("genie.funnel_stage") }}</label>
+                                <LabelSuffix :danger="true">*</LabelSuffix>
+                            </template>
 
-                        <template #footer>
-                            <Error :message="form.errors.funnel_stage"/>
-                        </template>
-                    </VerticalGroup>
+                            <Select
+                                v-model="form.funnel_stage"
+                                :disabled="isEdit"
+                                id="funnel_stage"
+                                required
+                            >
+                                <option v-for="funnelStage in funnelStages" :value="funnelStage.value">
+                                    {{ $t(`genie.funnel_stage_${funnelStage.title}`) }}
+                                </option>
+                            </Select>
 
-                    <VerticalGroup class="form-field mt-lg  mx-auto">
-                        <template #title>
-                            <label for="content_pillar">{{ $t("genie.content_pillar") }}</label>
-                        </template>
+                            <template #footer>
+                                <Error :message="form.errors.funnel_stage"/>
+                            </template>
+                        </VerticalGroup>
 
-                        <Select
-                            v-model="form.content_pillar"
-                            :disabled="isEdit"
-                            id="content_pillar"
-                        >
-                            <option v-for="contentPillar in contentPillars" :value="contentPillar">
-                                {{ contentPillar }}
-                            </option>
-                        </Select>
+                        <VerticalGroup class="form-field mt-lg">
+                            <template #title>
+                                <label for="content_pillar">{{ $t("genie.content_pillar") }}</label>
+                            </template>
 
-                        <template #footer>
-                            <Error :message="form.errors.content_pillar"/>
-                        </template>
-                    </VerticalGroup>
+                            <Select
+                                v-model="form.content_pillar"
+                                :disabled="isEdit"
+                                id="content_pillar"
+                            >
+                                <option v-for="contentPillar in contentPillars" :value="contentPillar">
+                                    {{ contentPillar }}
+                                </option>
+                            </Select>
 
-                    <VerticalGroup class="form-field mt-lg  mx-auto">
+                            <template #footer>
+                                <Error :message="form.errors.content_pillar"/>
+                            </template>
+                        </VerticalGroup>
+
+                    </div>
+
+                    <VerticalGroup class="form-field mt-lg mx-auto">
+
                         <template #title>
                             <label for="status">{{ $t('general.status') }}
                                 <LabelSuffix :danger="true">*</LabelSuffix>
                             </label>
                         </template>
 
-                        <Flex class="items-start">
-
-                            <Select
-                                v-model="form.status"
-                                id="status"
-                                required
-                            >
-                                <option
-                                    v-for="status in props.statusTypes"
-                                    :value="status.value"
-                                >
-                                    {{ $t(`genie.${status.title}`) }}
-                                </option>
-                            </Select>
-
-                        </Flex>
+                        <Badge :variant="statusBadge()">
+                            {{ $t(`genie.${formStatus().title}`) }}
+                        </Badge>
 
                         <template #footer>
                             <Error :message="form.errors.status"/>
                         </template>
+
                     </VerticalGroup>
+
+                </Panel>
+
+                <Panel v-if="formStatusApproved()" class="mt-xl">
+
+                    <template #title>{{ $t('genie.drafts') }}</template>
+
+                    <IdeaDrafts :is-loading="isLoading" :data="data" />
 
                 </Panel>
 
                 <div class="flex flex-row items-center justify-between mt-lg">
                     <div class="flex gap-6">
                         <WarningButton
-                            v-if="currentStatusApproved()"
+                            v-if="formStatusApproved()"
                             @click="generateDraft"
                             :hiddenTextOnSmallScreen="true"
                             :disabled="form.processing"
@@ -342,7 +391,20 @@ const generateDraft = () => {
                             {{ $t('genie.generate_draft') }}
                         </WarningButton>
 
+                        <SuccessButton
+                            v-if="isEdit && !formStatusApproved()"
+                            @click="approveIdea"
+                            :isLoading="form.processing"
+                            :hidden-text-on-small-screen=true
+                        >
+                            {{ $t("post.approve") }}
+                            <template #icon>
+                                <Check/>
+                            </template>
+                        </SuccessButton>
+
                         <PrimaryButton
+                            v-if="!formStatusApproved()"
                             type="submit"
                             :isLoading="form.processing"
                             :disabled="form.processing"
@@ -353,21 +415,6 @@ const generateDraft = () => {
                                 <Save/>
                             </template>
                         </PrimaryButton>
-
-                        <WarningButton
-                            v-if="!currentStatusApproved() && formStatusApproved()"
-                            @click="updateGenerateDraft"
-                            :hiddenTextOnSmallScreen="true"
-                            :disabled="form.processing"
-                            :isLoading="form.processing"
-                            size="sm"
-                        >
-
-                            <template #icon>
-                                <DraftIcon/>
-                            </template>
-                            {{ $t('genie.update_generate_draft') }}
-                        </WarningButton>
 
                         <SecondaryButton
                             @click="attemptClose"
@@ -385,6 +432,7 @@ const generateDraft = () => {
                     <div v-if="isEdit">
 
                         <DangerButton
+                            v-if="!formStatusApproved()"
                             @click="deleteIdea"
                             :disabled="form.processing"
                             :hidden-text-on-small-screen=true

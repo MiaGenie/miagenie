@@ -1,7 +1,7 @@
 <script setup>
 import {useI18n} from "vue-i18n";
 import {inject} from "vue";
-import {find} from "lodash";
+import {find, size} from "lodash";
 import {usePage} from "@inertiajs/vue3";
 import IdeaItemAction from "./IdeaItemAction.vue";
 import Badge from "@/Components/DataDisplay/Badge.vue";
@@ -18,10 +18,10 @@ const props = defineProps({
     }
 })
 
-const statusTypes = usePage().props.statusTypes;
+const ideaStatusTypes = usePage().props.ideaStatusTypes;
 
 const ideaStatus = () => {
-    return find(statusTypes, ['value', Number(props.item.status)]);
+    return find(ideaStatusTypes, ['value', Number(props.item.status)]);
 }
 
 const statusBadge = () => {
@@ -52,7 +52,9 @@ const statusBadge = () => {
                     class="sm:hidden">
                     {{ $t('genie.' + ideaStatus().title) }}
                 </Badge>
-
+            </Flex>
+            <Flex class="items-start sm:hidden text-sm">
+                {{ $t('genie.uses') + ': ' + props.item.drafts.length  }}
             </Flex>
         </TableCell>
 
@@ -62,9 +64,15 @@ const statusBadge = () => {
             </Badge>
         </TableCell>
 
+        <TableCell class="hidden sm:table-cell">
+            {{  props.item.drafts.length  }}
+        </TableCell>
 
         <TableCell>
-            <IdeaItemAction :itemId="item.id"/>
+            <IdeaItemAction
+                :item="item"
+                :status="ideaStatus()"
+            />
         </TableCell>
 
     </TableRow>

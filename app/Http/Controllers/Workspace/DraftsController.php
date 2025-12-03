@@ -44,7 +44,7 @@ class DraftsController
                 'status' => $request->query('status', '')
             ],
             'records' => fn () => DraftResource::collection($records),
-            'statusTypes' => DraftStatus::withTitle(),
+            'draftStatusTypes' => DraftStatus::withTitle(),
             'funnelStages' => FunnelStage::withTitle()
         ]);
     }
@@ -59,7 +59,7 @@ class DraftsController
 
         return Inertia::render('Genie/Workspace/Drafts/CreateEdit', [
             'mode' => 'create',
-            'statusTypes' => DraftStatus::withTitle(),
+            'draftStatusTypes' => DraftStatus::withTitle(),
             'funnelStages' => FunnelStage::withTitle(),
             'funnelStage' => $request->input('funnel_stage'),
             'contentPillars' => $contentPillars ?? [],
@@ -114,7 +114,7 @@ class DraftsController
 
         return Inertia::render('Genie/Workspace/Drafts/CreateEdit', [
             'mode' => 'edit',
-            'statusTypes' => DraftStatus::withTitle(),
+            'draftStatusTypes' => DraftStatus::withTitle(),
             'funnelStages' => FunnelStage::withTitle(),
             'funnelStage' => $request->input('funnel_stage'),
             'contentPillars' => $contentPillars ?? [],
@@ -124,7 +124,7 @@ class DraftsController
 
     public function generate(Request $request): RedirectResponse
     {
-        $ideas = Idea::where('uuid', $request->input('idea'))->get();
+        $ideas = Idea::where('uuid', $request->route('idea'))->get();
         $this->draftGeneration($ideas);
 
         return redirect()
