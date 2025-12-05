@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Workspace\DashboardController;
+use App\Http\Controllers\Workspace\PostsController;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Support\Facades\Route;
 use Inovector\Mixpost\Enums\WorkspaceUserRole;
@@ -46,10 +47,14 @@ Route::prefix(Util::corePath())
             ], Mixpost::getWorkspaceMiddlewares()))
                 ->prefix('{workspace}')
                 ->group(function () {
-                    $adminMiddleware = CheckWorkspaceUser::class . ':' . WorkspaceUserRole::ADMIN->name;
                     $editorMiddleware = CheckWorkspaceUser::class . ':' . WorkspaceUserRole::ADMIN->name . '|' . WorkspaceUserRole::MEMBER->name;
 
                     Route::get('/', DashboardController::class)->name('dashboard');
+
+                    // posts
+                    Route::prefix('posts')->name('posts.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
+                        Route::get('{post}', [PostsController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
+                    });
                 });
 
         });

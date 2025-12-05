@@ -35,6 +35,7 @@ return [
 
     'translations' => 'Translations',
     'uses' => 'Uses',
+    'media_instructions' => 'Media instructions',
 
     'are_you_sure' => 'Are you sure?',
     'unsaved_will_lost' => 'Unsaved changes will be lost.',
@@ -317,6 +318,7 @@ return [
     'approve_idea' => 'Approve Idea',
     'approve_idea_confirm' => 'Are you sure you want to approve this Idea?',
 
+    'draft' => 'Draft',
     'drafts' => 'Drafts',
     'drafts_desc' => 'Your Post drafts. This description needs rewriting',
     'create_draft' => 'Create Draft',
