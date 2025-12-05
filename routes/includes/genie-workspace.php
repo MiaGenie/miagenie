@@ -30,7 +30,6 @@ Route::middleware(array_merge([
             Route::get('/', DashboardController::class)->name('dashboard');
         });
 
-
         // competitor
         Route::prefix('competitors')->name('competitors.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
             Route::get('/', [CompetitorsController::class, 'index'])->name('index')->withoutMiddleware($editorMiddleware);
