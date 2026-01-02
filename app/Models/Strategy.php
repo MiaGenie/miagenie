@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\StrategyStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -17,7 +18,8 @@ class Strategy extends Model
     protected $fillable = [
         'run_id',
         'workspace_id',
-        'content'
+        'content',
+        'status'
     ];
 
     /**
@@ -35,7 +37,8 @@ class Strategy extends Model
      * @var string[]
      */
     protected $casts = [
-        'content' => 'array'
+        'content' => 'array',
+        'status' => StrategyStatus::class
     ];
 
     /**

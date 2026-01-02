@@ -308,7 +308,7 @@ class GenieDataDraftsResponses extends GenieData implements GenieDataContract
         }
 
         if ($field->field_type->name === 'FILE') {
-            return $item['path'];
+            return $item['path'] ?? '';
         }
 
         $item = array_map(function ($value) use ($fieldOptions) {

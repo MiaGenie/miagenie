@@ -40,8 +40,12 @@ const props = defineProps({
 </script>
 <template>
 
-    <div class="mt-xl italic">
-        <Flex class="mb-md items-center " :responsive="false">
+    <div class="mt-md italic">
+        <Flex
+            v-if="field.display_title"
+            class="mb-md items-center"
+            :responsive="false"
+        >
             <span>
                 <StrategyFieldIcon
                     :field="field.code_name"

@@ -8,11 +8,13 @@ use App\Enums\FormFieldType;
 use App\Enums\GenieSyncAction;
 use App\Enums\RuleType;
 use App\Enums\RunStatus;
+use App\Enums\StrategyStatus;
 use App\Http\Requests\Workspace\Strategy\StoreStrategy;
 use App\Http\Requests\Workspace\Strategy\ReviewUpdateStrategy;
 use App\Http\Requests\Workspace\Strategy\UpdateStrategy;
 use App\Http\Resources\StrategyResource;
 use App\Jobs\RunJob;
+use App\Models\Briefing;
 use App\Models\Rule;
 use App\Models\Run;
 use App\Models\RunResponse;
@@ -36,6 +38,35 @@ class StrategiesController extends Controller
      */
     public function index(Request $request)
     {
+        $record = Strategy::latest()->first();
+
+        $fields = WorkspaceVersion::byWorkspace(WorkspaceManager::current())
+            ->with(['version' => ['strategies' => ['options']]])
+            ->firstOrFail()
+            ->version
+            ->toArray();
+
+        $fieldList = $this->groupFieldOptions($fields['strategies']);
+
+        $strategySchemas = $record ? $this->getStrategySchemas($record) : null;
+
+        return Inertia::render(
+            'Genie/Workspace/Strategies/Index',
+            [
+                'record' => $record ? New StrategyResource($record) : null,
+                'fieldList' => $fieldList,
+                'runStatusTypes' => RunStatus::withState('', true),
+                'fieldTypes' => FormFieldType::withFieldOptions(),
+                'schemas' => $strategySchemas,
+            ]
+        );
+    }
+
+    /**
+     * @return Response
+     */
+    public function list(Request $request)
+    {
 
         $records = Strategy::query()
             ->latest()
@@ -51,7 +82,7 @@ class StrategiesController extends Controller
             ->toArray();
 
         return Inertia::render(
-            'Genie/Workspace/Strategies/Index',
+            'Genie/Workspace/Strategies/List',
             [
                 'filter' => [
                     'keyword' => $request->query('keyword', ''),
@@ -93,7 +124,9 @@ class StrategiesController extends Controller
     public function create()
     {
         $workspace = WorkspaceManager::current();
-        $workspaceVersion = WorkspaceVersion::where('workspace_id', $workspace->id)->first();
+        $workspaceVersion = WorkspaceVersion::first();
+
+        $briefing = Briefing::latest()->first();
 
         $rule = Rule::where('version_id', $workspaceVersion->version_id)->where('rule_type', RuleType::STRATEGY)->first();
 
@@ -103,9 +136,13 @@ class StrategiesController extends Controller
             'status' => RunStatus::OPEN,
         ]);
 
+        $run->runBriefing()->create([
+            'briefing_id' => $briefing->id
+        ]);
+
         $run->strategy()->create([
             'workspace_id' => $workspace->id,
-            'run_id' => $run->id,
+            'status' => StrategyStatus::OPEN,
         ]);
 
         RunJob::dispatch($run, GenieSyncAction::CREATE);

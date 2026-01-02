@@ -97,8 +97,8 @@ class Run extends Model
     /**
      * @return HasOne
      */
-    public function briefing(): HasOne
+    public function runBriefing(): HasOne
     {
-        return $this->HasOne(Briefing::class, 'run_id');
+        return $this->HasOne(RunBriefing::class);
     }
 }

@@ -157,7 +157,7 @@ class DraftsController
      */
     public function destroy(Request $request)
     {
-        $record = Draft::firstOrFailByUuid($request->route('draft'))->byWorkspace(WorkspaceManager::current())->first();
+        $record = Draft::firstOrFailByUuid($request->route('draft'));
 
         $redirect = redirect()->route('genie.drafts.index', ['workspace' => $request->route('workspace')]);
 

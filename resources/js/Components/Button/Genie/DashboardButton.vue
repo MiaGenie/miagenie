@@ -1,6 +1,5 @@
 <script setup>
 import useButtonSize from "@/Composables/useButtonSize"
-import CircleLoadingIcon from "@/Icons/CircleLoading.vue"
 
 const props = defineProps({
     type: {
@@ -11,9 +10,9 @@ const props = defineProps({
         type: String,
         default: 'lg'
     },
-    isLoading: {
-        type: Boolean,
-        default: false,
+    colorStyle: {
+        type: String,
+        default: ''
     },
     hiddenTextOnSmallScreen: {
         type: Boolean,
@@ -22,21 +21,32 @@ const props = defineProps({
 });
 
 const { sizeClass } = useButtonSize(props.size);
+const btnStyle = () => {
+    switch (props.colorStyle) {
+        default:
+            return  '';
+        case 'strategy':
+            return  'purple-500';
+        case 'ideas':
+            return  'yellow-500';
+        case 'posts':
+            return  'blue-500';
+        case 'support':
+            return  'green-500';
+    }
+}
+
 </script>
 
 <template>
-    <button :type="type" :class="sizeClass" class="relative inline-flex items-center bg-white text-gray-800 border border-gray-700 rounded-md font-medium text-xs tracking-widest rtl:tracking-normal hover:text-primary-500 hover:border-primary-500 active:text-primary-500 active:border-primary-800 focus:border-primary-800 focus:shadow-outline-indigo disabled:text-gray-500 disabled:cursor-not-allowed transition ease-in-out duration-200">
+    <button :type="type" :class="sizeClass" class="max-w-48 w-[47%] sm:w-[23%] relative inline-flex items-center bg-white text-gray-800 border border-gray-400 rounded-md font-medium text-xs tracking-widest rtl:tracking-normal hover:text-primary-500 hover:border-primary-500 active:text-primary-500 active:border-primary-800 focus:border-primary-800 focus:shadow-outline-indigo disabled:text-gray-500 disabled:cursor-not-allowed transition ease-in-out duration-200">
         <span v-if="$slots.icon" class="inline-flex"
-                      :class="{'sm:mr-xs rtl:sm:mr-0 rtl:sm:ml-xs': $slots.default, 'mr-0 sm:mr-xs rtl:sm:mr-0 rtl:sm:ml-xs': hiddenTextOnSmallScreen, 'mr-xs rtl:mr-xs rtl:ml-xs': !hiddenTextOnSmallScreen && $slots.default}">
+                      :class="['text-' + btnStyle(), {'sm:mr-xs rtl:sm:mr-0 rtl:sm:ml-xs': $slots.default, 'mr-0 sm:mr-xs rtl:sm:mr-0 rtl:sm:ml-xs': hiddenTextOnSmallScreen, 'mr-xs rtl:mr-xs rtl:ml-xs': !hiddenTextOnSmallScreen && $slots.default}]">
             <slot name="icon"/>
         </span>
 
-        <span v-if="$slots.default" class="inline-flex items-center text-xl" :class="{'hidden sm:inline': hiddenTextOnSmallScreen}">
+        <span v-if="$slots.default" class="w-full inline-flex justify-center items-center text-lg md:text-xl" :class="{'hidden sm:inline': hiddenTextOnSmallScreen}">
             <slot/>
-        </span>
-
-        <span v-if="isLoading" class="absolute left-0 top-0 flex justify-center items-center w-full h-full bg-white rounded-md">
-             <CircleLoadingIcon class="animate-spin text-primary-500"/>
         </span>
     </button>
 </template>

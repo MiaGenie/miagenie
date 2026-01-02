@@ -20,6 +20,14 @@ class RunBriefing extends Model
      */
     public function run(): BelongsTo
     {
-        return $this->belongsTo(Run::class, 'run_id');
+        return $this->belongsTo(Run::class);
+    }
+
+    /**
+     * @return BelongsTo
+     */
+    public function briefing(): BelongsTo
+    {
+        return $this->belongsTo(Briefing::class);
     }
 }

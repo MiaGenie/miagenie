@@ -15,8 +15,8 @@ use App\Enums\RunStatus;
 use App\Http\Requests\Workspace\Idea\StoreIdea;
 use App\Http\Requests\Workspace\Idea\UpdateIdea;
 use App\Http\Resources\IdeaResource;
+use App\Http\Resources\StrategyResource;
 use App\Jobs\RunIdeaJob;
-use App\Models\Draft;
 use App\Models\Idea;
 use App\Models\Rule;
 use App\Models\Run;
@@ -44,6 +44,8 @@ class IdeasController
             ->onEachSide(1)
             ->withQueryString();
 
+        $strategy = Strategy::latest()->first();
+
         $contentPillars = Idea::whereNotNull('content_pillar')->groupBy('content_pillar')->pluck('content_pillar');
 
         return Inertia::render('Genie/Workspace/Ideas/Index', [
@@ -52,7 +54,8 @@ class IdeasController
                 'content_pillar' => $request->query('content_pillar', ''),
                 'status' => $request->query('status', '')
             ],
-            'records' => fn () => IdeaResource::collection($records),
+            'records' => IdeaResource::collection($records),
+            'strategy' => $strategy ? New StrategyResource($strategy) : null,
             'ideaStatusTypes' => IdeaStatus::withTitle(),
             'funnelStages' => FunnelStage::withTitle(),
             'contentPillars' => $contentPillars,
@@ -172,7 +175,7 @@ class IdeasController
      */
     public function destroy(Request $request)
     {
-        $record = Idea::firstOrFailByUuid($request->route('idea'))->byWorkspace(WorkspaceManager::current())->first();
+        $record = Idea::firstOrFailByUuid($request->route('idea'));
 
         $redirect = redirect()->route('genie.ideas.index', ['workspace' => $request->route('workspace')]);
 

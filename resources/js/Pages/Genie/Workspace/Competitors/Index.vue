@@ -16,10 +16,6 @@ import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 const {t: $t} = useI18n()
 
 const props = defineProps({
-    filter: {
-        type: Object,
-        default: {}
-    },
     fieldList: {
         type: Object,
         required: true,
@@ -31,7 +27,6 @@ const props = defineProps({
 
 const routePrefix = inject('routePrefix');
 const workspaceCtx = inject('workspaceCtx');
-const confirmation = inject('confirmation');
 
 const identifier = props.fieldList.find( field => field.is_identifier === 1);
 provide('identifier', identifier);
@@ -39,55 +34,59 @@ provide('fieldList', props.fieldList);
 
 </script>
 <template>
-    <Head :title="$t('genie.competitors')"/>
+    <div class="w-full lg:w-3/5">
 
-    <div class="w-full mx-auto row-py">
-        <PageHeader :title="$t('genie.competitors')">
-            <template #description>
-                {{ $t('genie.competitors_desc') }}
-            </template>
-        </PageHeader>
+        <Head :title="$t('genie.competitors')"/>
 
-        <div class="w-full row-px mt-lg">
-            <Link :href="route(`${routePrefix}.competitors.create`, {workspace: workspaceCtx.id})">
-                <PrimaryButton size="sm">
-                    <Plus class="mr-xs" />
-                    {{ $t('genie.create_competitor') }}
-                </PrimaryButton>
-            </Link>
+        <div class="w-full mx-auto row-py">
+            <PageHeader :title="$t('genie.competitors')">
+                <template #description>
+                    {{ $t('genie.competitors_desc') }}
+                </template>
+            </PageHeader>
+
+            <div class="w-full row-px mt-lg">
+                <Link :href="route(`${routePrefix}.competitors.create`, {workspace: workspaceCtx.id})">
+                    <PrimaryButton size="sm">
+                        <Plus class="mr-xs" />
+                        {{ $t('genie.create_competitor') }}
+                    </PrimaryButton>
+                </Link>
 
 
-            <Panel :with-padding="false" class="mt-lg">
-                <Table>
-                    <template #head>
-                        <TableRow>
+                <Panel :with-padding="false" class="mt-lg">
+                    <Table>
+                        <template #head>
+                            <TableRow>
 
-                            <TableCell component="th" scope="col">{{ identifier?.name }}</TableCell>
+                                <TableCell component="th" scope="col">{{ identifier?.name }}</TableCell>
 
-                            <TableCell component="th" scope="col" class="hidden md:table-cell">
-                                {{ $t('general.status') }}
-                            </TableCell>
+                                <TableCell component="th" scope="col" class="hidden md:table-cell">
+                                    {{ $t('genie.completion') }}
+                                </TableCell>
 
-                            <TableCell component="th" scope="col"/>
+                                <TableCell component="th" scope="col"/>
 
-                        </TableRow>
-                    </template>
-                    <template #body>
-                        <template v-for="item in records.data" :key="item.id">
-
-                            <CompetitorItem :item="item" />
-
+                            </TableRow>
                         </template>
-                    </template>
-                </Table>
+                        <template #body>
+                            <template v-for="item in records.data" :key="item.id">
 
-                <NoResult v-if="!records.meta.total" class="py-md px-md"/>
+                                <CompetitorItem :item="item" />
 
-            </Panel>
+                            </template>
+                        </template>
+                    </Table>
 
-            <div v-if="records.meta.links.length > 3" class="mt-lg">
-                <Pagination :meta="records.meta" :links="records.links"/>
+                    <NoResult v-if="!records.meta.total" class="py-md px-md"/>
+
+                </Panel>
+
+                <div v-if="records.meta.links.length > 3" class="mt-lg">
+                    <Pagination :meta="records.meta" :links="records.links"/>
+                </div>
             </div>
         </div>
+
     </div>
 </template>

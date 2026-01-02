@@ -3,22 +3,16 @@ import {Head, router, useForm, usePage} from '@inertiajs/vue3';
 import {inject, provide, ref, watch} from "vue";
 import {cloneDeep} from "lodash";
 import {useI18n} from "vue-i18n";
-import useNotifications from "@/Composables/useNotifications";
 import usePageMode from "@/Composables/usePageMode";
 import useRouter from "@/Composables/useRouter";
-import BriefingAction from "@/Components/Genie/Briefings/BriefingAction.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import PageHeader from "@/Components/DataDisplay/PageHeader.vue";
-import Trash from "@/Icons/Trash.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import Flex from "@/Components/Layout/Flex.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import X from "@/Icons/X.vue";
-import DangerButton from "@/Components/Button/DangerButton.vue";
 import VersionFieldsForm from "@/Components/Form/Genie/FieldsForm.vue";
-import {useAPIForm} from "@/Composables/useAPIForm.js";
-import {hasFiles} from "@/Composables/Genie/useMultiPartForm.js";
 
 const {t: $t} = useI18n()
 
@@ -51,7 +45,6 @@ const props = defineProps({
 
 const workspaceCtx = inject('workspaceCtx');
 const confirmation = inject('confirmation');
-const {notify} = useNotifications();
 const {isCreate, isEdit} = usePageMode();
 const {onError} = useRouter();
 
@@ -168,7 +161,7 @@ const submit = () => {
 
 const attemptClose = () => {
     if (!form.isDirty) {
-        backToList();
+        backToConfig();
         return;
     }
 
@@ -177,45 +170,18 @@ const attemptClose = () => {
         .description($t('genie.unsaved_will_lost'))
         .btnConfirmName($t('genie.discard'))
         .onConfirm(() => {
-            backToList();
+            backToConfig();
         })
         .show();
 }
 
-const backToList = () => {
+const backToConfig = () => {
     if (removePreventNavigation.value) {
         removePreventNavigation.value();
     }
-    router.get(route('genie.briefings.index', {
+    router.get(route('genie.config.config', {
         workspace: workspaceCtx.id
     }));
-}
-
-const deleteBriefing = () => {
-    confirmation()
-        .title($t("genie.delete_briefing"))
-        .description($t("genie.delete_briefing_confirm"))
-        .destructive()
-        .onConfirm((dialog) => {
-            dialog.isLoading(true);
-
-            router.delete(
-                route('genie.briefings.delete',
-                    {
-                        workspace: workspaceCtx.id,
-                        briefing: props.record.id
-                    }), {
-                    preserveScroll: true,
-                    onSuccess() {
-                        notify('success', $t('genie.briefing_deleted'))
-                    },
-                    onFinish() {
-                        dialog.reset();
-                    }
-                }
-            );
-        })
-        .show();
 }
 
 provide('form', form);
@@ -270,19 +236,6 @@ provide('form', form);
                                 <X/>
                             </template>
                         </SecondaryButton>
-
-                    </Flex>
-                    <Flex v-if="isEdit">
-
-                        <DangerButton
-                            @click="deleteBriefing"
-                            :disabled="form.processing"
-                        >
-                            {{ $t("general.delete") }}
-                            <template #icon>
-                                <Trash/>
-                            </template>
-                        </DangerButton>
 
                     </Flex>
                 </Flex>

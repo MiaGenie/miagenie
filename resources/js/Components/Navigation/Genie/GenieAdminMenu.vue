@@ -73,7 +73,7 @@ import LogsIcon from "@/Icons/Genie/Logs.vue";
             <template #icon>
                 <CogIcon/>
             </template>
-            {{ $t('genie.config') }}
+            {{ $t('genie.genie_config') }}
         </MenuItem>
 
     </MenuGroupBody>

@@ -107,7 +107,7 @@ const {isWorkspaceAdminRole, isWorkspaceEditorRole} = useWorkspace();
                         </template>
                         {{ $t('account.accounts') }}
                     </MenuItem>
-                    <MenuItem :url="route('mixpost.postingSchedule.index', {workspace: workspaceCtx.id})"
+<!--                    <MenuItem :url="route('mixpost.postingSchedule.index', {workspace: workspaceCtx.id})"
                               :active="$page.component === 'Workspace/PostingSchedule'">
                         <template #icon>
                             <Forward/>
@@ -120,7 +120,7 @@ const {isWorkspaceAdminRole, isWorkspaceEditorRole} = useWorkspace();
                             <WebhooksIcon/>
                         </template>
                         {{ $t('webhook.webhooks') }}
-                    </MenuItem>
+                    </MenuItem>-->
                 </MenuGroupBody>
             </template>
         </div>

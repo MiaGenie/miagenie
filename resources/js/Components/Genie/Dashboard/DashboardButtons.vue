@@ -35,13 +35,14 @@ const navigate = (page) => {
 
 </script>
 <template>
-    <div class="row-px mb-2xl">
+    <div class="w-full max-w-[1200px] mx-auto mb-sm">
         <Panel>
-            <div class="flex-row items-center justify-between gap-lg hidden sm:flex">
+            <div class="flex-row items-center justify-around gap-md flex flex-wrap">
 
                 <DashboardButton
                     @click="navigate('strategy')"
                     v-tooltip="$t('genie.strategy')"
+                    colorStyle="strategy"
                 >
                     {{ $t('genie.strategy') }}
 
@@ -53,6 +54,7 @@ const navigate = (page) => {
                 <DashboardButton
                     @click="navigate('ideas')"
                     v-tooltip="$t('genie.ideas')"
+                    colorStyle="ideas"
                 >
                     {{ $t('genie.ideas') }}
 
@@ -64,6 +66,7 @@ const navigate = (page) => {
                 <DashboardButton
                     @click="navigate('posts')"
                     v-tooltip="$t('post.posts')"
+                    colorStyle="posts"
                 >
                     {{ $t('post.posts') }}
 
@@ -74,6 +77,7 @@ const navigate = (page) => {
 
                 <DashboardButton
                     v-tooltip="$t('genie.support')"
+                    colorStyle="support"
                 >
                     <template #default>
                         {{ $t('genie.support') }}

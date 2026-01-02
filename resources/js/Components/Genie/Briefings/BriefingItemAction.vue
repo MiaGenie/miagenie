@@ -101,12 +101,6 @@ const deleteBriefingAfterConfirmed = (dialog) => {
                         {{ $t('general.edit') }}
                     </DropdownItem>
 
-                    <DropdownItem @click="confirmDeleteBriefing" as="button">
-                        <template #icon>
-                            <Trash class="text-red-500"/>
-                        </template>
-                        {{ $t('general.delete') }}
-                    </DropdownItem>
                 </template>
             </Dropdown>
         </div>
@@ -118,13 +112,6 @@ const deleteBriefingAfterConfirmed = (dialog) => {
             >
                 <PencilSquare/>
             </PureButtonLink>
-
-            <PureButton
-                @click="confirmDeleteBriefing"
-                v-tooltip="$t('general.delete')"
-            >
-                <Trash class="text-red-500"/>
-            </PureButton>
 
         </div>
     </div>

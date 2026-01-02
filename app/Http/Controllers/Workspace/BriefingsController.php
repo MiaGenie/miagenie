@@ -14,6 +14,7 @@ use App\Models\WorkspaceVersion;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
+use Inertia\Response;
 use Inovector\Mixpost\Facades\WorkspaceManager;
 
 class BriefingsController extends Controller
@@ -21,9 +22,9 @@ class BriefingsController extends Controller
     use HasFieldOptions;
 
     /**
-     * @param Request $request
+     * @return Response
      */
-    public function index(Request $request)
+    public function index()
     {
 
         $records = Briefing::query()
@@ -40,14 +41,14 @@ class BriefingsController extends Controller
             ->toArray();
 
         return Inertia::render('Genie/Workspace/Briefings/Index', [
-            'filter' => [
-                'keyword' => $request->query('keyword', ''),
-            ],
             'records' => BriefingResource::collection($records),
             'fieldList' => $fieldList
         ]);
     }
 
+    /**
+     * @return Response
+     */
     public function create()
     {
         $fieldList = WorkspaceVersion::byWorkspace(WorkspaceManager::current())

@@ -3,98 +3,151 @@ import {Head, Link} from '@inertiajs/vue3';
 import {inject, provide} from "vue";
 import {useI18n} from "vue-i18n";
 import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
-import Panel from "@/Components/Surface/Panel.vue";
-import Table from "@/Components/DataDisplay/Table.vue";
-import TableRow from "@/Components/DataDisplay/TableRow.vue";
-import TableCell from "@/Components/DataDisplay/TableCell.vue";
-import Pagination from "@/Components/Navigation/Pagination.vue";
-import NoResult from "@/Components/Util/NoResult.vue";
-import StrategyItem from "@/Components/Genie/Strategies/StrategyItem.vue";
-import Plus from "@/Icons/Plus.vue";
+import StrategyView from "@/Pages/Genie/Workspace/Strategies/ViewEdit.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
+import Cog from "@/Icons/Cog.vue";
+import {find} from "lodash";
+import Panel from "@/Components/Surface/Panel.vue";
+import Flex from "@/Components/Layout/Flex.vue";
+import PencilSquare from "@/Icons/PencilSquare.vue";
+import Support from "@/Icons/Genie/Support.vue";
 
 const {t: $t} = useI18n()
+const workspaceCtx = inject('workspaceCtx');
 
 const props = defineProps({
-    filter: {
-        type: Object,
-        default: {}
-    },
     fieldList: {
         type: Object,
         required: true,
     },
-    runStatus: {
+    runStatusTypes: {
         type: Object,
     },
-    records: {
+    fieldTypes: {
+        type: Object,
+        required: true,
+    },
+    record: {
+        type: Object
+    },
+    schemas: {
         type: Object,
     }
 });
 
-const routePrefix = inject('routePrefix');
-const workspaceCtx = inject('workspaceCtx');
-
 const identifier = props.fieldList.find( field => field.is_identifier === 1);
 provide('identifier', identifier);
 provide('fieldList', props.fieldList);
-provide('runStatus', props.runStatus);
+
+const runStatus = () => {
+    return props.record?.status ? find(props.runStatusTypes, ['value', Number(props.record.status)]).name : '';
+}
 
 </script>
 <template>
-    <Head :title="$t('genie.strategies')"/>
+
+    <Head :title="$t('genie.strategy')"/>
 
     <div class="w-full max-w-[1200px] mx-auto row-py">
-        <PageHeader :title="$t('genie.strategies')">
-            <template #description>
-                {{ $t('genie.strategies_desc') }}
-            </template>
+        <PageHeader :title="$t('genie.strategy')">
+
         </PageHeader>
 
-        <div class="w-full row-px mt-lg">
-            <Link :href="route(`${routePrefix}.strategies.create`, {workspace: workspaceCtx.id})">
-                <PrimaryButton size="sm">
-                    <Plus class="mr-xs" />
-                    {{ $t('genie.create_strategy') }}
-                </PrimaryButton>
-            </Link>
+        <Panel
+            v-if="!record"
+            class="w-full row-px mt-lg"
+        >
+            <Flex
+                :col="true"
+            >
+                <div class="text-lg">
+                    {{ $t('genie.strategy_empty_desc') }}
+                </div>
 
+                <Link :href="route(`genie.config.config`, {workspace: workspaceCtx.id})">
+                    <PrimaryButton size="sm">
+                        <Cog class="mr-xs" />
+                        {{ $t('genie.config') }}
+                    </PrimaryButton>
+                </Link>
 
-            <Panel :with-padding="false" class="mt-lg">
-                <Table>
-                    <template #head>
-                        <TableRow>
+            </Flex>
 
-                            <TableCell component="th" scope="col">{{ $t('genie.created') }}</TableCell>
+        </Panel>
 
-                            <TableCell component="th" scope="col" class="hidden md:table-cell">
-                                {{ $t('genie.progression') }}
-                            </TableCell>
+        <StrategyView
+            v-else-if="runStatus() === 'COMPLETE'"
+            :record="record"
+            :schemas="schemas"
+            :fieldTypes="fieldTypes"
+            :fieldList="fieldList"
+        />
 
-                            <TableCell component="th" scope="col" class="hidden md:table-cell">
-                                {{ $t('genie.status') }}
-                            </TableCell>
+        <Panel
+            v-else-if="runStatus() === 'PENDING_REVIEW'"
+            class="w-full row-px mt-lg"
+        >
+            <Flex
+                :col="true"
+            >
+                <div class="text-lg">
+                    {{ $t('genie.strategy_pending_review') }}
+                </div>
 
-                            <TableCell component="th" scope="col"/>
+                <Link
+                    :href="route('genie.strategies.review', {
+                        workspace: workspaceCtx.id,
+                        strategy: record.id
+                    })"
+                >
+                    <PrimaryButton size="sm">
+                        <PencilSquare class="mr-xs" />
+                        {{ $t('genie.review_strategy') }}
+                    </PrimaryButton>
+                </Link>
 
-                        </TableRow>
-                    </template>
-                    <template #body>
-                        <template v-for="item in records.data" :key="item.id">
+            </Flex>
 
-                            <StrategyItem :item="item" />
+        </Panel>
 
-                        </template>
-                    </template>
-                </Table>
+        <Panel
+            v-else-if="runStatus() === 'ERROR'"
+            class="w-full row-px mt-lg"
+        >
+            <Flex
+                :col="true"
+            >
+                <div class="text-lg">
+                    {{ $t('genie.strategy_error') }}
+                </div>
 
-                <NoResult v-if="!records.meta.total" class="py-md px-md"/>
+                <Link
+                    href="mailto:hello@miagenie.com"
+                >
+                    <PrimaryButton size="sm">
+                        <Support class="mr-xs" />
+                        {{ $t('genie.support') }}
+                    </PrimaryButton>
+                </Link>
 
-            </Panel>
+            </Flex>
 
-            <div v-if="records.meta.links.length > 3" class="mt-lg">
-                <Pagination :meta="records.meta" :links="records.links"/>
-            </div>
-        </div>
+        </Panel>
+
+        <Panel
+            v-else-if="runStatus() !== ''"
+            class="w-full row-px mt-lg"
+        >
+            <Flex
+                :col="true"
+            >
+                <div class="text-lg">
+                    {{ $t('genie.strategy_running') }}
+                </div>
+
+            </Flex>
+
+        </Panel>
+
     </div>
 </template>
