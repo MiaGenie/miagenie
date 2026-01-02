@@ -3,6 +3,7 @@
 use App\Http\Controllers\Workspace\CompetitorsController;
 use App\Http\Controllers\Workspace\BriefingsController;
 use App\Http\Controllers\Workspace\DashboardController;
+use App\Http\Controllers\Workspace\ConfigController;
 use App\Http\Controllers\Workspace\DeleteDraftsController;
 use App\Http\Controllers\Workspace\DeleteIdeasController;
 use App\Http\Controllers\Workspace\DraftsController;
@@ -30,6 +31,10 @@ Route::middleware(array_merge([
             Route::get('/', DashboardController::class)->name('dashboard');
         });
 
+        Route::prefix('config')->name('config.')->group(function () {
+            Route::get('/', ConfigController::class)->name('config');
+        });
+
         // competitor
         Route::prefix('competitors')->name('competitors.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
             Route::get('/', [CompetitorsController::class, 'index'])->name('index')->withoutMiddleware($editorMiddleware);
@@ -53,6 +58,7 @@ Route::middleware(array_merge([
         // strategy
         Route::prefix('strategies')->name('strategies.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
             Route::get('/', [StrategiesController::class, 'index'])->name('index')->withoutMiddleware($editorMiddleware);
+            Route::get('list', [StrategiesController::class, 'list'])->name('list')->withoutMiddleware($editorMiddleware);
             Route::get('create', [StrategiesController::class, 'create'])->name('create');
             Route::post('store', [StrategiesController::class, 'store'])->name('store');
             Route::get('edit/{strategy}', [StrategiesController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);

@@ -21,12 +21,10 @@ class CompetitorsController extends Controller
     use HasFieldOptions;
 
     /**
-     * @param Request $request
      * @return Response
      */
-    public function index(Request $request)
+    public function index()
     {
-
         $records = Competitor::query()
             ->latest()
             ->paginate(100)
@@ -41,9 +39,6 @@ class CompetitorsController extends Controller
             ->toArray();
 
         return Inertia::render('Genie/Workspace/Competitors/Index', [
-            'filter' => [
-                'keyword' => $request->query('keyword', ''),
-            ],
             'records' => fn () => CompetitorResource::collection($records),
             'fieldList' => $fieldList,
         ]);
@@ -134,11 +129,11 @@ class CompetitorsController extends Controller
 
         if (! $query) {
             return redirect()
-                ->route('genie.competitors.index', ['workspace' => $request->route('workspace')])
+                ->route('genie.config.config', ['workspace' => $request->route('workspace')])
                 ->with('error', __('genie.competitor_not_found'));
         }
 
-        return redirect()->route('genie.competitors.index', ['workspace' => $request->route('workspace')])
+        return redirect()->route('genie.config.config', ['workspace' => $request->route('workspace')])
             ->with('success', __('genie.competitor_deleted'));
     }
 }

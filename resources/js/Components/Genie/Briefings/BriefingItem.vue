@@ -5,7 +5,6 @@ import {reduce} from "lodash";
 import Badge from "@/Components/DataDisplay/Badge.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
-import Flex from "@/Components/Layout/Flex.vue";
 import BriefingItemAction from "./BriefingItemAction.vue";
 
 const {t: $t} = useI18n();
@@ -37,24 +36,21 @@ const percentage = Number(fieldsCount.filled / fieldsCount.total * 100).toFixed(
     <TableRow :hoverable="true">
 
         <TableCell>
-            {{ item.id }}
 
-            <Flex :responsive="false" class="md:hidden">
-                <Badge :variant="percentage == 100 ? 'success' : 'error'">
-                    {{ percentage + '%'}}
-                </Badge>
-            </Flex>
+            <Badge :variant="percentage == 100 ? 'success' : 'error'">
+                {{ percentage + '%'}}
+            </Badge>
 
         </TableCell>
 
         <TableCell class="hidden md:table-cell">
-            <Badge :variant="percentage == 100 ? 'success' : 'error'">
-                {{ percentage + '%'}}
+            <Badge :variant="item.runStatus ? item.runStatus === 'COMPLETE' ? 'success' : 'info' : 'neutral'">
+                {{ item.runStatus ? item.runStatus === 'COMPLETE' ? $t('genie.done') : $t('genie.working') : $t('genie.open') }}
             </Badge>
         </TableCell>
 
         <TableCell>
-            <BriefingItemAction :itemId="item.id"/>
+            <BriefingItemAction v-if="!item.runStatus" :itemId="item.id"/>
         </TableCell>
     </TableRow>
 </template>

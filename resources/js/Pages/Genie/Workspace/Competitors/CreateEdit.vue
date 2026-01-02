@@ -1,6 +1,6 @@
 <script setup>
 import {Head, router, useForm} from '@inertiajs/vue3';
-import {inject, provide} from "vue";
+import {inject, provide, ref, watch} from "vue";
 import {cloneDeep, find} from "lodash";
 import {useI18n} from "vue-i18n";
 import useNotifications from "@/Composables/useNotifications";
@@ -62,6 +62,34 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) :
     )
 );
 
+const removePreventNavigation = ref(null);
+const reloadPreventNavigation = ref(false);
+
+watch( () => [form.isDirty, reloadPreventNavigation.value], () => {
+    if (form.isDirty && removePreventNavigation.value === null) {
+        removePreventNavigation.value = router.on('before', (event) => {
+            if (!form.isDirty) {
+                removePreventNavigation.value();
+                return;
+            }
+            if (!confirm($t('genie.are_you_sure') + "\n" + $t('genie.unsaved_will_lost'))) {
+                event.preventDefault();
+                removePreventNavigation.value();
+                removePreventNavigation.value = null;
+                reloadPreventNavigation.value = true;
+            } else {
+                removePreventNavigation.value();
+            }
+        })
+    } else if (reloadPreventNavigation.value) {
+        if (removePreventNavigation.value) {
+            removePreventNavigation.value();
+            removePreventNavigation.value = null;
+        }
+    }
+    reloadPreventNavigation.value = false;
+})
+
 const store = () => {
     form.transform((data) => ({
         ...data,
@@ -91,6 +119,10 @@ const update = () => {
 }
 
 const submit = () => {
+    if (removePreventNavigation.value) {
+        removePreventNavigation.value();
+        removePreventNavigation.value = null;
+    }
     if (isCreate.value) {
         store();
     }
@@ -102,7 +134,7 @@ const submit = () => {
 
 const attemptClose = () => {
     if (!form.isDirty) {
-        backToList();
+        backToConfig();
         return;
     }
 
@@ -111,13 +143,16 @@ const attemptClose = () => {
         .description($t('genie.unsaved_will_lost'))
         .btnConfirmName($t('genie.discard'))
         .onConfirm(() => {
-            backToList();
+            backToConfig();
         })
         .show();
 }
 
-const backToList = () => {
-    router.get(route('genie.competitors.index', {
+const backToConfig = () => {
+    if (removePreventNavigation.value) {
+        removePreventNavigation.value();
+    }
+    router.get(route('genie.config.config', {
         workspace: workspaceCtx.id
     }));
 }
@@ -129,6 +164,11 @@ const deleteCompetitor = () => {
         .destructive()
         .onConfirm((dialog) => {
             dialog.isLoading(true);
+
+            if (removePreventNavigation.value) {
+                removePreventNavigation.value();
+                removePreventNavigation.value = null;
+            }
 
             router.delete(
                 route('genie.competitors.delete',

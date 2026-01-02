@@ -23,6 +23,7 @@ class BriefingResource extends JsonResource
             'name' => $this->name,
             'active' => $this->active,
             'content' => $this->content,
+            'runStatus' =>  $this->runBriefing?->run->status->name
         ];
 
     }

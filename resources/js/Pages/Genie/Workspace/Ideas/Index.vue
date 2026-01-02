@@ -28,11 +28,15 @@ import Select from "@/Components/Form/Select.vue";
 import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
 import WarningButton from "@/Components/Button/WarningButton.vue";
 import DraftIcon from "mixpost-pro-team/resources/js/Icons/Genie/Draft.vue";
+import Lamp from "@/Icons/Genie/Lamp.vue";
 
 const {t: $t} = useI18n()
 
 const props = defineProps({
     records: {
+        type: Object,
+    },
+    strategy: {
         type: Object,
     },
     ideaStatusTypes: {
@@ -144,6 +148,22 @@ const generateDrafts = () => {
         .show();
 }
 
+const generateIdeas = () => {
+    confirmation()
+        .title($t('genie.generate_ideas'))
+        .description($t('genie.generate_ideas_confirm'))
+        .warning()
+        .onConfirm((dialog) => {
+            router.put(route('genie.ideas.generate', {
+                workspace: workspaceCtx.id,
+                strategy: props.strategy.id
+            }));
+            deselectAllRecords();
+            dialog.reset();
+        })
+        .show();
+}
+
 const deleteIdeas = () => {
     router.delete(route('genie.ideas.deleteMultiple', {workspace: workspaceCtx.id}), {
         data: {
@@ -174,9 +194,23 @@ const deleteIdeas = () => {
 
         <div class="w-full row-px row-mb mt-lg flex justify-between grow gap-6">
 
+            <div class="flex justify-start gap-6">
+
+            <WarningButton
+                @click="generateIdeas"
+                :disabled="isLoading || !strategy"
+                :isLoading="isLoading"
+                size="sm"
+            >
+
+                <template #icon>
+                    <Lamp/>
+                </template>
+                {{ $t('genie.generate_ideas') }}
+            </WarningButton>
+
             <PrimaryButton
                 @click="createIdea"
-                :hiddenTextOnSmallScreen="true"
                 :disabled="isLoading"
                 :isLoading="isLoading"
                 size="sm"
@@ -187,11 +221,11 @@ const deleteIdeas = () => {
                 </template>
                 {{ $t('genie.create_idea') }}
             </PrimaryButton>
+            </div>
 
             <WarningButton
                 v-if="selectedRecords.length > 0"
                 @click="generateDrafts"
-                :hiddenTextOnSmallScreen="true"
                 :disabled="isLoading"
                 :isLoading="isLoading"
                 size="sm"

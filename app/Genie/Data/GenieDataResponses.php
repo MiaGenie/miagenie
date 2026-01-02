@@ -181,7 +181,7 @@ class GenieDataResponses extends GenieData implements GenieDataContract
      */
     private function getBriefingReplacements(): array
     {
-        $briefing = Briefing::where(['workspace_id' => $this->runResponse->run->workspace_id])->latest()->first()?->content;
+        $briefing = $this->runResponse->run->runBriefing->briefing->content;
         $briefing = $this->formatFieldOptions($briefing, 'BRIEFINGS');
 
         return Arr::prependKeysWith($briefing, 'briefings.');
@@ -246,7 +246,7 @@ class GenieDataResponses extends GenieData implements GenieDataContract
         }
 
         if ($field->field_type->name === 'FILE') {
-            return $item['path'];
+            return $item['path'] ?? '';
         }
 
         $item = array_map(function ($value) use ($fieldOptions) {
