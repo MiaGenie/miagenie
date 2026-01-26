@@ -11,8 +11,8 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
-use Inovector\Mixpost\Builders\Post\PostQuery;
 use Inovector\Mixpost\Enums\PostStatus;
+use Inovector\Mixpost\Facades\WorkspaceManager;
 use Inovector\Mixpost\Http\Base\Resources\AccountResource;
 use Inovector\Mixpost\Models\Account;
 use Inovector\Mixpost\Models\Post;
@@ -23,7 +23,7 @@ class DashboardController extends Controller
     public function __invoke(Request $request): Response
     {
         $workspace = Auth::user()->getActiveWorkspace();
-        $workspaceVersion = WorkspaceVersion::where('workspace_id', $workspace->id)->first();
+        $workspaceVersion = WorkspaceVersion::byWorkspace(WorkspaceManager::current())->first();
 
         if (!$workspaceVersion) {
             $version = Version::where('is_default', true)->first();
