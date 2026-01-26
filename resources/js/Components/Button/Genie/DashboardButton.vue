@@ -39,7 +39,7 @@ const btnStyle = () => {
 </script>
 
 <template>
-    <button :type="type" :class="sizeClass" class="max-w-48 w-[47%] sm:w-[23%] relative inline-flex items-center bg-white text-gray-800 border border-gray-400 rounded-md font-medium text-xs tracking-widest rtl:tracking-normal hover:text-primary-500 hover:border-primary-500 active:text-primary-500 active:border-primary-800 focus:border-primary-800 focus:shadow-outline-indigo disabled:text-gray-500 disabled:cursor-not-allowed transition ease-in-out duration-200">
+    <button :type="type" :class="sizeClass" class="max-h-20 max-w-48 w-[47%] sm:w-[23%] relative inline-flex items-center bg-white text-gray-800 border border-gray-400 rounded-md font-medium text-xs tracking-widest rtl:tracking-normal hover:text-primary-500 hover:border-primary-500 active:text-primary-500 active:border-primary-800 focus:border-primary-800 focus:shadow-outline-indigo disabled:text-gray-500 disabled:cursor-not-allowed transition ease-in-out duration-200">
         <span v-if="$slots.icon" class="inline-flex"
                       :class="['text-' + btnStyle(), {'sm:mr-xs rtl:sm:mr-0 rtl:sm:ml-xs': $slots.default, 'mr-0 sm:mr-xs rtl:sm:mr-0 rtl:sm:ml-xs': hiddenTextOnSmallScreen, 'mr-xs rtl:mr-xs rtl:ml-xs': !hiddenTextOnSmallScreen && $slots.default}]">
             <slot name="icon"/>

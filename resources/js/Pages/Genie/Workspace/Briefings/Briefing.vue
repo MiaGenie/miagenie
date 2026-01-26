@@ -38,7 +38,7 @@ provide('fieldList', props.fieldList);
 
         <Head :title="$t('genie.briefings')"/>
 
-        <div class="w-full mx-auto row-py">
+        <div class="w-full mx-auto row-py whitespace-pre-line">
             <PageHeader :title="$t('genie.briefing')">
                 <template #description>
                     {{ $t('genie.briefings_desc') }}

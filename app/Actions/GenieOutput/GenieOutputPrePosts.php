@@ -73,13 +73,13 @@ class GenieOutputPrePosts extends GenieOutput implements GenieOutputContract
 
                 $post->versions()->create([
                     'account_id' => 0,
-                    'is_original' => 0,
+                    'is_original' => 1,
                     'content' => [[
                         'body' => $this->lineToDiv($prePost->caption ?? ''),
                         'media' => [],
                         'url' => null,
                     ]],
-                    'options' => []
+                    'options' => $this->versionOptions()
                 ]);
 
                 return $post;
@@ -104,4 +104,58 @@ class GenieOutputPrePosts extends GenieOutput implements GenieOutputContract
         return $output;
     }
 
+    /**
+     * @return array
+     */
+    private function versionOptions(): array
+    {
+        return [
+            'tiktok' => [
+                'allow_duet' => [
+                    'account-0' => false
+                ],
+                'allow_stitch' => [
+                    'account-0' => false
+                ],
+                'privacy_level' => [
+                    'account-0' => null
+                ],
+                'allow_comments' => [
+                    'account-0' => false
+                ],
+                'content_disclosure' => [
+                    'account-0' => false
+                ],
+                'brand_content_toggle' => [
+                    'account-0' => false
+                ],
+                'brand_organic_toggle' => [
+                    'account-0' => false
+                ]
+            ],
+            'youtube' => [
+                'title' => null,
+                'status' => 'public'
+            ],
+            'linkedin' => [
+                'visibility' => 'PUBLIC'
+            ],
+            'mastodon' => [
+                'sensitive' => false
+            ],
+            'instagram' => [
+                'type' => 'post'
+            ],
+            'pinterest' => [
+                'link' => null,
+                'title' => null,
+                'boards' => [
+                    'account-0' => null
+                ]
+            ],
+            'facebook_page' => [
+                'type' => 'post'
+            ]
+        ];
+    }
 }

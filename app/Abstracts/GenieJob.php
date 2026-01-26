@@ -3,6 +3,7 @@
 namespace App\Abstracts;
 
 use App\Actions\GenieState\GenieStateRuns;
+use App\Actions\GenieState\GenieStateStrategies;
 use App\Actions\GenieState\GenieStateSyncs;
 use App\Concerns\GenieLogger;
 use App\Contracts\GenieOutputContract;
@@ -103,5 +104,14 @@ abstract class GenieJob
     protected function getGenieStateRuns(): mixed
     {
         return App::make(GenieStateRuns::class);
+    }
+
+    /**
+     * @return GenieStateStrategies
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    protected function getGenieStateStrategy(): mixed
+    {
+        return App::make(GenieStateStrategies::class);
     }
 }

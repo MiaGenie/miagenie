@@ -42,6 +42,7 @@ const fieldList = inject('fieldList')
 const fieldTypes = inject('fieldTypes')
 const record = inject('record')
 const editing = ref(inject('editing'));
+const strategyStatus = inject('strategyStatus');
 
 const fieldType = (field) => {
     return find(fieldTypes, ['value', Number(field.field_type)]);
@@ -127,7 +128,7 @@ const attemptClose = () => {
                 </Flex>
                 <Flex>
                     <PureButton
-                        v-if="editing !== field.code_name"
+                        v-if="strategyStatus === 'PENDING_APPROVAL' && editing !== field.code_name"
                         @click="editing = field.code_name"
                         v-tooltip="$t('general.edit')"
                     >
@@ -149,7 +150,7 @@ const attemptClose = () => {
                     <PureButton
                         v-if="editing === field.code_name"
                         @click="attemptClose(editing)"
-                        v-tooltip="$t('general.edit')"
+                        v-tooltip="$t('general.close')"
                     >
                         <template #icon>
                             <X/>

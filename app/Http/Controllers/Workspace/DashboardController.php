@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Workspace;
 
 use App\Http\Resources\DashboardPostResource;
+use App\Models\Version;
+use App\Models\WorkspaceVersion;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 use Inovector\Mixpost\Builders\Post\PostQuery;
@@ -19,6 +22,16 @@ class DashboardController extends Controller
 {
     public function __invoke(Request $request): Response
     {
+        $workspace = Auth::user()->getActiveWorkspace();
+        $workspaceVersion = WorkspaceVersion::where('workspace_id', $workspace->id)->first();
+
+        if (!$workspaceVersion) {
+            $version = Version::where('is_default', true)->first();
+            WorkspaceVersion::create([
+                'workspace_id' => $workspace->id,
+                'version_id' => $version->id,
+            ]);
+        }
 
         $postsPending = Post::with('accounts', 'user', 'versions', 'tags')
             ->whereIn('status', [PostStatus::DRAFT, PostStatus::NEEDS_APPROVAL])

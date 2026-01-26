@@ -9,15 +9,15 @@ use App\Enums\GenieSyncAction;
 use App\Enums\RuleType;
 use App\Enums\RunStatus;
 use App\Enums\StrategyStatus;
-use App\Http\Requests\Workspace\Strategy\StoreStrategy;
+use App\Http\Requests\Workspace\Strategy\ApproveStrategy;
 use App\Http\Requests\Workspace\Strategy\ReviewUpdateStrategy;
+use App\Http\Requests\Workspace\Strategy\StoreStrategy;
 use App\Http\Requests\Workspace\Strategy\UpdateStrategy;
 use App\Http\Resources\StrategyResource;
 use App\Jobs\RunJob;
 use App\Models\Briefing;
 use App\Models\Rule;
 use App\Models\Run;
-use App\Models\RunResponse;
 use App\Models\Strategy;
 use App\Models\VersionField;
 use App\Models\WorkspaceVersion;
@@ -53,9 +53,9 @@ class StrategiesController extends Controller
         return Inertia::render(
             'Genie/Workspace/Strategies/Index',
             [
-                'record' => $record ? New StrategyResource($record) : null,
+                'record' => $record ? new StrategyResource($record) : null,
                 'fieldList' => $fieldList,
-                'runStatusTypes' => RunStatus::withState('', true),
+                'strategyStatusTypes' => StrategyStatus::withState('', true),
                 'fieldTypes' => FormFieldType::withFieldOptions(),
                 'schemas' => $strategySchemas,
             ]
@@ -140,14 +140,20 @@ class StrategiesController extends Controller
             'briefing_id' => $briefing->id
         ]);
 
-        $run->strategy()->create([
+        $strategy = $run->strategy()->create([
             'workspace_id' => $workspace->id,
             'status' => StrategyStatus::OPEN,
         ]);
 
         RunJob::dispatch($run, GenieSyncAction::CREATE);
 
-        return redirect()->back()->with('success', __('genie.generating_strategy'));
+        return redirect()->route(
+            'genie.strategies.index',
+            [
+                'workspace' => WorkspaceManager::current()->uuid,
+                'strategy' => $strategy->uuid,
+            ]
+        )->with('success', __('genie.generating_strategy'));
     }
 
     /**
@@ -197,6 +203,17 @@ class StrategiesController extends Controller
         $record = $updateStrategy->handle();
 
         return redirect()->back()->with('success', __('genie.strategy_updated'));
+    }
+
+
+    /**
+     * @return RedirectResponse
+     */
+    public function approve(ApproveStrategy $approveStrategy)
+    {
+        $record = $approveStrategy->handle();
+
+        return redirect()->back()->with('success', __('genie.strategy_approved'));
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Abstracts\GenieJob;
+use App\Actions\GenieState\GenieStateStrategies;
 use App\Concerns\GenieLogger;
 use App\Enums\GenieSyncAction;
 use App\Enums\GenieType;
@@ -16,6 +17,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -75,6 +77,11 @@ class RunResponseJob extends GenieJob implements ShouldQueue
         $genieState = $this->getGenieState($data);
         $genieState->handle($data, 'run');
 
+        if ($data->getRuleType() === RuleType::STRATEGY) {
+            $strategyState = $this->getGenieStateStrategy();
+            $strategyState->handle($data->getModel()->run->strategy, 'run');
+        }
+
         $action = $this->getGenieAction();
 
         $data = $action->handle($data);
@@ -107,6 +114,11 @@ class RunResponseJob extends GenieJob implements ShouldQueue
                     RunPrePostJob::dispatch($this->runResponse->run, $nextAction);
                     break;
             }
+        } else {
+            if ($data->getRuleType() === RuleType::STRATEGY) {
+                $strategyState = $this->getGenieStateStrategy();
+                $strategyState->handle($data->getModel()->run->strategy, 'end', $data->getModel()->step->requires_review);
+            }
         }
     }
 
@@ -120,6 +132,12 @@ class RunResponseJob extends GenieJob implements ShouldQueue
         $data = $this->getGenieData();
         $genieState = $this->getGenieState($data);
         $genieState->handle($data, 'fail');
+
+        if ($data->getRuleType() === RuleType::STRATEGY) {
+            $strategyState = $this->getGenieStateStrategy();
+            $strategyState->handle($data, 'fail');
+        }
+
         Log::error($exception->getMessage());
     }
 }

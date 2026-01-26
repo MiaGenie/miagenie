@@ -151,7 +151,7 @@ const deleteDrafts = () => {
 
     <Head :title="$t('genie.drafts')"/>
 
-    <div class="w-full mx-auto row-py">
+    <div class="w-full mx-auto row-py whitespace-pre-line">
 
         <PageHeader :title="$t('genie.drafts')">
             <template #description>
@@ -176,10 +176,9 @@ const deleteDrafts = () => {
             </PrimaryButton>
 
             <WarningButton
-                v-if="selectedRecords.length > 0"
                 @click="generatePrePosts"
                 :hiddenTextOnSmallScreen="true"
-                :disabled="isLoading"
+                :disabled="isLoading || selectedRecords.length === 0"
                 :isLoading="isLoading"
                 size="sm"
             >

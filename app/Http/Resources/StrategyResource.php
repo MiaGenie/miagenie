@@ -26,7 +26,7 @@ class StrategyResource extends JsonResource
             'active' => $this->active,
             'content' => $this->content,
             'created_at' => $this->created_at,
-            'status' => $this->run->status,
+            'status' => $this->status,
         ];
 
     }

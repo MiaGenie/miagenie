@@ -5,6 +5,7 @@ namespace App\Http\Requests\Workspace\Strategy;
 use App\Concerns\IngestVersionsContent;
 use App\Enums\GenieSyncAction;
 use App\Enums\RunStatus;
+use App\Enums\StrategyStatus;
 use App\Jobs\RunJob;
 use App\Models\RunResponseReview;
 use App\Models\Strategy;
@@ -63,6 +64,7 @@ class ReviewUpdateStrategy extends FormRequest
             ]);
         }
 
+        $strategy->update(['status' => StrategyStatus::REVIEWED]);
         $response->update(['status' => RunStatus::COMPLETE]);
         $run->update(['status' => RunStatus::RUNNING]);
 
