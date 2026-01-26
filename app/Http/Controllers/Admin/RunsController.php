@@ -7,19 +7,16 @@ use App\Enums\GenieSyncAction;
 use App\Enums\RuleType;
 use App\Enums\RunStatus;
 use App\Http\Resources\Admin\RunResource;
-use App\Jobs\RunIdeaJob;
 use App\Jobs\RunJob;
 use App\Models\Rule;
 use App\Models\Run;
 use App\Models\Version;
-use App\Models\WorkspaceVersion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
 use Inertia\Response;
-use Inovector\Mixpost\Facades\WorkspaceManager;
 use Inovector\Mixpost\Models\Workspace;
 
 class RunsController extends Controller
@@ -52,7 +49,7 @@ class RunsController extends Controller
     {
         $run = Run::firstOrFailByUuid($request->route('run'));
 
-        RunIdeaJob::dispatch($run, GenieSyncAction::UPDATE);
+        RunJob::dispatch($run, GenieSyncAction::UPDATE);
 
         return redirect()->back()->with('success', __('genie.run_resume'));
     }

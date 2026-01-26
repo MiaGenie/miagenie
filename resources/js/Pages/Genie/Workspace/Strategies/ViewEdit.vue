@@ -12,6 +12,8 @@ import X from "@/Icons/X.vue";
 import {cloneDeep, find} from "lodash";
 import StrategyField from "@/Components/Form/Genie/StrategyField.vue";
 import StrategyOutputField from "@/Components/Form/Genie/StrategyOutputField.vue";
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
+import Save from "@/Icons/Genie/Save.vue";
 
 const {t: $t} = useI18n();
 
@@ -42,11 +44,24 @@ provide('schemas', props.schemas);
 provide('fieldList', props.fieldList);
 provide('fieldTypes', props.fieldTypes);
 provide('record', props.record);
+const strategyStatus = inject('strategyStatus');
 
 const backToList = () => {
     router.get(route('genie.strategies.index', {
         workspace: workspaceCtx.id
     }));
+}
+
+const approve = () => {
+    form.put(route('genie.strategies.approve', {
+        'workspace': workspaceCtx.id,
+        'strategy': props.record.id
+    }), {
+        preserveScroll: true,
+        onError: (errors) => {``
+            onError(errors, update);
+        },
+    });
 }
 
 const fieldHasContent = (field) => {
@@ -82,25 +97,31 @@ const fieldType = (field) => {
         </Panel>
 
         <Flex
-            class="flex-row items-center justify-between mt-lg"
+            v-if="strategyStatus === 'PENDING_APPROVAL'"
+            class="flex-row items-center justify-between mt-lg gap-6"
             :responsive="false"
         >
-            <Flex
-                class="gap-6"
-                :responsive="false"
+
+            <PrimaryButton
+                @click="approve"
+                type="button"
             >
+                {{ $t("genie.approve_strategy") }}
+                <template #icon>
+                    <Save/>
+                </template>
+            </PrimaryButton>
 
-                <PrimaryButton
-                    @click="backToList"
-                    type="button"
-                >
-                    {{ $t("general.close") }}
-                    <template #icon>
-                        <X/>
-                    </template>
-                </PrimaryButton>
+            <SecondaryButton
+                @click="backToList"
+                type="button"
+            >
+                {{ $t("general.close") }}
+                <template #icon>
+                    <X/>
+                </template>
+            </SecondaryButton>
 
-            </Flex>
         </Flex>
 
     </div>

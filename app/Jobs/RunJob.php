@@ -7,6 +7,7 @@ use App\Concerns\GenieLogger;
 use App\Contracts\GenieRunDataContract;
 use App\Enums\GenieSyncAction;
 use App\Enums\RuleSubType;
+use App\Enums\RuleType;
 use App\Enums\RunStatus;
 use App\Models\Rule;
 use App\Models\Run;
@@ -94,6 +95,10 @@ class RunJob extends GenieJob implements ShouldQueue
             RunResponseJob::dispatch($runResponse, GenieSyncAction::CREATE);
         } else {
             $genieState->handle($data, 'end');
+            if ($data->getModel()->rule->rule_type === RuleType::STRATEGY) {
+                $strategyState = $this->getGenieStateStrategy();
+                $strategyState->handle($data->getModel()->strategy, 'end');
+            }
         }
     }
 

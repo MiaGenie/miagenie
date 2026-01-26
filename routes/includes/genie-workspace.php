@@ -63,6 +63,7 @@ Route::middleware(array_merge([
             Route::post('store', [StrategiesController::class, 'store'])->name('store');
             Route::get('edit/{strategy}', [StrategiesController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
             Route::put('update/{strategy}', [StrategiesController::class, 'update'])->name('update');
+            Route::put('approve/{strategy}', [StrategiesController::class, 'approve'])->name('approve');
             Route::get('review/{strategy}', [StrategiesController::class, 'review'])->name('review')->withoutMiddleware($editorMiddleware);
             Route::put('review_update/{strategy}', [StrategiesController::class, 'review_update'])->name('review_update');
             Route::delete('{strategy}', [StrategiesController::class, 'destroy'])->name('delete');

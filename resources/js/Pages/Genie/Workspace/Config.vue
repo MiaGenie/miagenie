@@ -1,6 +1,6 @@
 <script setup>
 import {inject} from "vue";
-import {Head} from '@inertiajs/vue3';
+import {Head, Link, router} from '@inertiajs/vue3';
 import {useI18n} from "vue-i18n";
 import useNotifications from "@/Composables/useNotifications";
 import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
@@ -10,10 +10,8 @@ import Briefing from "@/Pages/Genie/Workspace/Briefings/Briefing.vue"
 import Flex from "@/Components/Layout/Flex.vue";
 import DashboardButton from "@/Components/Button/Genie/DashboardButton.vue";
 import Strategies from "@/Icons/Genie/Strategies.vue";
-import Panel from "@/Components/Surface/Panel.vue";
-import HorizontalGroup from "@/Components/Layout/HorizontalGroup.vue";
-import TemplateForm from "@/Components/TemplateManager/TemplateForm.vue";
-import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
+import Plus from "@/Icons/Plus.vue";
+import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 
 const {t: $t} = useI18n()
 
@@ -39,6 +37,10 @@ const workspaceCtx = inject('workspaceCtx');
 const {notify} = useNotifications();
 const {isWorkspaceAdminRole} = useWorkspace();
 
+const createStrategy = () => {
+    router.get(route(`genie.strategies.create`, {workspace: workspaceCtx.id}))
+}
+
 
 </script>
 <template>
@@ -47,10 +49,10 @@ const {isWorkspaceAdminRole} = useWorkspace();
     <div class="row-py">
         <PageHeader :title="$t('genie.genie_setup')" />
 
-        <Flex class="px-lg gap-xl">
+        <Flex class="px-lg gap-xl items-center">
 
             <DashboardButton
-                @click="navigate('strategy')"
+                @click="createStrategy()"
                 :disabled="!briefing || briefing.runStatus"
                 v-tooltip="$t('genie.create_strategy')"
                 colorStyle="strategy"
@@ -62,8 +64,8 @@ const {isWorkspaceAdminRole} = useWorkspace();
                 </template>
             </DashboardButton>
 
-            <div class="mt-xs mx-lg text-lg">
-                {{ $t('genie.genie_setup_empty_description') }}
+            <div class="mt-xs mx-lg text-lg whitespace-pre-line">
+                {{ $t('genie.genie_setup_description') }}
             </div>
 
         </Flex>

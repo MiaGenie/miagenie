@@ -13,7 +13,7 @@ return [
     'open_ai' => 'Open AI',
     'genie_setup' => 'Genie Setup',
     'setup' => 'Setup',
-    'genie_setup_empty_description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent et augue at ante fringilla malesuada. Cras sed tortor felis. Cras non consectetur nulla. Maecenas varius lobortis malesuada. Cras sed rhoncus nibh, ac maximus neque. Phasellus sed velit id nisi congue pretium vitae vitae elit. Vivamus eget magna non lacus dapibus blandit sit amet vel justo.',
+    'genie_setup_description' => "Set the foundation for your strategy. Start by filling in your briefing and adding competitors. Once everything is complete, you’ll be able to generate your digital strategy. \n\n Generate your strategy when you’re ready. \n\n Once your briefing and competitors are complete, you can create a strategy tailored to your business.You will NOT be able to add more information once your strategy is created.",
     'genie_config' => 'Genie Config',
     'config' => 'Configuration',
     'completion' => 'Completion',
@@ -61,6 +61,17 @@ return [
     'publishing' => 'Publishing',
 
     'analytics' => 'Analytics',
+
+    'max_facebook_daily_posts' => "Maximum daily limit of Facebook posts reached. \n Max limit: :value.",
+    'max_facebook_twitter_posts' => "Maximum daily limit of Twitter posts reached. \n Max limit: :value.",
+    'max_facebook_instagram_posts' => "Maximum daily limit of Instagram posts reached. \n Max limit: :value.",
+    'max_facebook_threads_posts' => "Maximum daily limit of Threads posts reached. \n Max limit: :value.",
+    'max_facebook_mastodon_posts' => "Maximum daily limit of Mastodon posts reached. \n Max limit: :value.",
+    'max_facebook_youtube_posts' => "Maximum daily limit of YouTube posts reached. \n Max limit: :value.",
+    'max_facebook_pinterest_posts' => "Maximum daily limit of Pinterest posts reached. \n Max limit: :value.",
+    'max_facebook_linkedin_posts' => "Maximum daily limit of LinkedIn posts reached. \n Max limit: :value.",
+    'max_facebook_tiktok_posts' => "Maximum daily limit of TikTok posts reached. \n Max limit: :value.",
+    'max_facebook_bluesky_posts' => "Maximum daily limit of BlueSky posts reached. \n Max limit: :value.",
 
     'rules' => 'Rules',
     'create_rule' => 'Create Rule',
@@ -285,7 +296,7 @@ return [
     'image_max_dimensions' => 'Image must no be greater than :width px Width x :height px Height',
 
     'competitors' => 'Competitors',
-    'competitors_desc' => 'Your direct competitors. This information is important to help improve your strategy',
+    'competitors_desc' => "Let’s understand your competitive landscape. \n Add competitors one at a time so we can identify opportunities, gaps, and positioning. A competitor doesn’t have to look exactly like you. \n Include businesses your audience compares you to, follows, or considers as alternatives. \n\n Most strategies work best with 3–5 competitors.",
     'create_competitor' => 'Create Competitor',
     'edit_competitor' => 'Edit competitor',
     'delete_competitor' => 'Delete competitor',
@@ -296,7 +307,7 @@ return [
 
     'briefing' => 'Briefing',
     'briefings' => 'Briefings',
-    'briefings_desc' => 'Your direct briefings. This information is important to help improve your strategy',
+    'briefings_desc' => "This briefing is the foundation of your entire strategy. \n The clearer you are here, the smarter everything that follows will be. Think of this as explaining your business to a strategist — not filling out a form. \n Answer honestly and in your own words. \n\n You can edit this later — until your strategy is created.",
     'create_briefing' => 'Create Briefing',
     'edit_briefing' => 'Edit briefing',
     'delete_briefing' => 'Delete briefing',
@@ -307,7 +318,7 @@ return [
 
     'ideas' => 'Ideas',
     'ideas_theme' => 'Theme',
-    'ideas_desc' => 'Your Content ideas. This description needs rewriting',
+    'ideas_desc' => "Turn your strategy into content ideas. \n Generate ideas, add your own, and approve the ones you want to develop further. Each approved idea will become a draft with clear goals and creative direction.",
     'create_idea' => 'Create Idea',
     'generate_ideas' => 'Generate Ideas',
     'generate_ideas_confirm' => 'Are you sure you want to Generate Ideas',
@@ -330,7 +341,7 @@ return [
 
     'draft' => 'Draft',
     'drafts' => 'Drafts',
-    'drafts_desc' => 'Your Post drafts. This description needs rewriting',
+    'drafts_desc' => "Drafts are your content blueprints. Each draft outlines the goal, key message, and media needed to create a post. \n These are not final posts. Drafts guide creation - they tell you what to create and why, not the finished wording. \n Only approved drafts can be turned into posts.",
     'create_draft' => 'Create Draft',
     'generate_drafts' => 'Generate Drafts',
     'generate_draft' => 'Generate Draft',
@@ -394,10 +405,11 @@ return [
 
     'strategy' => 'Strategy',
     'strategies' => 'Strategies',
-    'strategy_empty_desc' => 'Your digital strategy is not setup yet. Please click bellow to setup the necessary information.',
-    'strategy_pending_review' => 'Your digital strategy is pending review. Please click bellow to do the thing.',
-    'strategy_error' => 'Something went wrong. Please click bellow to contact support.',
-    'strategy_running' => 'Genie is doing Genie stuff, please stand by. We will need you soon.',
+    'strategy_empty_desc' => "Your digital strategy is not setup yet. \n Please click bellow to setup the necessary information.",
+    'strategy_pending_review' => "Your digital strategy is pending review. \n Please click bellow to do the thing.",
+    'strategy_error' => "Something went wrong. \n Please click bellow to contact support.",
+    'strategy_pending_approval' => "Your strategy is ready to review. \n\n Take time to review and edit it before approval. \n This is the foundation for all future content and cannot be edited once it’s approved.",
+    'strategy_running' => "We’re building your strategy. \n This may take a moment — we’re analyzing your briefing, competitors, and positioning.",
     'strategies_desc' => 'Your direct strategies. This information is important to help improve your strategy',
     'create_strategy' => 'Create Strategy',
     'generating_strategy' => 'Strategy generation started',
@@ -410,5 +422,6 @@ return [
     'strategy_deleted' => 'Strategy deleted successfully',
     'strategy_created' => 'Strategy created successfully',
     'delete_strategy_confirm' => 'Are you sure you want to delete this strategy?',
-
+    'approve_strategy' => 'Approve Strategy',
+    'strategy_approved' => 'Strategy Approved',
 ];

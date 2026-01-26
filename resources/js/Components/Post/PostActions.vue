@@ -96,29 +96,6 @@ const schedule = (postNow = false) => {
     })
 }
 
-const addToQueue = () => {
-    isLoading.value = true;
-
-    axios.post(route('mixpost.posts.addToQueue', {
-        workspace: workspaceCtx.id,
-        post: postId.value
-    }), {}).then((response) => {
-        const message = `${$t('post.post_scheduled')}\n${response.data.scheduled_at}
-        ${response.data.needs_approval ? `<div class="text-sm max-w-xs mt-xs">${$t('post.approval_required')}</div>` : ''}`;
-
-        notify('success', message, {
-            name: $t("post.view_in_calendar"),
-            href: route('mixpost.calendar', {workspace: workspaceCtx.id, date: response.data.date})
-        });
-
-        router.visit(route('mixpost.posts.index', {workspace: workspaceCtx.id}));
-    }).catch((error) => {
-        handleValidationError(error);
-    }).finally(() => {
-        isLoading.value = false;
-    })
-}
-
 const approve = () => {
     isLoading.value = true;
 
@@ -228,18 +205,6 @@ const accounts = computed(() => {
 
                     {{ scheduleTime ? $t("post.schedule") : $t("post.post_now") }}
                 </PrimaryButton>
-            </template>
-
-            <template v-if="editAllowed && !needsApproval && hasAvailableTimes">
-                <WarningButton @click="addToQueue"
-                               :hiddenTextOnSmallScreen="true"
-                               :disabled="!canSchedule || isLoading" size="md">
-                    <template #icon>
-                        <Forward/>
-                    </template>
-
-                    {{ $t("post.add_to_queue") }}
-                </WarningButton>
             </template>
 
             <template v-if="editAllowed && !userCanApprove">

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Workspace;
 
+use App\Models\Version;
+use App\Models\WorkspaceVersion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
