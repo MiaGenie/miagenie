@@ -77,12 +77,23 @@ const update = () => {
 }
 
 const cloneVersion = () => {
-    form.put(route('genie.admin.versions.clone', {version: props.record.id}), {
-        preserveScroll: true,
-        onError: (errors) => {
-            onError(errors, update);
-        },
-    });
+    confirmation()
+        .title($t('genie.clone_version'))
+        .description($t('genie.clone_version_confirm'))
+        .warning()
+        .onConfirm((dialog) => {
+            dialog.isLoading(true);
+
+            router.put(route('genie.admin.versions.clone', {version: props.record.id}), {
+                preserveScroll: true,
+                onError: (errors) => {
+                    onError(errors, update);
+                },
+            });
+
+            dialog.reset();
+        })
+        .show();
 }
 
 const submit = () => {

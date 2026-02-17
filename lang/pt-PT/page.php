@@ -10,7 +10,7 @@ return [
     'no_pages_found' => 'Não foram encontradas páginas.',
     'edit_page' => 'Editar página',
     'page_created' => 'A página foi criada',
-    'page_updated' => 'A página foi actualizada',
+    'page_updated' => 'A página foi atualizada',
     'delete_page' => 'Eliminar página',
     'confirm_delete_page' => 'Tem a certeza de que pretende eliminar esta página?',
     'page_deleted' => 'Página eliminada',

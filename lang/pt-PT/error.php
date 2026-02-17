@@ -4,7 +4,7 @@ return [
     'self_deletion_not_allowed' => 'Não se pode apagar a si próprio',
     'browser_video_unsupported' => 'O seu browser não suporta a etiqueta de vídeo.',
     'error_saving' => 'Erro ao guardar',
-    'try_again' => 'Há algo errado. Tenta novamente.',
+    'try_again' => 'Há algo errado. Tente novamente.',
     'something_wrong' => 'Algo correu mal',
     'error_upload_video' => 'Erro ao carregar o vídeo. Tente novamente mais tarde ou tente outro vídeo.',
     'request_timeout' => 'Tempo limite do pedido. Tente novamente.',
