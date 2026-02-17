@@ -10,7 +10,7 @@ class DraftStatusFilter implements Filter
 {
     public static function apply(Builder $builder, $value): Builder
     {
-        if (DraftStatus::tryFrom($value)) {
+        if ($value && DraftStatus::tryFrom($value)) {
             $builder->where('status', $value);
         } else {
             $builder->whereNot('status', DraftStatus::TRASH);

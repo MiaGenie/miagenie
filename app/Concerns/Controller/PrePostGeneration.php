@@ -18,9 +18,9 @@ trait PrePostGeneration
 {
 
     /**
-     * @param Collection<Draft> $drafts
+     * @param Draft $draft
      */
-    private function prePostGeneration(Collection $drafts): void
+    private function prePostGeneration(Draft $draft): void
     {
         $workspace = WorkspaceManager::current();
         $workspaceVersion = WorkspaceVersion::where('workspace_id', $workspace->id)->first();
@@ -41,9 +41,7 @@ trait PrePostGeneration
             'strategy_id' => $strategy->id
         ]);
 
-        $drafts->each(function (Draft $draft) use ($run) {
-            $run->runDrafts()->create(['draft_id' => $draft->id]);
-        });
+        $run->runDrafts()->create(['draft_id' => $draft->id]);
 
         RunPrePostJob::dispatch($run, GenieSyncAction::CREATE);
 

@@ -76,7 +76,7 @@ class RunDraftJob extends GenieJob implements ShouldQueue
             $runJobs = [];
             foreach ($this->run->runIdeas as $runIdea) {
                 $runResponseJobs = [];
-                foreach ($this->run->rule->ruleSteps as $ruleStep) {
+                foreach ($this->run->rule->steps as $ruleStep) {
                     $runResponse = $this->run->runResponses()->create([
                         'step_id' => $ruleStep->id
                     ]);
@@ -88,12 +88,17 @@ class RunDraftJob extends GenieJob implements ShouldQueue
                 $runJobs[] = $runResponseJobs;
             }
 
-            Bus::batch($runJobs)
-                ->finally(function () use ($genieState, $data) {$genieState->handle($data, 'end');})
-                ->allowFailures()
-                ->dispatch();
+            if (!empty($runJobs)) {
+                Bus::batch($runJobs)
+                    ->finally(function () use ($genieState, $data) {$genieState->handle($data, 'end');})
+                    ->allowFailures()
+                    ->dispatch();
 
-            $genieState->handle($data, 'run');
+                $genieState->handle($data, 'run');
+            } else {
+                $genieState->handle($data, 'end');
+            }
+
             return;
         }
 

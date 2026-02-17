@@ -12,7 +12,7 @@ import Pagination from "@/Components/Navigation/Pagination.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import NoResult from "@/Components/Util/NoResult.vue";
 import Plus from "@/Icons/Plus.vue";
-import {cloneDeep, pickBy, throttle} from "lodash";
+import {cloneDeep, find, pickBy, throttle} from "lodash";
 import useSelectable from "@/Composables/useSelectable";
 import Tabs from "@/Components/Navigation/Tabs.vue";
 import Tab from "@/Components/Navigation/Tab.vue";
@@ -146,6 +146,10 @@ const deleteDrafts = () => {
     });
 }
 
+const draftStatus = (item) => {
+    return find(props.draftStatusTypes, ['value', Number(item.status)]);
+}
+
 </script>
 <template>
 
@@ -175,19 +179,6 @@ const deleteDrafts = () => {
                 {{ $t('genie.create_draft') }}
             </PrimaryButton>
 
-            <WarningButton
-                @click="generatePrePosts"
-                :hiddenTextOnSmallScreen="true"
-                :disabled="isLoading || selectedRecords.length === 0"
-                :isLoading="isLoading"
-                size="sm"
-            >
-
-                <template #icon>
-                    <DraftIcon/>
-                </template>
-                {{ $t('genie.generate_posts') }}
-            </WarningButton>
 
         </div>
 
@@ -200,14 +191,16 @@ const deleteDrafts = () => {
                     {{ $t('general.all') }}
                 </Tab>
 
-                <Tab
-                    v-for="statusType in draftStatusTypes"
-                    :key="statusType.value"
-                    @click="currentFilter.status = statusType.value"
-                    :active="currentFilter.status == statusType.value"
-                >
-                    {{ $t(`genie.${statusType.title}`) }}
-                </Tab>
+                <template v-for="statusType in draftStatusTypes">
+                    <Tab
+                        v-if="statusType.name !== 'APPROVED'"
+                        :key="statusType.value"
+                        @click="currentFilter.status = statusType.value"
+                        :active="currentFilter.status == statusType.value"
+                    >
+                        {{ $t(`genie.${statusType.title}`) }}
+                    </Tab>
+                </template>
 
             </Tabs>
         </div>
@@ -229,7 +222,10 @@ const deleteDrafts = () => {
 
                         <TableRow>
                             <TableCell component="th" scope="col" class="w-10">
-                                <Checkbox v-model:checked="toggleSelectRecordsOnPage" :disabled="!records.meta.total"/>
+                                <Checkbox
+                                    v-model:checked="toggleSelectRecordsOnPage"
+                                    :disabled="!records.meta.total"
+                                />
                             </TableCell>
 
                             <TableCell
@@ -263,7 +259,11 @@ const deleteDrafts = () => {
                         >
                             <DraftItem :item="item">
                                 <template #checkbox>
-                                    <Checkbox v-model:checked="selectedRecords" :value="item.id"/>
+                                    <Checkbox
+                                        v-model:checked="selectedRecords"
+                                        :disabled="draftStatus(item).name !== 'PENDING_REVIEW'"
+                                        :value="item.id"
+                                    />
                                 </template>
                             </DraftItem>
                         </template>

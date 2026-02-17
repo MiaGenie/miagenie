@@ -24,6 +24,7 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
         Route::post('store', [VersionsController::class, 'store'])->name('store');
         Route::get('{version}', [VersionsController::class, 'edit'])->name('edit');
         Route::put('{version}', [VersionsController::class, 'update'])->name('update');
+        Route::put('{version}', [VersionsController::class, 'clone'])->name('clone');
         Route::delete('{version}', [VersionsController::class, 'destroy'])->name('delete');
 
         Route::prefix('{version}/fields')->name('fields.')->group(function () {

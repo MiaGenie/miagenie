@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Workspace;
 use App\Builders\IdeaQuery;
 use App\Concerns\Controller\DraftGeneration;
 use App\Concerns\Controller\HasFieldOptions;
-use App\Concerns\Controller\PrePostGeneration;
 use App\Enums\DraftStatus;
 use App\Enums\FunnelStage;
 use App\Enums\GenieSyncAction;
@@ -20,6 +19,7 @@ use App\Jobs\RunIdeaJob;
 use App\Models\Idea;
 use App\Models\Rule;
 use App\Models\Run;
+use App\Models\RunIdea;
 use App\Models\Strategy;
 use App\Models\WorkspaceVersion;
 use Illuminate\Http\Request;
@@ -30,7 +30,6 @@ class IdeasController
 {
     use HasFieldOptions;
     use DraftGeneration;
-    use PrePostGeneration;
 
     /**
      * @param Request $request
@@ -125,6 +124,12 @@ class IdeasController
             $contentPillars = collect($strategy->content['content_pillars'])->pluck('0_title');
         }
 
+        $generating = (bool) RunIdea::where('idea_id', $record->id)
+            ->whereHas('run', function ($query) {
+                $query->whereNotIn('status', [RunStatus::COMPLETE, RunStatus::ERROR]);
+            })->first();
+
+
         return Inertia::render('Genie/Workspace/Ideas/CreateEdit', [
             'mode' => 'edit',
             'ideaStatusTypes' => IdeaStatus::withTitle(),
@@ -132,6 +137,20 @@ class IdeasController
             'funnelStages' => FunnelStage::withTitle(),
             'funnelStage' => $request->input('funnel_stage'),
             'contentPillars' => $contentPillars ?? [],
+            'record' => IdeaResource::make($record),
+            'generating' => $generating
+        ]);
+    }
+
+    /**
+     * @param Request $request
+     */
+    public function generating(Request $request)
+    {
+        $record = Idea::firstOrFailByUuid($request->route('idea'));
+
+        return Inertia::render('Genie/Workspace/Ideas/Generating', [
+            'ideaStatusTypes' => IdeaStatus::withTitle(),
             'record' => IdeaResource::make($record),
         ]);
     }

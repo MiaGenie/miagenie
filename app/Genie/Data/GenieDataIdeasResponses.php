@@ -258,7 +258,7 @@ class GenieDataIdeasResponses extends GenieData implements GenieDataContract
      */
     private function getStrategySchemas(): array
     {
-        $schemas = $this->runResponse->run->runStrategy->strategy->run->rule->ruleSteps->map(function (RuleStep $step) {
+        $schemas = $this->runResponse->run->runStrategy->strategy->run->rule->steps->map(function (RuleStep $step) {
             return $step->getTranslation('json_schema', $this->locale);
         });
 
@@ -358,7 +358,7 @@ class GenieDataIdeasResponses extends GenieData implements GenieDataContract
      */
     private function ruleInitialStep(): ?RuleStep
     {
-        foreach ($this->runResponse->run->rule->ruleSteps as $ruleStep) {
+        foreach ($this->runResponse->run->rule->steps as $ruleStep) {
             if (str_contains($ruleStep->rule_sub_type->name, 'INITIAL')) {
                 return $ruleStep;
             }

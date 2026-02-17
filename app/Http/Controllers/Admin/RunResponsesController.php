@@ -38,7 +38,7 @@ class RunResponsesController extends Controller
             'workspaceName' => $run->workspace->name,
             'ruleName' => $run->rule->name,
             'ruleType' => $run->rule->rule_type->name,
-            'ruleSteps' => $run->rule->ruleSteps,
+            'ruleSteps' => $run->rule->steps,
             'ruleSubTypes' => RuleSubType::withTitle(),
             'run' => new RunResource($run),
             'runResponseStatus' => RunStatus::withTitle(),

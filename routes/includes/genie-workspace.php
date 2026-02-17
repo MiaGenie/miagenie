@@ -77,6 +77,7 @@ Route::middleware(array_merge([
             Route::put('updateGenerate/{idea}', [IdeasController::class, 'updateGenerate'])->name('updateGenerate');
             Route::post('store', [IdeasController::class, 'store'])->name('store');
             Route::get('{idea}', [IdeasController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
+            Route::get('generating/{idea}', [IdeasController::class, 'generating'])->name('generating')->withoutMiddleware($editorMiddleware);
             Route::put('{idea}', [IdeasController::class, 'update'])->name('update');
             Route::delete('{idea}', [IdeasController::class, 'destroy'])->name('delete');
             Route::delete('/', DeleteIdeasController::class)->name('deleteMultiple');
@@ -88,8 +89,9 @@ Route::middleware(array_merge([
             Route::get('create', [DraftsController::class, 'create'])->name('create');
             Route::put('generate/{idea}', [DraftsController::class, 'generate'])->name('generate');
             Route::post('store', [DraftsController::class, 'store'])->name('store');
-            Route::put('updateGenerate/{draft}', [DraftsController::class, 'updateGenerate'])->name('updateGenerate');
             Route::get('{draft}', [DraftsController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
+            Route::get('generating/{draft}', [DraftsController::class, 'generating'])->name('generating')->withoutMiddleware($editorMiddleware);
+            Route::put('approve/{draft}', [DraftsController::class, 'approve'])->name('approve');
             Route::put('{draft}', [DraftsController::class, 'update'])->name('update');
             Route::delete('{draft}', [DraftsController::class, 'destroy'])->name('delete');
             Route::post('generateMultiple', [DraftsController::class, 'generateMultiple'])->name('generateMultiple');
@@ -99,7 +101,6 @@ Route::middleware(array_merge([
         Route::prefix('pre_posts')->name('pre_posts.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
             Route::get('/', [PrePostsController::class, 'index'])->name('index')->withoutMiddleware($editorMiddleware);
             Route::get('create', [PrePostsController::class, 'create'])->name('create');
-            Route::put('generate/{draft}', [PrePostsController::class, 'generate'])->name('generate');
             Route::post('store', [PrePostsController::class, 'store'])->name('store');
             Route::post('updateGenerate', [PrePostsController::class, 'updateGenerate'])->name('updateGenerate');
             Route::get('{pre_post}', [PrePostsController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);

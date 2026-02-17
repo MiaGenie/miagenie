@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Requests\Admin\CloneVersion;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -81,6 +82,18 @@ class VersionsController extends Controller
         $updateVersion->handle();
 
         return redirect()->back()->with('success', __('genie.version_updated'));
+    }
+
+    /**
+     * @param CloneVersion $cloneVersion
+     * @return RedirectResponse
+     */
+    public function clone(CloneVersion $cloneVersion)
+    {
+        $record = $cloneVersion->handle();
+
+        return redirect()->back()->with('success', __('genie.version_cloned'));
+
     }
 
     /**

@@ -51,7 +51,7 @@ class Rule extends Model
     /**
      * @return HasMany
      */
-    public function ruleSteps(): HasMany
+    public function steps(): HasMany
     {
         return $this->hasMany(RuleStep::class, 'rule_id')->orderBy('position');
     }

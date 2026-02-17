@@ -119,16 +119,6 @@ class PrePostsController
         ]);
     }
 
-    public function generate(Request $request): RedirectResponse
-    {
-        $drafts = Draft::where('uuid', $request->input('draft'))->get();
-        $this->prePostGeneration($drafts);
-
-        return redirect()
-            ->route('genie.drafts.index', ['workspace' => $request->route('workspace')])
-            ->with('success', __('genie.generating_pre_posts'));
-    }
-
     public function generateMultiple(Request $request): RedirectResponse
     {
         $drafts = Draft::whereIn('uuid', $request->input('drafts'))->get();

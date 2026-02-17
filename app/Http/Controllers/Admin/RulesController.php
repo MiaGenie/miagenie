@@ -24,13 +24,14 @@ class RulesController extends Controller
     public function index(Request $request): AnonymousResourceCollection|Response
     {
 
+        $version = Version::firstOrFailByUuid($request->route('version'));
+
         $records = RuleQuery::apply($request)
+            ->where('version_id', $version->id)
             ->latest()
             ->paginate(100)
             ->onEachSide(1)
             ->withQueryString();
-
-        $version = Version::firstOrFailByUuid($request->route('version'));
 
         return Inertia::render('Genie/Admin/Versions/Rules/Index', [
             'filter' => [
