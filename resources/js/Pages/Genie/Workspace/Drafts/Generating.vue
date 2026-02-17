@@ -79,9 +79,8 @@ onBeforeUnmount(() => {
                         {{ $t('genie.generating_post') }}
                     </div>
 
-                    <div class="orbit-spinner mt-lg">
-                        <div class="orbit"></div>
-                        <div class="orbit"></div>
+                    <div class="fulfilling-bouncing-circle-spinner">
+                        <div class="circle"></div>
                         <div class="orbit"></div>
                     </div>
 

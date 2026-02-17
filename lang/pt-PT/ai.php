@@ -16,7 +16,7 @@ return [
     'expand' => 'Expandir',
     'shorten' => 'Encurtar',
     'simplify' => 'Simplificar',
-    'friendly_tone' => 'Alterar o tom da mensagem para amigável',
+    'friendly_tone' => 'Alterar o tom da publicação para amigável',
     'formal_tone' => 'Utilizar um tom formal',
     'edgy_tone' => 'Utilizar um tom ousado',
     'engaging_tone' => 'Utilizar um tom cativante',

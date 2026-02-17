@@ -13,7 +13,7 @@ return [
     'access_tokens' => 'Tokens de acesso',
     'create' => 'Criar token',
     'name_placeholder' => 'O meu token fixe',
-    'expiration' => 'Expiração',
+    'expiration' => 'Validade',
     'never_expires' => 'Nunca expira',
     'copy_token' => 'Copie este token agora. Não o poderá voltar a ver.'
 ];

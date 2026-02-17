@@ -420,15 +420,14 @@ onBeforeUnmount(() => {
                     <Flex
                         v-if="generating"
                         :col="true"
-                        class="items-center"
+                        class="items-center mt-xl"
                     >
                         <div class="text-lg">
                             {{ $t('genie.generating_draft') }}
                         </div>
 
-                        <div class="orbit-spinner mt-lg">
-                            <div class="orbit"></div>
-                            <div class="orbit"></div>
+                        <div class="fulfilling-bouncing-circle-spinner">
+                            <div class="circle"></div>
                             <div class="orbit"></div>
                         </div>
 

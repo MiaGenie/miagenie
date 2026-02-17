@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'media_library' => 'Biblioteca de média',
+    'media_library' => 'Biblioteca de multimédia',
     'uploads' => 'Carregar',
     'stock' => 'Fotos de arquivo',
     'gifs' => 'GIFs',
@@ -21,7 +21,7 @@ return [
     'error_deleting_media' => 'Erro ao apagar ficheiros multimédia. Tentar de novo!',
     'author' => 'Autor',
     'image_source' => 'Fonte da imagem',
-    'aspect_ratio_range' => 'O rácio de aspeto tem de estar entre :min e :max.',
+    'aspect_ratio_range' => 'O rácio das dimensões tem de estar entre :min e :max.',
     'resolution_range' => 'A resolução tem de ser no mínimo :min x :max px. A resolução recomendada é :recommended_min x :recommended_max px.',
     'duration_range' => 'A duração tem de ser entre :min e :max segundos.',
     'frame_rate_range' => 'A taxa de fotogramas tem de estar compreendida entre :min e :max fotogramas por segundo.'

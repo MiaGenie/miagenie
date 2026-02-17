@@ -5,7 +5,6 @@ return [
     'progression' => 'Progression',
     'status' => 'Status',
     'language' => 'Language',
-
     'date' => 'Date',
 
     'genie' => 'Genie',
@@ -21,7 +20,6 @@ return [
     'open' => 'Open',
     'working' => 'Working',
     'done' => 'Done',
-
     'updated' => 'Updated',
     'created' => 'Created',
     'deleted' => 'Deleted',
@@ -176,11 +174,13 @@ return [
     'create_version' => 'Create Version',
     'edit_version' => 'Edit Version',
     'delete_version' => 'Delete Version',
+    'clone_version' => 'Clone Version',
     'version_updated' => 'Version Updated',
     'version_cloned' => 'Version Cloned',
     'version_created' => 'Version Created',
     'version_deleted' => 'Version Deleted',
     'delete_version_confirm' => 'Are you sure you want to delete this version?',
+    'clone_version_confirm' => 'Are you sure you want to clone this version?',
     'version_group_type_briefings' => 'Briefings',
     'version_group_type_competitors' => 'Competitors',
     'version_group_type_strategies' => 'Strategies',
@@ -371,7 +371,7 @@ return [
     'drafts_key_ideas' => 'Key Ideas',
     'drafts_media' => 'Media',
     'approve_draft' => 'Approve Draft',
-    'approve_draft_confirm' => 'Are you sure you want to approve this Draft?',
+    'approve_draft_confirm' => 'Are you sure you want to approve this Draft and generate a Post?',
     'error_retrieving_drafts' => 'Error retrieving drafts.',
 
     'generating_post' => "Your post is being generated. \n Please wait.",
@@ -416,7 +416,7 @@ return [
     'strategy' => 'Strategy',
     'strategies' => 'Strategies',
     'strategy_empty_desc' => "Your digital strategy is not setup yet. \n Please click bellow to setup the necessary information.",
-    'strategy_pending_review' => "Your digital strategy is pending review. \n Please click bellow to do the thing.",
+    'strategy_pending_review' => "Your digital strategy is pending review. \n Please click bellow.",
     'strategy_error' => "Something went wrong. \n Please click bellow to contact support.",
     'strategy_pending_approval' => "Your strategy is ready to review. \n\n Take time to review and edit it before approval. \n This is the foundation for all future content and cannot be edited once it’s approved.",
     'strategy_running' => "We’re building your strategy. \n This may take a moment — we’re analyzing your briefing, competitors, and positioning.",

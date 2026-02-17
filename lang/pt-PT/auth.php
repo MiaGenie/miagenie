@@ -34,12 +34,12 @@ return [
     'forgot_password' => 'Esqueceu-se da sua palavra-passe?',
     'backend' =>
         [
-        'notification' =>
-            [
-            'reset_password_notification' => 'Notificação de redefinição de senha',
-            'password_reset_request_received' => 'Está a receber este e-mail porque recebemos um pedido de redefinição da palavra-passe para a sua conta.',
-            'password_reset_link_expiry' => 'Este link de redefinição de senha expirará em :count minutes.',
-            'no_password_reset_required' => 'Se não solicitou uma redefinição da palavra-passe, não é necessária qualquer ação adicional',
+            'notification' =>
+                [
+                    'reset_password_notification' => 'Notificação de redefinição de senha',
+                    'password_reset_request_received' => 'Está a receber este e-mail porque recebemos um pedido de redefinição da palavra-passe para a sua conta.',
+                    'password_reset_link_expiry' => 'Este link de redefinição de senha expirará em :count minutes.',
+                    'no_password_reset_required' => 'Se não solicitou uma redefinição da palavra-passe, não é necessária qualquer ação adicional',
+                ],
         ],
-    ],
 ];

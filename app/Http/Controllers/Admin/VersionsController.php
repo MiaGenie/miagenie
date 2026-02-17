@@ -28,7 +28,7 @@ class VersionsController extends Controller
             ->withQueryString();
 
         return Inertia::render('Genie/Admin/Versions/Index', [
-            'records' => fn () => VersionResource::collection($records),
+            'records' => VersionResource::collection($records),
             'statusTypes' => VersionStatus::withTitle()
         ]);
     }
@@ -92,7 +92,9 @@ class VersionsController extends Controller
     {
         $record = $cloneVersion->handle();
 
-        return redirect()->back()->with('success', __('genie.version_cloned'));
+        return redirect()
+            ->route('genie.admin.versions.index')
+            ->with('success', __('genie.version_cloned'));
 
     }
 
