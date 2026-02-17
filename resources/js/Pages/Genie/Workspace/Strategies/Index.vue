@@ -85,11 +85,11 @@ onBeforeUnmount(() => {
 
         <PageHeader :title="$t('genie.strategy')" />
 
-        <div class="w-full row-px mt-lg whitespace-pre-line text-center">
+        <div class="w-full row-px mt-lg whitespace-pre-line">
 
             <Panel
                 v-if="!record"
-                class="w-full row-px mt-lg"
+                class="w-full row-px mt-lg text-center"
             >
                 <Flex
                     :col="true"
@@ -119,7 +119,7 @@ onBeforeUnmount(() => {
 
             <Panel
                 v-else-if="strategyStatus === 'PENDING_REVIEW'"
-                class="w-full row-px mt-lg"
+                class="w-full row-px mt-lg text-center"
             >
                 <Flex
                     :col="true"
@@ -146,7 +146,7 @@ onBeforeUnmount(() => {
 
             <Panel
                 v-else-if="strategyStatus === 'ERROR'"
-                class="w-full row-px mt-lg"
+                class="w-full row-px mt-lg text-center"
             >
                 <Flex
                     :col="true"
@@ -170,7 +170,7 @@ onBeforeUnmount(() => {
 
             <Panel
                 v-else-if="strategyStatus === 'PENDING_APPROVAL'"
-                class="w-full row-px mt-lg"
+                class="w-full row-px mt-lg text-center"
             >
                 <Flex
                     :col="true"
@@ -198,7 +198,7 @@ onBeforeUnmount(() => {
 
             <Panel
                 v-else-if="strategyStatus !== ''"
-                class="w-full row-px mt-lg"
+                class="w-full row-px mt-lg text-center"
             >
                 <Flex
                     :col="true"
