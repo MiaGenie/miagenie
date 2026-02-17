@@ -332,7 +332,7 @@ const viewPost = () => {
                         </WarningButton>
 
                         <WarningButton
-                            v-if="isEdit && formStatus().name !== 'PENDING_REVIEW'"
+                            v-if="isEdit && formStatus().name === 'PENDING_REVIEW'"
                             @click="approveDraft"
                             :isLoading="form.processing"
                             :hidden-text-on-small-screen=true
