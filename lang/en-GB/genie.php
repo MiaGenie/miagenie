@@ -38,6 +38,7 @@ return [
 
     'close' => 'Close',
     'save' => 'Save',
+    'clone' => 'Clone',
     'update' => 'Update',
     'reorder' => 'Reorder',
     'reordering' => 'Reordering',
@@ -176,6 +177,7 @@ return [
     'edit_version' => 'Edit Version',
     'delete_version' => 'Delete Version',
     'version_updated' => 'Version Updated',
+    'version_cloned' => 'Version Cloned',
     'version_created' => 'Version Created',
     'version_deleted' => 'Version Deleted',
     'delete_version_confirm' => 'Are you sure you want to delete this version?',
@@ -349,7 +351,9 @@ return [
     'generate_drafts_confirm' => 'Are you sure you want to Generate Drafts for the chosen Ideas?',
     'generate_draft_confirm' => 'Are you sure you want to Generate a Draft for this Idea?',
     'generating_drafts' => 'Generating Drafts',
+    'generating_draft' => 'Generating Draft',
     'edit_draft' => 'Edit draft',
+    'view_draft' => 'View draft',
     'delete_draft' => 'Delete draft',
     'delete_drafts' => 'Delete drafts',
     'draft_updated' => 'Draft updated successfully',
@@ -370,6 +374,11 @@ return [
     'approve_draft_confirm' => 'Are you sure you want to approve this Draft?',
     'error_retrieving_drafts' => 'Error retrieving drafts.',
 
+    'generating_post' => "Your post is being generated. \n Please wait.",
+
+    'post' => 'Post',
+    'posts' => 'Posts',
+
     'pre_posts' => 'Pre Posts',
     'pre_posts_desc' => 'Your Post pre posts. This description needs rewriting',
     'create_pre_post' => 'Create Pre Post',
@@ -388,6 +397,7 @@ return [
 
     'generate_posts' => 'Generate Posts',
     'generate_post' => 'Generate Post',
+    'view_post' => 'View Post',
     'update_generate_post' => 'Update and Generate Post',
     'generate_posts_confirm' => 'Are you sure you want to Generate Posts for the chosen Drafts?',
     'generate_post_confirm' => 'Are you sure you want to Generate a Post for this Draft?',

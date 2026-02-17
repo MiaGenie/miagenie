@@ -2,7 +2,7 @@
 import {useI18n} from "vue-i18n";
 import {inject} from "vue";
 import {find, size} from "lodash";
-import {usePage} from "@inertiajs/vue3";
+import {router, usePage} from "@inertiajs/vue3";
 import IdeaItemAction from "./IdeaItemAction.vue";
 import Badge from "@/Components/DataDisplay/Badge.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
@@ -18,6 +18,7 @@ const props = defineProps({
     }
 })
 
+const workspaceCtx = inject('workspaceCtx');
 const ideaStatusTypes = usePage().props.ideaStatusTypes;
 
 const ideaStatus = () => {
@@ -37,6 +38,13 @@ const statusBadge = () => {
     }
 }
 
+const edit = () => {
+    router.get(route('genie.ideas.edit', {
+        workspace: workspaceCtx.id,
+        idea: props.item.id,
+    }));
+}
+
 </script>
 <template>
     <TableRow :hoverable="true">
@@ -44,7 +52,7 @@ const statusBadge = () => {
             <slot name="checkbox"/>
         </TableCell>
 
-        <TableCell>
+        <TableCell :clickable="true" @click="edit">
             {{ item.theme }}
             <Flex class="items-start">
                 <Badge
@@ -58,22 +66,16 @@ const statusBadge = () => {
             </Flex>
         </TableCell>
 
-        <TableCell class="hidden sm:table-cell">
+        <TableCell class="hidden sm:table-cell" :clickable="true" @click="edit">
             <Badge :variant="statusBadge()">
                 {{ $t('genie.' + ideaStatus().title) }}
             </Badge>
         </TableCell>
 
-        <TableCell class="hidden sm:table-cell">
+        <TableCell class="hidden sm:table-cell" :clickable="true" @click="edit">
             {{  props.item.drafts.length  }}
         </TableCell>
 
-        <TableCell>
-            <IdeaItemAction
-                :item="item"
-                :status="ideaStatus()"
-            />
-        </TableCell>
 
     </TableRow>
 </template>

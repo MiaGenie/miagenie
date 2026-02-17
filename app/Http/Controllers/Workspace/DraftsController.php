@@ -67,22 +67,6 @@ class DraftsController
         ]);
     }
 
-
-    /**
-     * @param UpdateDraft $updateDraft
-     */
-    public function updateGenerate(UpdateDraft $updateDraft)
-    {
-        $updateDraft->handle();
-
-        $record = Draft::firstOrFailByUuid($updateDraft->route('draft'));
-        $this->prePostGeneration(Draft::where('id', $record->id)->get());
-
-        return redirect()
-            ->route('genie.drafts.index', ['workspace' => $updateDraft->route('workspace')])
-            ->with('success', __('genie.generating_pre_posts'));
-    }
-
     /**
      * @param StoreDraft $storeDraft
      */
@@ -106,14 +90,23 @@ class DraftsController
     {
         $record = Draft::firstOrFailByUuid($request->route('draft'));
 
+        if ($record->status === DraftStatus::APPROVED) {
+            return $this->generating($request);
+        }
+
         $strategy = Strategy::latest()->first();
 
         if ($strategy && isset($strategy->content['content_pillars']) && !empty($strategy->content['content_pillars'])) {
             $contentPillars = collect($strategy->content['content_pillars'])->pluck('0_title');
         }
 
+        $mode = match ($record->status) {
+            DraftStatus::PENDING_REVIEW, DraftStatus::TRASH => 'edit',
+            DraftStatus::PUBLISHED => 'view'
+        };
+
         return Inertia::render('Genie/Workspace/Drafts/CreateEdit', [
-            'mode' => 'edit',
+            'mode' => $mode,
             'draftStatusTypes' => DraftStatus::withTitle(),
             'funnelStages' => FunnelStage::withTitle(),
             'funnelStage' => $request->input('funnel_stage'),
@@ -122,14 +115,46 @@ class DraftsController
         ]);
     }
 
+    /**
+     * @param Request $request
+     */
+    public function generating(Request $request)
+    {
+        $record = Draft::firstOrFailByUuid($request->route('draft'));
+
+        if ($record->status === DraftStatus::PUBLISHED) {
+            $record->draftPost->uuid;
+            return redirect()->route(
+                'mixpost.posts.edit',
+                [
+                    'workspace' => $request->route('workspace'),
+                    'post' => $record->draftPost->uuid
+                ]
+            );
+        }
+
+        return Inertia::render('Genie/Workspace/Drafts/Generating', [
+            'statusTypes' => DraftStatus::withTitle(),
+            'record' => DraftResource::make($record),
+        ]);
+    }
+
+    public function approve(Request $request)
+    {
+        $draft = Draft::findByUuid($request->route('draft'));
+        $draft->update(['status' => DraftStatus::APPROVED]);
+        $this->prePostGeneration($draft);
+
+        return $this->generating($request);
+    }
+
     public function generate(Request $request): RedirectResponse
     {
         $ideas = Idea::where('uuid', $request->route('idea'))->get();
         $this->draftGeneration($ideas);
 
-        return redirect()
-            ->route('genie.ideas.index', ['workspace' => $request->route('workspace')])
-            ->with('success', __('genie.generating_drafts'));
+        return redirect()->back()->with('success', __('genie.generating_drafts'));
+
     }
 
     public function generateMultiple(Request $request): RedirectResponse

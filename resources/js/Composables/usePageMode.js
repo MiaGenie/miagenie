@@ -14,9 +14,14 @@ const usePageMode = () => {
         return mode.value === 'edit';
     })
 
+    const isView = computed(() => {
+        return mode.value === 'view';
+    })
+
     return {
         isCreate,
-        isEdit
+        isEdit,
+        isView
     }
 }
 

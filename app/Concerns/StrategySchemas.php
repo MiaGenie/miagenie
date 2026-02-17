@@ -12,7 +12,7 @@ trait StrategySchemas
     protected function getStrategySchemas(Strategy $strategy): array
     {
         $locale = $strategy->workspace->locale ?? app()->getLocale();
-        $schemas = $strategy->run->rule->ruleSteps->map(function ($step) use ($locale) {
+        $schemas = $strategy->run->rule->steps->map(function ($step) use ($locale) {
             return $step->getTranslation('json_schema', $locale);
         });
 

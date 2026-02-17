@@ -1,9 +1,9 @@
 <script setup>
 import {Head, router, useForm} from '@inertiajs/vue3';
-import {inject, onMounted, ref, watch} from "vue";
+import {computed, inject, onBeforeUnmount, onMounted, onUpdated, ref, watch} from "vue";
 import {useI18n} from "vue-i18n";
 import useRouter from "@/Composables/useRouter";
-import {cloneDeep, find} from "lodash";
+import {cloneDeep, find, result} from "lodash";
 import usePageMode from "@/Composables/usePageMode";
 import DangerButton from "@/Components/Button/DangerButton.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
@@ -59,6 +59,10 @@ const props = defineProps({
     },
     record: {
         type: Object
+    },
+    generating: {
+        type: Boolean,
+        default: false
     }
 })
 
@@ -223,13 +227,15 @@ const generateDraft = () => {
                 workspace: workspaceCtx.id,
                 idea: props.record.id
             }));
+
+            generatingDraft.value = true;
+            dialog.reset();
         })
         .show();
 }
 
 const fetch = () => {
     isLoading.value = true;
-    NProgress.start();
 
     axios.get(route('genie.ideas.ideaDrafts', {workspace: workspaceCtx.id, idea: props.record.id})
     ).then(function (response) {
@@ -238,14 +244,53 @@ const fetch = () => {
         notify('error', $t('genie.error_retrieving_drafts'));
     }).finally(() => {
         isLoading.value = false;
-        NProgress.done();
     });
 }
+
+
+let refreshStatus;
+
+const startRefresh = () => {
+    refreshStatus = setInterval(() => {
+        router.get(
+            route('genie.ideas.edit',
+                {
+                    workspace: workspaceCtx.id,
+                    idea: props.record.id
+                }
+            ), result(), {
+                preserveState: true,
+                preserveScroll: true,
+                only: ['generating']
+            });
+    }, 10000)
+}
+
+const generatingDraft = computed(() => {
+    return props.generating
+});
+
+watch(generatingDraft, (newValue, oldValue) => {
+    if (newValue && !oldValue) {
+        startRefresh();
+    } else if (!newValue && oldValue) {
+        clearInterval(refreshStatus);
+        fetch();
+    }
+});
 
 onMounted(() => {
     if (formStatusApproved()) {
         fetch();
     }
+
+    if (generatingDraft.value) {
+        startRefresh()
+    }
+})
+
+onBeforeUnmount(() => {
+    clearInterval(refreshStatus);
 })
 
 </script>
@@ -372,12 +417,29 @@ onMounted(() => {
 
                     <IdeaDrafts :is-loading="isLoading" :data="data" />
 
+                    <Flex
+                        v-if="generating"
+                        :col="true"
+                        class="items-center"
+                    >
+                        <div class="text-lg">
+                            {{ $t('genie.generating_draft') }}
+                        </div>
+
+                        <div class="orbit-spinner mt-lg">
+                            <div class="orbit"></div>
+                            <div class="orbit"></div>
+                            <div class="orbit"></div>
+                        </div>
+
+                    </Flex>
+
                 </Panel>
 
                 <div class="flex flex-row items-center justify-between mt-lg">
                     <div class="flex gap-6">
                         <WarningButton
-                            v-if="formStatusApproved()"
+                            v-if="formStatusApproved() && !generating"
                             @click="generateDraft"
                             :hiddenTextOnSmallScreen="true"
                             :disabled="form.processing"

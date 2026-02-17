@@ -281,7 +281,7 @@ const deleteStep = () => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup v-if="ruleSubType['name'] === 'CHANNELS' || ruleSubType['name'] === 'IDEAS_MULTIPLE'" class="form-field mt-lg">
+                    <VerticalGroup v-if="ruleSubType['name'] === 'CHANNELS' || ruleSubType['name'] === 'IDEAS_MULTIPLE' && form.link_upstream" class="form-field mt-lg">
                         <template #title>
                             <label for="depends_on_field">{{ $t("genie.step_depends_on_field") }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>

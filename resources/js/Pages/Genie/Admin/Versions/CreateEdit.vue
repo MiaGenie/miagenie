@@ -24,6 +24,7 @@ import Panel from "@/Components/Surface/Panel.vue";
 import Trash from "@/Icons/Trash.vue";
 import X from "@/Icons/X.vue";
 import Save from "@/Icons/Genie/Save.vue";
+import Clipboard from "@/Icons/Clipboard.vue";
 
 defineOptions({layout: AdminLayout});
 
@@ -68,6 +69,15 @@ const store = () => {
 
 const update = () => {
     form.put(route('genie.admin.versions.update', {version: props.record.id}), {
+        preserveScroll: true,
+        onError: (errors) => {
+            onError(errors, update);
+        },
+    });
+}
+
+const cloneVersion = () => {
+    form.put(route('genie.admin.versions.clone', {version: props.record.id}), {
         preserveScroll: true,
         onError: (errors) => {
             onError(errors, update);
@@ -275,7 +285,18 @@ const statusEnabled = () => {
                         </SecondaryButton>
 
                     </div>
-                    <div v-if="isEdit">
+                    <div v-if="isEdit" class="flex gap-6">
+
+                        <DangerButton
+                            @click="cloneVersion"
+                            :disabled="form.processing"
+                            :hidden-text-on-small-screen=true
+                        >
+                            {{ $t("genie.clone") }}
+                            <template #icon>
+                                <Clipboard/>
+                            </template>
+                        </DangerButton>
 
                         <DangerButton
                             @click="deleteVersion"
