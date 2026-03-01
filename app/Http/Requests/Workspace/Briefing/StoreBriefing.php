@@ -99,9 +99,8 @@ class StoreBriefing extends FormRequest
             $query->where('uuid', $this->route('workspace'));
         })->firstOrFail()->version_id;
 
-        $this->fieldList = Version::find($versionId)
-            ->with(['briefings' => ['options']])
-            ->firstOrFail()
+        $this->fieldList = Version::with(['briefings' => ['options']])
+            ->find($versionId)
             ->briefings;
 
         $this->validationRules = $this->getValidationRules()->toArray();

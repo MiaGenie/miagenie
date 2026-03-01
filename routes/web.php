@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Workspace\DashboardController;
+use App\Http\Controllers\MixpostEnterprise\DashboardController;
 use App\Http\Controllers\Workspace\PostsController;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Support\Facades\Route;
@@ -9,6 +9,7 @@ use Inovector\Mixpost\Http\Base\Middleware\CheckWorkspaceUser;
 use Inovector\Mixpost\Http\Base\Middleware\IdentifyWorkspace;
 use Inovector\Mixpost\Mixpost;
 use Inovector\Mixpost\Util;
+use Inovector\MixpostEnterprise\Util as EnterpriseUtil;
 
 Route::name('genie.')
     ->prefix('genie')
@@ -26,7 +27,6 @@ Route::name('genie.')
             require __DIR__ . '/includes/genie-workspace.php';
         });
     });
-
 
 Route::prefix(Util::corePath())
     ->name('mixpost.')
@@ -60,6 +60,19 @@ Route::prefix(Util::corePath())
         });
     });
 
+Route::prefix(EnterpriseUtil::corePath(true))
+    ->name('mixpost_e.')
+    ->middleware(Mixpost::getWebAppMiddlewares())
+    ->group(function () {
+        // Enterprise console routes
+        Route::middleware(array_merge(
+            Mixpost::getWebDashboardMiddlewares(),
+            [HandleInertiaRequests::class]
+        ))->group(function () {
+            require __DIR__ . '/mixpost-includes/panel.php';
+            require __DIR__ . '/mixpost-includes/workspace.php';
+        });
+    });
 
 Route::get('/', function () {
     return redirect()->to(config('mixpost.core_path'));

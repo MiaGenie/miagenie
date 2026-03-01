@@ -1,6 +1,6 @@
 <script setup>
 import {Head, router} from '@inertiajs/vue3';
-import {inject, onMounted, ref, watch} from "vue";
+import {inject, onMounted, onUnmounted, ref, watch} from "vue";
 import {useI18n} from "vue-i18n";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
@@ -24,8 +24,10 @@ import ConfirmationModal from "@/Components/Modal/ConfirmationModal.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
 import useNotifications from "@/Composables/useNotifications.js";
-import WarningButton from "@/Components/Button/WarningButton.vue";
-import DraftIcon from "mixpost-pro-team/resources/js/Icons/Genie/Draft.vue";
+import emitter from "@/Services/emitter.js";
+import ArrowUturnLeft from "@/Icons/ArrowUturnLeft.vue";
+import PureSuccessButton from "@/Components/Button/Genie/PureSuccessButton.vue";
+import SuccessButton from "@/Components/Button/SuccessButton.vue";
 
 const {t: $t} = useI18n()
 
@@ -59,14 +61,11 @@ const {notify} = useNotifications();
 const confirmation = inject('confirmation');
 const workspaceCtx = inject('workspaceCtx');
 
-const filter = ref({
-    type: props.filter.type
-})
-
 const currentFilter = ref(cloneDeep(props.filter));
 const isFiltered = ref(false);
 const isLoading = ref(false);
 const confirmationDeletion = ref(false);
+const confirmationRestore = ref(false);
 
 const itemsId = () => {
     return props.records.data.map(item => item.id);
@@ -74,17 +73,23 @@ const itemsId = () => {
 
 onMounted(() => {
     putPageRecords(itemsId());
+
+    emitter.on('itemDelete', id => {
+        deselectRecord(id);
+    });
 });
 
-watch(() => cloneDeep(filter.value), throttle(() => {
-    router.get(route('genie.drafts.index'), pickBy(filter.value), {
-        preserveState: true,
-        only: ['records', 'filter']
-    });
-}, 300))
+onUnmounted(() => {
+    emitter.off('postDelete');
+})
+
+watch(() => props.records.data, () => {
+    putPageRecords(itemsId());
+})
 
 watch(() => currentFilter.value.status, throttle(() => {
     isLoading.value = true;
+    deselectAllRecords();
 
     router.get(route(
         'genie.drafts.index',
@@ -114,23 +119,6 @@ const createDraft = () => {
     );
 }
 
-const generatePrePosts = () => {
-    confirmation()
-        .title($t('genie.generate_posts'))
-        .description($t('genie.generate_posts_confirm'))
-        .warning()
-        .onConfirm((dialog) => {
-            router.post(route('genie.pre_posts.generateMultiple',{
-                workspace: workspaceCtx.id
-            }),{
-                drafts: selectedRecords.value
-            });
-            deselectAllRecords();
-            dialog.reset();
-        })
-        .show();
-}
-
 const deleteDrafts = () => {
     router.delete(route('genie.drafts.deleteMultiple', {workspace: workspaceCtx.id}), {
         data: {
@@ -146,8 +134,31 @@ const deleteDrafts = () => {
     });
 }
 
-const draftStatus = (item) => {
+const restoreDrafts = () => {
+    router.post(route('genie.drafts.restoreMultiple', {workspace: workspaceCtx.id}), {
+            drafts: selectedRecords.value,
+            filter: currentFilter.value
+        }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            deselectAllRecords();
+        },
+        onFinish: () => {
+            confirmationRestore.value = false;
+        },
+        onError: (errors) => {
+            onError(errors, update);
+        },
+    });
+
+}
+
+const itemStatus = (item) => {
     return find(props.draftStatusTypes, ['value', Number(item.status)]);
+}
+
+const statusValue = (status) => {
+    return find(props.draftStatusTypes, ['value', status]);
 }
 
 </script>
@@ -208,7 +219,10 @@ const draftStatus = (item) => {
         <div class="w-full row-px">
 
             <SelectableBar :count="selectedRecords.length" @close="deselectAllRecords">
-                <PureDangerButton @click="confirmationDeletion = true" v-tooltip="$t('general.delete')">
+                <PureSuccessButton v-if="statusValue(currentFilter.status)?.name === 'TRASH'" @click="confirmationRestore = true" v-tooltip="$t('general.restore')" class="mx-md">
+                    <ArrowUturnLeft/>
+                </PureSuccessButton>
+                <PureDangerButton @click="confirmationDeletion = true" v-tooltip="$t('general.delete')" class="mx-md">
                     <TrashIcon/>
                 </PureDangerButton>
             </SelectableBar>
@@ -224,7 +238,7 @@ const draftStatus = (item) => {
                             <TableCell component="th" scope="col" class="w-10">
                                 <Checkbox
                                     v-model:checked="toggleSelectRecordsOnPage"
-                                    :disabled="!records.meta.total"
+                                    :disabled="!records.meta.total || (statusValue(currentFilter.status)?.name !== 'TRASH' && statusValue(currentFilter.status)?.name !== 'PENDING_REVIEW')"
                                 />
                             </TableCell>
 
@@ -261,7 +275,7 @@ const draftStatus = (item) => {
                                 <template #checkbox>
                                     <Checkbox
                                         v-model:checked="selectedRecords"
-                                        :disabled="draftStatus(item).name !== 'PENDING_REVIEW'"
+                                        :disabled="itemStatus(item).name !== 'PENDING_REVIEW' && itemStatus(item).name !== 'TRASH'"
                                         :value="item.id"
                                     />
                                 </template>
@@ -294,7 +308,7 @@ const draftStatus = (item) => {
             {{ $t("genie.delete_drafts") }}
         </template>
         <template #body>
-            {{ $t("genie.confirmation_delete_draft") }}
+            {{ $t("genie.confirmation_delete_drafts") }}
         </template>
         <template #footer>
             <SecondaryButton @click="confirmationDeletion = false" class="mr-xs rtl:mr-0 rtl:ml-xs">{{
@@ -302,6 +316,21 @@ const draftStatus = (item) => {
                 }}
             </SecondaryButton>
             <DangerButton @click="deleteDrafts">{{ $t("general.delete") }}</DangerButton>
+        </template>
+    </ConfirmationModal>
+    <ConfirmationModal :show="confirmationRestore" @close="confirmationRestore = false">
+        <template #header>
+            {{ $t("general.restore") }}
+        </template>
+        <template #body>
+            {{ $t("genie.confirmation_restore_drafts") }}
+        </template>
+        <template #footer>
+            <SecondaryButton @click="confirmationRestore = false" class="mr-xs rtl:mr-0 rtl:ml-xs">{{
+                    $t("general.cancel")
+                }}
+            </SecondaryButton>
+            <SuccessButton @click="restoreDrafts">{{ $t("general.restore") }}</SuccessButton>
         </template>
     </ConfirmationModal>
 </template>

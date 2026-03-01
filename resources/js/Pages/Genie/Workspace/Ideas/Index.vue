@@ -1,6 +1,6 @@
 <script setup>
 import {Head, router} from '@inertiajs/vue3';
-import {inject, onMounted, ref, watch} from "vue";
+import {computed, inject, onBeforeUnmount, onMounted, onUnmounted, ref, watch} from "vue";
 import {useI18n} from "vue-i18n";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
@@ -12,7 +12,7 @@ import Pagination from "@/Components/Navigation/Pagination.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import NoResult from "@/Components/Util/NoResult.vue";
 import Plus from "@/Icons/Plus.vue";
-import {cloneDeep, pickBy, size, throttle} from "lodash";
+import {cloneDeep, find, pickBy, result, filter, size, throttle} from "lodash";
 import useSelectable from "@/Composables/useSelectable";
 import Tabs from "@/Components/Navigation/Tabs.vue";
 import Tab from "@/Components/Navigation/Tab.vue";
@@ -29,6 +29,11 @@ import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
 import WarningButton from "@/Components/Button/WarningButton.vue";
 import DraftIcon from "mixpost-pro-team/resources/js/Icons/Genie/Draft.vue";
 import Lamp from "@/Icons/Genie/Lamp.vue";
+import Flex from "@/Components/Layout/Flex.vue";
+import emitter from "@/Services/emitter.js";
+import PureSuccessButton from "@/Components/Button/Genie/PureSuccessButton.vue";
+import ArrowUturnLeft from "@/Icons/ArrowUturnLeft.vue";
+import SuccessButton from "@/Components/Button/SuccessButton.vue";
 
 const {t: $t} = useI18n()
 
@@ -55,6 +60,14 @@ const props = defineProps({
         type: Object,
         default: {}
     },
+    generating: {
+        type: Boolean,
+        default: false
+    },
+    hasPending: {
+        type: Boolean,
+        default: false
+    }
 });
 
 const {
@@ -73,18 +86,65 @@ const currentFilter = ref(cloneDeep(props.filter));
 const isFiltered = ref(false);
 const isLoading = ref(false);
 const confirmationDeletion = ref(false);
-const filter = ref({type: props.filter.type})
+const confirmationRestore = ref(false);
 
 const itemsId = () => {
     return props.records.data.map(item => item.id);
 }
 
-onMounted(() => {
-    putPageRecords(itemsId());
+let refreshStatus;
+
+const startRefresh = () => {
+    refreshStatus = setInterval(() => {
+        router.get(
+            route('genie.ideas.index',
+                {workspace: workspaceCtx.id}
+            ), result(), {
+                preserveScroll: true
+            });
+    }, 2500)
+}
+
+const generatingIdeas = ref(props.generating);
+
+watch(generatingIdeas, (newValue, oldValue) => {
+    if (newValue && !oldValue) {
+        startRefresh();
+    } else if (!newValue && oldValue) {
+        clearInterval(refreshStatus);
+    }
 });
 
-watch(() => cloneDeep(filter.value), throttle(() => {
-    router.get(route('genie.ideas.index'), pickBy(filter.value), {
+watch(() => props.generating, () => {
+    generatingIdeas.value = props.generating;
+})
+
+onMounted(() => {
+    putPageRecords(itemsId());
+
+    emitter.on('itemDelete', id => {
+        deselectRecord(id);
+    });
+
+    if (generatingIdeas.value) {
+        startRefresh()
+    }
+})
+
+onBeforeUnmount(() => {
+    clearInterval(refreshStatus);
+})
+
+onUnmounted(() => {
+    emitter.off('postDelete');
+})
+
+watch(() => props.records.data, () => {
+    putPageRecords(itemsId());
+})
+
+watch(() => cloneDeep(currentFilter.value.type), throttle(() => {
+    router.get(route('genie.ideas.index'), pickBy(currentFilter.value.type), {
         preserveState: true,
         only: ['records', 'filter']
     });
@@ -97,6 +157,7 @@ watch(() => [
     ],
     throttle(() => {
         isLoading.value = true;
+        deselectAllRecords();
 
         router.get(route(
             'genie.ideas.index',
@@ -131,23 +192,6 @@ const createIdea = () => {
     );
 }
 
-const generateDrafts = () => {
-    confirmation()
-        .title($t('genie.generate_drafts'))
-        .description($t('genie.generate_drafts_confirm'))
-        .warning()
-        .onConfirm((dialog) => {
-            router.post(route('genie.drafts.generateMultiple',{
-                workspace: workspaceCtx.id
-            }),{
-                ideas: selectedRecords.value
-            });
-            deselectAllRecords();
-            dialog.reset();
-        })
-        .show();
-}
-
 const generateIdeas = () => {
     confirmation()
         .title($t('genie.generate_ideas'))
@@ -158,10 +202,9 @@ const generateIdeas = () => {
                 workspace: workspaceCtx.id,
                 strategy: props.strategy.id
             }));
-            deselectAllRecords();
+            generatingIdeas.value = true;
             dialog.reset();
-        })
-        .show();
+        }).show();
 }
 
 const deleteIdeas = () => {
@@ -177,6 +220,33 @@ const deleteIdeas = () => {
             confirmationDeletion.value = false;
         }
     });
+}
+
+const restoreIdeas = () => {
+    router.post(route('genie.ideas.restoreMultiple', {workspace: workspaceCtx.id}), {
+        ideas: selectedRecords.value,
+        filter: currentFilter.value
+    }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            deselectAllRecords();
+        },
+        onFinish: () => {
+            confirmationRestore.value = false;
+        },
+        onError: (errors) => {
+            onError(errors, update);
+        },
+    });
+
+}
+
+const itemStatus = (item) => {
+    return find(props.ideaStatusTypes, ['value', Number(item.status)]);
+}
+
+const statusValue = (status) => {
+    return find(props.ideaStatusTypes, ['value', status]);
 }
 
 </script>
@@ -198,7 +268,7 @@ const deleteIdeas = () => {
 
             <WarningButton
                 @click="generateIdeas"
-                :disabled="isLoading || !strategy"
+                :disabled="isLoading || !strategy || hasPending || generating"
                 :isLoading="isLoading"
                 size="sm"
             >
@@ -222,19 +292,6 @@ const deleteIdeas = () => {
                 {{ $t('genie.create_idea') }}
             </PrimaryButton>
             </div>
-
-            <WarningButton
-                @click="generateDrafts"
-                :disabled="isLoading || selectedRecords.length === 0"
-                :isLoading="isLoading"
-                size="sm"
-            >
-
-                <template #icon>
-                    <DraftIcon/>
-                </template>
-                {{ $t('genie.generate_drafts') }}
-            </WarningButton>
 
         </div>
 
@@ -305,10 +362,30 @@ const deleteIdeas = () => {
             </Tabs>
         </div>
 
+        <Flex
+            v-if="generatingIdeas"
+            :col="true"
+            class="items-center mt-xl"
+        >
+            <div class="text-lg">
+                {{ $t('genie.generating_ideas') }}
+            </div>
+
+            <div class="fulfilling-bouncing-circle-spinner">
+                <div class="circle"></div>
+                <div class="orbit"></div>
+            </div>
+
+        </Flex>
+
+
         <div class="w-full row-px">
 
             <SelectableBar :count="selectedRecords.length" @close="deselectAllRecords">
-                <PureDangerButton @click="confirmationDeletion = true" v-tooltip="$t('general.delete')">
+                <PureSuccessButton v-if="statusValue(currentFilter.status)?.name === 'TRASH'" @click="confirmationRestore = true" v-tooltip="$t('general.restore')" class="mx-md">
+                    <ArrowUturnLeft/>
+                </PureSuccessButton>
+                <PureDangerButton @click="confirmationDeletion = true" v-tooltip="$t('general.delete')" class="mx-md">
                     <TrashIcon/>
                 </PureDangerButton>
             </SelectableBar>
@@ -322,7 +399,10 @@ const deleteIdeas = () => {
 
                         <TableRow>
                             <TableCell component="th" scope="col" class="w-10">
-                                <Checkbox v-model:checked="toggleSelectRecordsOnPage" :disabled="!records.meta.total"/>
+                                <Checkbox
+                                    v-model:checked="toggleSelectRecordsOnPage"
+                                    :disabled="!records.meta.total || (statusValue(currentFilter.status)?.name !== 'TRASH' && statusValue(currentFilter.status)?.name !== 'PENDING_REVIEW')"
+                                />
                             </TableCell>
 
                             <TableCell
@@ -364,7 +444,11 @@ const deleteIdeas = () => {
                         >
                             <IdeaItem :item="item">
                                 <template #checkbox>
-                                    <Checkbox v-model:checked="selectedRecords" :value="item.id"/>
+                                    <Checkbox
+                                        v-model:checked="selectedRecords"
+                                        :disabled="itemStatus(item).name !== 'PENDING_REVIEW' && itemStatus(item).name !== 'TRASH'"
+                                        :value="item.id"
+                                    />
                                 </template>
                             </IdeaItem>
                         </template>
@@ -403,6 +487,21 @@ const deleteIdeas = () => {
                 }}
             </SecondaryButton>
             <DangerButton @click="deleteIdeas">{{ $t("general.delete") }}</DangerButton>
+        </template>
+    </ConfirmationModal>
+    <ConfirmationModal :show="confirmationRestore" @close="confirmationRestore = false">
+        <template #header>
+            {{ $t("general.restore") }}
+        </template>
+        <template #body>
+            {{ $t("genie.confirmation_restore_ideas") }}
+        </template>
+        <template #footer>
+            <SecondaryButton @click="confirmationRestore = false" class="mr-xs rtl:mr-0 rtl:ml-xs">{{
+                    $t("general.cancel")
+                }}
+            </SecondaryButton>
+            <SuccessButton @click="restoreIdeas">{{ $t("general.restore") }}</SuccessButton>
         </template>
     </ConfirmationModal>
 </template>

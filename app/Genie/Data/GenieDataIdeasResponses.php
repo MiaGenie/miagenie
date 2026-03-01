@@ -310,7 +310,9 @@ class GenieDataIdeasResponses extends GenieData implements GenieDataContract
         }
 
         $item = array_map(function ($value) use ($fieldOptions) {
-            return $fieldOptions[$value];
+            if (isset($fieldOptions[$value])) {
+                return $fieldOptions[$value];
+            }
         }, $item);
 
         return implode(', ', $item);

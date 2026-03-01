@@ -23,7 +23,7 @@ class ConfigController extends Controller
             ->onEachSide(1)
             ->withQueryString();
 
-        $competitorsFieldList = WorkspaceVersion::byWorkspace(WorkspaceManager::current())
+        $competitorsFieldList = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
             ->with(['version' => ['competitors']])
             ->firstOrFail()
             ->version
@@ -33,7 +33,7 @@ class ConfigController extends Controller
         $briefing = Briefing::latest()
             ->first();
 
-        $briefingsFieldList = WorkspaceVersion::byWorkspace(WorkspaceManager::current())
+        $briefingsFieldList = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
             ->with(['version' => ['briefings']])
             ->firstOrFail()
             ->version

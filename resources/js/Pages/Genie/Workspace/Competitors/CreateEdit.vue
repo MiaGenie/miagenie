@@ -17,6 +17,7 @@ import Save from "@/Icons/Genie/Save.vue";
 import X from "@/Icons/X.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
 import VersionFieldsForm from "@/Components/Form/Genie/FieldsForm.vue";
+import useValidateVersionField from "@/Composables/Genie/useValidateVersionField.js";
 
 const {t: $t} = useI18n()
 
@@ -34,12 +35,19 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    fileTypes: {
+        type: Object,
+        required: true,
+    },
+    inputTypes: {
+        type: Object,
+        required: true,
+    },
     record: {
         type: Object
     }
 })
 
-const routePrefix = inject('routePrefix');
 const workspaceCtx = inject('workspaceCtx')
 const confirmation = inject('confirmation');
 
@@ -51,16 +59,31 @@ const fieldType = (field) => {
     return find(props.fieldTypes, ['value', Number(field.field_type)]);
 }
 
-const form = useForm(isEdit.value ? cloneDeep(props.record) :
+const form = useForm(isEdit.value ? cloneDeep(props.record.content) :
+
     cloneDeep(props.fieldList.competitors).reduce(
         (list, field) => {
-            list.content[field.code_name] = fieldType(field).hasOptions ? [] : '';
+            const hasOptions = (
+                props.fieldTypes.find((field_type) => field_type.value === field.field_type).hasOptions ||
+                props.fieldTypes.find((field_type) => field_type.value === field.field_type).name === "FILE"
+            )
+            list[field.code_name] = hasOptions ? [] : '' ;
+            if(Array.isArray(list[field.code_name])) {
+                field.options.forEach(function(group, indexGroup){
+                    const nextGroup = group.filter(option => option.checked === 1);
+                    nextGroup.forEach(function(option, indexOption){
+                        list[field.code_name].push(option.code_name);
+                    });
+                });
+            }
+
             return list;
-        }, {
-            'content': {}
-        }
+        }, {}
     )
 );
+
+const {checkForm, divRefs} = useValidateVersionField(form);
+provide("form", form);
 
 const removePreventNavigation = ref(null);
 const reloadPreventNavigation = ref(false);
@@ -92,10 +115,12 @@ watch( () => [form.isDirty, reloadPreventNavigation.value], () => {
 
 const store = () => {
     form.transform((data) => ({
-        ...data,
-        'version' : props.fieldList.uuid
-    })).post(route(`${routePrefix}.competitors.store`, {
-        'workspace': workspaceCtx.id
+        content: {...data},
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })).post(route(`genie.competitors.store`, {
+        workspace: workspaceCtx.id
     }), {
         onError: (errors) => {
             onError(errors, store);
@@ -105,10 +130,12 @@ const store = () => {
 
 const update = () => {
     form.transform((data) => ({
-        ...data,
-        'version' : props.fieldList.uuid
-    })).put(route(`${routePrefix}.competitors.update`, {
-        'workspace': workspaceCtx.id,
+        content: {...data},
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })).post(route(`genie.competitors.update`, {
+        workspace: workspaceCtx.id,
         competitor: props.record.id
     }), {
         preserveScroll: true,
@@ -119,6 +146,8 @@ const update = () => {
 }
 
 const submit = () => {
+    if (!checkForm('competitors')) return;
+
     if (removePreventNavigation.value) {
         removePreventNavigation.value();
         removePreventNavigation.value = null;
@@ -189,8 +218,6 @@ const deleteCompetitor = () => {
         .show();
 }
 
-provide(/* key */ 'form', /* value */ form);
-
 </script>
 <template>
 
@@ -205,9 +232,11 @@ provide(/* key */ 'form', /* value */ form);
 
                 <Panel class="mx-auto">
                     <template v-for="(field) in fieldList.competitors">
+                        <div :ref="el => (divRefs[field.code_name] = el)" >
 
                         <VersionFieldsForm :field="field"></VersionFieldsForm>
 
+                        </div>
                     </template>
                 </Panel>
 

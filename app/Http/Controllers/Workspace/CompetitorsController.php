@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Workspace;
 
 use App\Concerns\Controller\HasFieldOptions;
+use App\Enums\FormFieldFileType;
 use App\Enums\FormFieldType;
+use App\Enums\FormInputType;
 use App\Http\Requests\Workspace\Competitor\StoreCompetitor;
 use App\Http\Requests\Workspace\Competitor\UpdateCompetitor;
 use App\Http\Resources\CompetitorResource;
@@ -31,7 +33,7 @@ class CompetitorsController extends Controller
             ->onEachSide(1)
             ->withQueryString();
 
-        $fieldList = WorkspaceVersion::byWorkspace(WorkspaceManager::current())
+        $fieldList = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
             ->with(['version' => ['competitors']])
             ->firstOrFail()
             ->version
@@ -49,7 +51,7 @@ class CompetitorsController extends Controller
      */
     public function create()
     {
-        $fieldList = WorkspaceVersion::byWorkspace(WorkspaceManager::current())
+        $fieldList = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
             ->with(['version' => ['competitors' => ['options']]])
             ->firstOrFail()
             ->version
@@ -61,6 +63,8 @@ class CompetitorsController extends Controller
             'mode' => 'create',
             'fieldList' => $fieldList,
             'fieldTypes' => FormFieldType::withFieldOptions(),
+            'fileTypes' => FormFieldFileType::withTitle(),
+            'inputTypes' => FormInputType::withInputOptions(),
             'record' => null,
         ]);
     }
@@ -90,7 +94,7 @@ class CompetitorsController extends Controller
     {
         $record = Competitor::firstOrFailByUuid($request->route('competitor'));
 
-        $fieldList = WorkspaceVersion::byWorkspace(WorkspaceManager::current())
+        $fieldList = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
             ->with(['version' => ['competitors' => ['options']]])
             ->firstOrFail()
             ->version
@@ -102,6 +106,8 @@ class CompetitorsController extends Controller
             'mode' => 'edit',
             'fieldList' => $fieldList,
             'fieldTypes' => FormFieldType::withFieldOptions(),
+            'fileTypes' => FormFieldFileType::withTitle(),
+            'inputTypes' => FormInputType::withInputOptions(),
             'record' => new CompetitorResource($record),
         ]);
     }
