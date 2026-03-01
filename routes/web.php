@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use Inovector\Mixpost\Enums\WorkspaceUserRole;
 use Inovector\Mixpost\Http\Base\Middleware\CheckWorkspaceUser;
 use Inovector\Mixpost\Http\Base\Middleware\IdentifyWorkspace;
+use Inovector\Mixpost\Http\Base\Middleware\Localization;
 use Inovector\Mixpost\Mixpost;
 use Inovector\Mixpost\Util;
 use Inovector\MixpostEnterprise\Util as EnterpriseUtil;
@@ -70,6 +71,18 @@ Route::prefix(EnterpriseUtil::corePath(true))
             [HandleInertiaRequests::class]
         ))->group(function () {
             require __DIR__ . '/mixpost-includes/panel.php';
+        });
+    });
+
+Route::prefix(Util::corePath())
+    ->name('mixpost_e.')
+    ->middleware(['web', Localization::class])
+    ->group(function () {
+        // Dashboard routes
+        Route::middleware(array_merge(
+            Mixpost::getWebDashboardMiddlewares(),
+            [HandleInertiaRequests::class]
+        ))->group(function () {
             require __DIR__ . '/mixpost-includes/workspace.php';
         });
     });
