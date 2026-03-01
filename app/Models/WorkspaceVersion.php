@@ -12,8 +12,6 @@ use Inovector\Mixpost\Models\Workspace;
 
 class WorkspaceVersion extends Model
 {
-    use OwnedByWorkspace;
-    use HasUuid;
 
     /**
      * @var string

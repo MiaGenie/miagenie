@@ -40,7 +40,7 @@ class StrategiesController extends Controller
     {
         $record = Strategy::latest()->first();
 
-        $fields = WorkspaceVersion::byWorkspace(WorkspaceManager::current())
+        $fields = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
             ->with(['version' => ['strategies' => ['options']]])
             ->firstOrFail()
             ->version
@@ -74,7 +74,7 @@ class StrategiesController extends Controller
             ->onEachSide(1)
             ->withQueryString();
 
-        $fieldList = WorkspaceVersion::byWorkspace(WorkspaceManager::current())
+        $fieldList = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
             ->with(['version' => ['strategies']])
             ->firstOrFail()
             ->version
@@ -179,7 +179,7 @@ class StrategiesController extends Controller
     {
         $record = Strategy::firstOrFailByUuid($request->route('strategy'));
 
-        $fieldList = WorkspaceVersion::byWorkspace(WorkspaceManager::current())
+        $fieldList = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
             ->with(['version' => ['strategies' => ['options']]])
             ->firstOrFail()
             ->version

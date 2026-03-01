@@ -36,6 +36,8 @@ use App\Genie\Data\GenieRunDataIdeas;
 use App\Genie\Data\GenieRunDataPrePosts;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Inovector\Mixpost\Mixpost;
+use App\Models\Workspace;
 
 class GenieServiceProvider extends ServiceProvider
 {
@@ -153,6 +155,6 @@ class GenieServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-
+        Mixpost::customWorkspaceModel(Workspace::class);
     }
 }

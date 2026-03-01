@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\Workspace\CompetitorsController;
+use App\Http\Controllers\MixpostEnterprise\DashboardController;
 use App\Http\Controllers\Workspace\BriefingsController;
-use App\Http\Controllers\Workspace\DashboardController;
+use App\Http\Controllers\Workspace\CompetitorsController;
 use App\Http\Controllers\Workspace\ConfigController;
 use App\Http\Controllers\Workspace\DeleteDraftsController;
 use App\Http\Controllers\Workspace\DeleteIdeasController;
@@ -10,6 +10,8 @@ use App\Http\Controllers\Workspace\DraftsController;
 use App\Http\Controllers\Workspace\IdeaDraftsController;
 use App\Http\Controllers\Workspace\IdeasController;
 use App\Http\Controllers\Workspace\PrePostsController;
+use App\Http\Controllers\Workspace\RestoreDraftsController;
+use App\Http\Controllers\Workspace\RestoreIdeasController;
 use App\Http\Controllers\Workspace\StrategiesController;
 use Illuminate\Support\Facades\Route;
 use Inovector\Mixpost\Enums\WorkspaceUserRole;
@@ -41,7 +43,7 @@ Route::middleware(array_merge([
             Route::get('create', [CompetitorsController::class, 'create'])->name('create');
             Route::post('store', [CompetitorsController::class, 'store'])->name('store');
             Route::get('{competitor}', [CompetitorsController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
-            Route::put('{competitor}', [CompetitorsController::class, 'update'])->name('update');
+            Route::post('update/{competitor}', [CompetitorsController::class, 'update'])->name('update');
             Route::delete('{competitor}', [CompetitorsController::class, 'destroy'])->name('delete');
         });
 
@@ -82,6 +84,7 @@ Route::middleware(array_merge([
             Route::delete('{idea}', [IdeasController::class, 'destroy'])->name('delete');
             Route::delete('/', DeleteIdeasController::class)->name('deleteMultiple');
             Route::get('{idea}/ideaDrafts', IdeaDraftsController::class)->name('ideaDrafts');
+            Route::post('/', RestoreIdeasController::class)->name('restoreMultiple');
         });
 
         Route::prefix('drafts')->name('drafts.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
@@ -96,6 +99,7 @@ Route::middleware(array_merge([
             Route::delete('{draft}', [DraftsController::class, 'destroy'])->name('delete');
             Route::post('generateMultiple', [DraftsController::class, 'generateMultiple'])->name('generateMultiple');
             Route::delete('/', DeleteDraftsController::class)->name('deleteMultiple');
+            Route::post('/', RestoreDraftsController::class)->name('restoreMultiple');
         });
 
         Route::prefix('pre_posts')->name('pre_posts.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {

@@ -1,6 +1,6 @@
 <script setup>
 import {Head, router, useForm} from '@inertiajs/vue3';
-import {inject, onMounted, ref, watch} from "vue";
+import {inject, onBeforeMount, onMounted, ref, watch} from "vue";
 import {useI18n} from "vue-i18n";
 import useRouter from "@/Composables/useRouter";
 import {cloneDeep, find} from "lodash";
@@ -22,6 +22,8 @@ import WarningButton from "@/Components/Button/WarningButton.vue";
 import Check from "@/Icons/Check.vue";
 import Badge from "@/Components/DataDisplay/Badge.vue";
 import Document from "@/Icons/Document.vue";
+import ArrowUturnLeft from "@/Icons/ArrowUturnLeft.vue";
+import SuccessButton from "@/Components/Button/SuccessButton.vue";
 
 
 
@@ -67,6 +69,10 @@ const form = useForm(isEdit.value || isView.value ? cloneDeep(props.record) : {
     status: 1
 });
 
+onBeforeMount( () => {
+    form.defaults();
+})
+
 
 const store = () => {
     form.post(route('genie.drafts.store',
@@ -77,6 +83,11 @@ const store = () => {
             onError(errors, store);
         },
     });
+}
+
+const restore = () => {
+    form.status = statusValue('PENDING_REVIEW').value;
+    update();
 }
 
 const update = () => {
@@ -145,6 +156,10 @@ const deleteDraft = () => {
                 )
             );
         }).show();
+}
+
+const statusValue = (status) => {
+    return find(props.draftStatusTypes, ['name', status]);
 }
 
 const formStatus = () => {
@@ -306,6 +321,11 @@ const viewPost = () => {
                             </label>
                         </template>
 
+                        <Input v-model="form.status"
+                               :hidden="true"
+                               id="status"
+                        />
+
                         <Badge :variant="statusBadge()">
                             {{ $t(`genie.${formStatus().title}`) }}
                         </Badge>
@@ -320,7 +340,7 @@ const viewPost = () => {
                 <div class="flex flex-row items-center justify-between mt-lg">
                     <div class="flex gap-6">
                         <WarningButton
-                            v-if="isView"
+                            v-if="formStatus().name === 'PUBLISHED'"
                             @click="viewPost"
                             :isLoading="form.processing"
                             :hidden-text-on-small-screen=true
@@ -369,10 +389,23 @@ const viewPost = () => {
                         </SecondaryButton>
 
                     </div>
-                    <div v-if="isEdit">
+                    <div class="flex gap-6">
+
+                        <SuccessButton
+                            v-if="formStatus().name === 'TRASH'"
+                            @click="restore"
+                            :isLoading="form.processing"
+                            :disabled="form.processing"
+                            :hidden-text-on-small-screen=true
+                        >
+                            {{ $t("general.restore") }}
+                            <template #icon>
+                                <ArrowUturnLeft/>
+                            </template>
+                        </SuccessButton>
 
                         <DangerButton
-                            v-if="formStatus().name !== 'PENDING_REVIEW'"
+                            v-if="formStatus().name === 'PENDING_REVIEW' || formStatus().name === 'TRASH'"
                             @click="deleteDraft"
                             :disabled="form.processing"
                             :hidden-text-on-small-screen=true

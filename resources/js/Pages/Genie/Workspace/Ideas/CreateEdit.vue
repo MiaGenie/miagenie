@@ -28,6 +28,7 @@ import IdeaDrafts from "@/Components/Genie/Drafts/IdeaDrafts.vue";
 import SuccessButton from "@/Components/Button/SuccessButton.vue";
 import Check from "@/Icons/Check.vue";
 import Badge from "@/Components/DataDisplay/Badge.vue";
+import ArrowUturnLeft from "@/Icons/ArrowUturnLeft.vue";
 
 
 const {t: $t} = useI18n()
@@ -93,6 +94,20 @@ const store = () => {
             onError(errors, store);
         },
     });
+}
+
+const restore = () => {
+    confirmation()
+        .title($t('genie.are_you_sure'))
+        .description($t('genie.confirmation_restore_idea'))
+        .btnConfirmName($t('genie.restore'), {})
+        .onConfirm((dialog) => {
+            dialog.isLoading(true);
+            form.status = statusValue('PENDING_REVIEW').value;
+            update();
+            dialog.close();
+        })
+        .show();
 }
 
 const update = () => {
@@ -161,6 +176,10 @@ const deleteIdea = () => {
                 )
             );
         }).show();
+}
+
+const statusValue = (status) => {
+    return find(props.draftStatusTypes, ['name', status]);
 }
 
 const formStatus = () => {
@@ -263,7 +282,7 @@ const startRefresh = () => {
                 preserveScroll: true,
                 only: ['generating']
             });
-    }, 10000)
+    }, 2500)
 }
 
 const generatingDraft = computed(() => {
@@ -453,7 +472,7 @@ onBeforeUnmount(() => {
                         </WarningButton>
 
                         <SuccessButton
-                            v-if="isEdit && !formStatusApproved()"
+                            v-if="isEdit && formStatus().name === 'PENDING_REVIEW'"
                             @click="approveIdea"
                             :isLoading="form.processing"
                             :hidden-text-on-small-screen=true
@@ -465,7 +484,7 @@ onBeforeUnmount(() => {
                         </SuccessButton>
 
                         <PrimaryButton
-                            v-if="!formStatusApproved()"
+                            v-if="formStatus().name === 'PENDING_REVIEW'"
                             type="submit"
                             :isLoading="form.processing"
                             :disabled="form.processing"
@@ -490,10 +509,23 @@ onBeforeUnmount(() => {
                         </SecondaryButton>
 
                     </div>
-                    <div v-if="isEdit">
+                    <div class="flex gap-6">
+
+                        <SuccessButton
+                            v-if="formStatus().name === 'TRASH'"
+                            @click="restore"
+                            :isLoading="form.processing"
+                            :disabled="form.processing"
+                            :hidden-text-on-small-screen=true
+                        >
+                            {{ $t("general.restore") }}
+                            <template #icon>
+                                <ArrowUturnLeft/>
+                            </template>
+                        </SuccessButton>
 
                         <DangerButton
-                            v-if="!formStatusApproved()"
+                            v-if="formStatus().name === 'PENDING_REVIEW' || formStatus().name === 'TRASH'"
                             @click="deleteIdea"
                             :disabled="form.processing"
                             :hidden-text-on-small-screen=true

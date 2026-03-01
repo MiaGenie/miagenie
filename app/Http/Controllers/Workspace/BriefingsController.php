@@ -33,7 +33,7 @@ class BriefingsController extends Controller
             ->onEachSide(1)
             ->withQueryString();
 
-        $fieldList = WorkspaceVersion::byWorkspace(WorkspaceManager::current())
+        $fieldList = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
             ->with(['version' => ['briefings']])
             ->firstOrFail()
             ->version
@@ -51,7 +51,7 @@ class BriefingsController extends Controller
      */
     public function create()
     {
-        $fieldList = WorkspaceVersion::byWorkspace(WorkspaceManager::current())
+        $fieldList = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
             ->with(['version' => ['briefings' => ['options']]])
             ->firstOrFail()
             ->version
@@ -92,7 +92,7 @@ class BriefingsController extends Controller
     {
         $record = Briefing::firstOrFailByUuid($request->route('briefing'));
 
-        $fieldList = WorkspaceVersion::byWorkspace(WorkspaceManager::current())
+        $fieldList = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
             ->with(['version' => ['briefings' => ['options']]])
             ->firstOrFail()
             ->version

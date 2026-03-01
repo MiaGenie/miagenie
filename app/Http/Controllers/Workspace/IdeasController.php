@@ -28,12 +28,9 @@ use Inovector\Mixpost\Facades\WorkspaceManager;
 
 class IdeasController
 {
-    use HasFieldOptions;
     use DraftGeneration;
+    use HasFieldOptions;
 
-    /**
-     * @param Request $request
-     */
     public function index(Request $request)
     {
 
@@ -45,19 +42,28 @@ class IdeasController
 
         $strategy = Strategy::latest()->first();
 
+        //$generating = Run::with('runIdeas')->has('runIdeas')->whereNotIn('status', [RunStatus::COMPLETE, RunStatus::ERROR])->count() > 0;
+        $generating = Run::withWhereRelation('rule', 'rule_type', RuleType::IDEAS)
+                ->whereIn('status', [RunStatus::OPEN, RunStatus::RUNNING])
+                ->count() > 0;
+
+        $hasPending = $records->where('status', IdeaStatus::PENDING_REVIEW)->count() > 0;
+
         $contentPillars = Idea::whereNotNull('content_pillar')->groupBy('content_pillar')->pluck('content_pillar');
 
         return Inertia::render('Genie/Workspace/Ideas/Index', [
             'filter' => [
                 'funnel_stage' => $request->query('funnel_stage', ''),
                 'content_pillar' => $request->query('content_pillar', ''),
-                'status' => $request->query('status', '')
+                'status' => $request->query('status', ''),
             ],
             'records' => IdeaResource::collection($records),
-            'strategy' => $strategy ? New StrategyResource($strategy) : null,
+            'strategy' => $strategy ? new StrategyResource($strategy) : null,
             'ideaStatusTypes' => IdeaStatus::withTitle(),
             'funnelStages' => FunnelStage::withTitle(),
             'contentPillars' => $contentPillars,
+            'generating' => $generating,
+            'hasPending' => $hasPending,
         ]);
     }
 
@@ -65,7 +71,7 @@ class IdeasController
     {
         $strategy = Strategy::latest()->first();
 
-        if ($strategy && isset($strategy->content['content_pillars']) && !empty($strategy->content['content_pillars'])) {
+        if ($strategy && isset($strategy->content['content_pillars']) && ! empty($strategy->content['content_pillars'])) {
             $contentPillars = collect($strategy->content['content_pillars'])->pluck('0_title');
         }
 
@@ -76,13 +82,10 @@ class IdeasController
             'funnelStages' => FunnelStage::withTitle(),
             'funnelStage' => $request->input('funnel_stage'),
             'contentPillars' => $contentPillars ?? [],
-            'record' => null
+            'record' => null,
         ]);
     }
 
-    /**
-     * @param StoreIdea $storeIdea
-     */
     public function store(StoreIdea $storeIdea)
     {
         $record = $storeIdea->handle();
@@ -91,14 +94,11 @@ class IdeasController
             'genie.ideas.edit',
             [
                 'workspace' => WorkspaceManager::current()->uuid,
-                'idea' => $record->uuid
+                'idea' => $record->uuid,
             ]
         )->with('success', __('genie.idea_created'));
     }
 
-    /**
-     * @param UpdateIdea $updateIdea
-     */
     public function updateGenerate(UpdateIdea $updateIdea)
     {
         $updateIdea->handle();
@@ -111,16 +111,13 @@ class IdeasController
             ->with('success', __('genie.generating_drafts'));
     }
 
-    /**
-     * @param Request $request
-     */
     public function edit(Request $request)
     {
         $record = Idea::firstOrFailByUuid($request->route('idea'));
 
         $strategy = Strategy::latest()->first();
 
-        if ($strategy && isset($strategy->content['content_pillars']) && !empty($strategy->content['content_pillars'])) {
+        if ($strategy && isset($strategy->content['content_pillars']) && ! empty($strategy->content['content_pillars'])) {
             $contentPillars = collect($strategy->content['content_pillars'])->pluck('0_title');
         }
 
@@ -128,7 +125,6 @@ class IdeasController
             ->whereHas('run', function ($query) {
                 $query->whereNotIn('status', [RunStatus::COMPLETE, RunStatus::ERROR]);
             })->first();
-
 
         return Inertia::render('Genie/Workspace/Ideas/CreateEdit', [
             'mode' => 'edit',
@@ -138,13 +134,10 @@ class IdeasController
             'funnelStage' => $request->input('funnel_stage'),
             'contentPillars' => $contentPillars ?? [],
             'record' => IdeaResource::make($record),
-            'generating' => $generating
+            'generating' => $generating,
         ]);
     }
 
-    /**
-     * @param Request $request
-     */
     public function generating(Request $request)
     {
         $record = Idea::firstOrFailByUuid($request->route('idea'));
@@ -171,17 +164,14 @@ class IdeasController
         ]);
 
         $run->runStrategy()->create([
-            'strategy_id' => $strategy->id
+            'strategy_id' => $strategy->id,
         ]);
 
         RunIdeaJob::dispatch($run, GenieSyncAction::CREATE);
 
-        return redirect()->back()->with('success', __('genie.generating_ideas'));
+        return redirect()->back()->with('success', __('genie.generating_ideas_started'));
     }
 
-    /**
-     * @param UpdateIdea $updateIdea
-     */
     public function update(UpdateIdea $updateIdea)
     {
         $updateIdea->handle();
@@ -189,9 +179,6 @@ class IdeasController
         return redirect()->back()->with('success', __('genie.idea_updated'));
     }
 
-    /**
-     * @param Request $request
-     */
     public function destroy(Request $request)
     {
         $record = Idea::firstOrFailByUuid($request->route('idea'));

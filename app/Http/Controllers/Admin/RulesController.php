@@ -6,6 +6,9 @@ use App\Builders\RuleQuery;
 use App\Enums\RuleStatus;
 use App\Enums\RuleSubType;
 use App\Enums\RuleType;
+use App\Enums\VersionStatus;
+use App\Http\Requests\Admin\CloneRule;
+use App\Http\Requests\Admin\CloneRuleInto;
 use App\Http\Requests\Admin\StoreRule;
 use App\Http\Requests\Admin\UpdateRule;
 use App\Http\Resources\Admin\RuleResource;
@@ -47,12 +50,15 @@ class RulesController extends Controller
     public function create(Request $request): Response
     {
         $version = Version::firstOrFailByUuid($request->route('version'));
+        $versions = Version::whereNotIn('status', [VersionStatus::ARCHIVED])
+            ->whereNot('id', $version->id)->get();
 
         return Inertia::render('Genie/Admin/Versions/Rules/CreateEdit', [
             'mode' => 'create',
             'ruleTypes' => RuleType::withTitle(),
             'type' => $request->input('rule_type'),
             'version' => new VersionResource($version),
+            'versions' => VersionResource::collection($versions),
             'statusTypes' => RuleStatus::withTitle(),
             'record' => null
         ]);
@@ -76,12 +82,15 @@ class RulesController extends Controller
         $record = Rule::firstOrFailByUuid($request->route('rule'));
 
         $version = Version::firstOrFailByUuid($request->route('version'));
+        $versions = Version::whereNotIn('status', [VersionStatus::ARCHIVED])
+            ->whereNot('id', $version->id)->get();
 
         return Inertia::render('Genie/Admin/Versions/Rules/CreateEdit', [
             'mode' => 'edit',
             'ruleTypes' => RuleType::withTitle(),
             'statusTypes' => RuleStatus::withTitle(),
             'version' => new VersionResource($version),
+            'versions' => VersionResource::collection($versions),
             'record' => new RuleResource($record)
         ]);
     }
@@ -91,6 +100,43 @@ class RulesController extends Controller
         $updateRule->handle();
 
         return redirect()->back()->with('success', __('genie.updated'));
+    }
+
+    /**
+     * @param CloneRule $cloneRule
+     * @return RedirectResponse
+     */
+    public function clone(CloneRule $cloneRule)
+    {
+        $record = $cloneRule->handle();
+
+        $version = Version::firstOrFailByUuid($cloneRule->route('version'));
+
+        return redirect()
+            ->route('genie.admin.versions.rules.index', [
+                'version' => $version->uuid
+            ])
+            ->with('success', __('genie.rule_cloned'));
+
+    }
+
+
+    /**
+     * @param CloneRuleInto $cloneRuleInto
+     * @return RedirectResponse
+     */
+    public function cloneInto(CloneRuleInto $cloneRuleInto)
+    {
+        $record = $cloneRuleInto->handle();
+
+        $version = Version::firstOrFailByUuid($cloneRuleInto->route('target'));
+
+        return redirect()
+            ->route('genie.admin.versions.rules.index', [
+                'version' => $version->uuid
+            ])
+            ->with('success', __('genie.rule_cloned'));
+
     }
 
     public function destroy(Request $request): RedirectResponse

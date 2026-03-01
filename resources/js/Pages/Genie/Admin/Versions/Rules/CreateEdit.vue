@@ -24,6 +24,19 @@ import X from "@/Icons/X.vue";
 import Label from "@/Components/Form/Label.vue";
 import Flex from "@/Components/Layout/Flex.vue";
 import Switch from "@/Components/Form/Switch.vue";
+import Clipboard from "@/Icons/Clipboard.vue";
+import WarningButton from "@/Components/Button/WarningButton.vue";
+import PureButtonLink from "@/Components/Button/PureButtonLink.vue";
+import PureButton from "@/Components/Button/PureButton.vue";
+import ArrowDownTray from "@/Icons/Genie/ArrowDownTray.vue";
+import ArrowPath from "mixpost-enterprise/resources/js/Icons/ArrowPath.vue";
+import ChevronDown from "@/Icons/ChevronDown.vue";
+import DropdownItem from "mixpost-enterprise/resources/js/Components/Dropdown/DropdownItem.vue";
+import DropdownButton from "mixpost-enterprise/resources/js/Components/Dropdown/DropdownButton.vue";
+import Dropdown from "mixpost-enterprise/resources/js/Components/Dropdown/Dropdown.vue";
+import PencilSquare from "mixpost-enterprise/resources/js/Icons/PencilSquare.vue";
+import EllipsisVertical from "mixpost-enterprise/resources/js/Icons/EllipsisVertical.vue";
+import ExpandingWarningButton from "@/Components/Button/Genie/ExpandingWarningButton.vue";
 
 defineOptions({layout: AdminLayout});
 
@@ -42,6 +55,9 @@ const props = defineProps({
     version: {
         type: Object,
         required: true
+    },
+    versions: {
+        type: Object
     },
     type: {
         type: String
@@ -163,6 +179,46 @@ const currentStatus = () => {
 
 const statusEnabled = () => {
     return currentStatus()?.name === 'ENABLED';
+}
+
+const cloneRule = () => {
+    confirmation()
+        .title($t('genie.clone_rule'))
+        .description($t('genie.clone_rule_confirm'))
+        .warning()
+        .onConfirm((dialog) => {
+            dialog.isLoading(true);
+
+            router.put(route('genie.admin.versions.rules.clone', {version: props.version.id, rule: props.record.id}), {
+                preserveScroll: true,
+                onError: (errors) => {
+                    onError(errors, update);
+                },
+            });
+
+            dialog.reset();
+        })
+        .show();
+}
+
+const cloneRuleInto = (target) => {
+    confirmation()
+        .title($t('genie.clone_rule_into'))
+        .description($t('genie.clone_rule_into_confirm') + " -> " + target.name)
+        .warning()
+        .onConfirm((dialog) => {
+            dialog.isLoading(true);
+
+            router.put(route('genie.admin.versions.rules.clone_into', {version: props.version.id, rule: props.record.id, target: target.id}), {
+                preserveScroll: true,
+                onError: (errors) => {
+                    onError(errors, update);
+                },
+            });
+
+            dialog.reset();
+        })
+        .show();
 }
 
 </script>
@@ -311,7 +367,46 @@ const statusEnabled = () => {
                         </SecondaryButton>
 
                     </div>
-                    <div v-if="isEdit">
+                    <div v-if="isEdit" class="flex gap-6">
+
+                        <WarningButton
+                            @click="cloneRule"
+                            :disabled="form.processing"
+                            :hidden-text-on-small-screen=true
+                        >
+                            {{ $t("genie.clone") }}
+                            <template #icon>
+                                <Clipboard/>
+                            </template>
+                        </WarningButton>
+
+                        <Dropdown placement="bottom-end">
+                            <template #trigger>
+                                <ExpandingWarningButton
+                                    :disabled="form.processing"
+                                    :hidden-text-on-small-screen=true
+                                >
+                                    {{ $t("genie.clone_into") }}
+                                    <template #icon>
+                                        <Clipboard/>
+                                        <ChevronDown/>
+                                    </template>
+                                </ExpandingWarningButton>
+                            </template>
+
+                            <template #content>
+
+                                <template v-for="item in versions.data">
+                                <DropdownItem
+                                    @click="cloneRuleInto(item)"
+                                    as="button">
+
+                                    {{ item.name }}
+                                </DropdownItem>
+                                </template>
+
+                            </template>
+                        </Dropdown>
 
                         <DangerButton
                             @click="deleteRule"

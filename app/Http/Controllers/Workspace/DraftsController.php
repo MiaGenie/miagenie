@@ -101,8 +101,8 @@ class DraftsController
         }
 
         $mode = match ($record->status) {
-            DraftStatus::PENDING_REVIEW, DraftStatus::TRASH => 'edit',
-            DraftStatus::PUBLISHED => 'view'
+            DraftStatus::PENDING_REVIEW => 'edit',
+            DraftStatus::PUBLISHED, DraftStatus::TRASH => 'view'
         };
 
         return Inertia::render('Genie/Workspace/Drafts/CreateEdit', [

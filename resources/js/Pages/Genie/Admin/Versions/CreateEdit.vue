@@ -25,6 +25,7 @@ import Trash from "@/Icons/Trash.vue";
 import X from "@/Icons/X.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import Clipboard from "@/Icons/Clipboard.vue";
+import WarningButton from "@/Components/Button/WarningButton.vue";
 
 defineOptions({layout: AdminLayout});
 
@@ -298,7 +299,7 @@ const statusEnabled = () => {
                     </div>
                     <div v-if="isEdit" class="flex gap-6">
 
-                        <DangerButton
+                        <WarningButton
                             @click="cloneVersion"
                             :disabled="form.processing"
                             :hidden-text-on-small-screen=true
@@ -307,7 +308,7 @@ const statusEnabled = () => {
                             <template #icon>
                                 <Clipboard/>
                             </template>
-                        </DangerButton>
+                        </WarningButton>
 
                         <DangerButton
                             @click="deleteVersion"

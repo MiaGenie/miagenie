@@ -14,6 +14,10 @@ import StrategyField from "@/Components/Form/Genie/StrategyField.vue";
 import StrategyOutputField from "@/Components/Form/Genie/StrategyOutputField.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import Save from "@/Icons/Genie/Save.vue";
+import ConfirmationModal from "@/Components/Modal/ConfirmationModal.vue";
+import DangerButton from "@/Components/Button/DangerButton.vue";
+import DialogModal from "@/Components/Modal/DialogModal.vue";
+import PureButtonLink from "@/Components/Button/PureButtonLink.vue";
 
 const {t: $t} = useI18n();
 
@@ -45,9 +49,16 @@ provide('fieldList', props.fieldList);
 provide('fieldTypes', props.fieldTypes);
 provide('record', props.record);
 const strategyStatus = inject('strategyStatus');
+const strategyApproved = ref(false);
 
 const backToList = () => {
     router.get(route('genie.strategies.index', {
+        workspace: workspaceCtx.id
+    }));
+}
+
+const ideasIndex = () => {
+    router.get(route('genie.ideas.index', {
         workspace: workspaceCtx.id
     }));
 }
@@ -60,6 +71,9 @@ const approve = () => {
         preserveScroll: true,
         onError: (errors) => {``
             onError(errors, update);
+        },
+        onSuccess: () => {``
+            strategyApproved.value = true;
         },
     });
 }
@@ -125,5 +139,19 @@ const fieldType = (field) => {
         </Flex>
 
     </div>
+
+    <DialogModal :show="strategyApproved" @close="strategyApproved = false">
+        <template #header>
+            {{ $t("genie.strategy_approved") }}
+        </template>
+        <template #body>
+            {{ $t("genie.strategy_approved_msg") }}
+        </template>
+        <template #footer>
+            <PrimaryButton @click="ideasIndex" class="mr-xs rtl:mr-0 rtl:ml-xs">
+                {{  $t("genie.ideas")  }}
+            </PrimaryButton>
+        </template>
+    </DialogModal>
 
 </template>

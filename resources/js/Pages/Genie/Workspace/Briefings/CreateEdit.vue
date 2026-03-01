@@ -13,6 +13,7 @@ import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import X from "@/Icons/X.vue";
 import VersionFieldsForm from "@/Components/Form/Genie/FieldsForm.vue";
+import useValidateVersionField from "@/Composables/Genie/useValidateVersionField.js";
 
 const {t: $t} = useI18n()
 
@@ -57,7 +58,7 @@ const briefingFields =  cloneDeep(props.fieldList.briefings).reduce(
     }, []
 )
 
-const form = useForm(isEdit.value ? cloneDeep(props.record) :
+const form = useForm(isEdit.value ? cloneDeep(props.record.content) :
 
     cloneDeep(props.fieldList.briefings).reduce(
         (list, field) => {
@@ -65,23 +66,22 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) :
                 props.fieldTypes.find((field_type) => field_type.value === field.field_type).hasOptions ||
                 props.fieldTypes.find((field_type) => field_type.value === field.field_type).name === "FILE"
             )
-            list.content[field.code_name] = hasOptions ? [] : '' ;
-            if(Array.isArray(list.content[field.code_name])) {
+            list[field.code_name] = hasOptions ? [] : '' ;
+            if(Array.isArray(list[field.code_name])) {
                 field.options.forEach(function(group, indexGroup){
                     const nextGroup = group.filter(option => option.checked === 1);
                     nextGroup.forEach(function(option, indexOption){
-                        list.content[field.code_name].push(option.code_name);
+                        list[field.code_name].push(option.code_name);
                     });
                 });
             }
 
             return list;
-        }, {
-            'content': {}
-        }
+        }, {}
     )
 );
 
+const {checkForm, divRefs} = useValidateVersionField(form);
 provide("form", form);
 
 const removePreventNavigation = ref(null);
@@ -114,7 +114,7 @@ watch( () => [form.isDirty, reloadPreventNavigation.value], () => {
 
 const store = () => {
     form.transform((data) => ({
-        ...data,
+        content: {...data},
         headers: {
             'Content-Type': 'multipart/form-data'
         }
@@ -129,7 +129,7 @@ const store = () => {
 
 const update = () => {
     form.transform((data) => ({
-        ...data,
+        content: {...data},
         headers: {
             'Content-Type': 'multipart/form-data'
         }
@@ -145,6 +145,8 @@ const update = () => {
 }
 
 const submit = () => {
+    if (!checkForm('briefings')) return;
+
     if (removePreventNavigation.value) {
         removePreventNavigation.value();
         removePreventNavigation.value = null;
@@ -157,7 +159,6 @@ const submit = () => {
         update();
     }
 }
-
 
 const attemptClose = () => {
     if (!form.isDirty) {
@@ -184,8 +185,6 @@ const backToConfig = () => {
     }));
 }
 
-provide('form', form);
-
 </script>
 <template>
 
@@ -200,9 +199,11 @@ provide('form', form);
 
                 <Panel class="mx-auto">
                     <template v-for="(field) in briefingFields">
+                        <div :ref="el => (divRefs[field.code_name] = el)" >
 
                         <VersionFieldsForm :field="field"></VersionFieldsForm>
 
+                        </div>
                     </template>
                 </Panel>
 
