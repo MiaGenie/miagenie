@@ -27,7 +27,6 @@ import useNotifications from "@/Composables/useNotifications.js";
 import Select from "@/Components/Form/Select.vue";
 import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
 import WarningButton from "@/Components/Button/WarningButton.vue";
-import DraftIcon from "mixpost-pro-team/resources/js/Icons/Genie/Draft.vue";
 import Lamp from "@/Icons/Genie/Lamp.vue";
 import Flex from "@/Components/Layout/Flex.vue";
 import emitter from "@/Services/emitter.js";
@@ -45,6 +44,10 @@ const props = defineProps({
         type: Object,
     },
     ideaStatusTypes: {
+        type: Object,
+        required: true
+    },
+    draftStatusTypes: {
         type: Object,
         required: true
     },
@@ -425,13 +428,8 @@ const statusValue = (status) => {
                                 scope="col"
                                 class="hidden sm:table-cell"
                             >
-                                {{ $t('genie.uses') }}
+                                {{ $t('genie.drafts') }}
                             </TableCell>
-
-                            <TableCell
-                                component="th"
-                                scope="col"
-                            />
 
                         </TableRow>
 

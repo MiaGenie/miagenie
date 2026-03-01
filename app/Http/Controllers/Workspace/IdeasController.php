@@ -60,6 +60,7 @@ class IdeasController
             'records' => IdeaResource::collection($records),
             'strategy' => $strategy ? new StrategyResource($strategy) : null,
             'ideaStatusTypes' => IdeaStatus::withTitle(),
+            'draftStatusTypes' => DraftStatus::withTitle(),
             'funnelStages' => FunnelStage::withTitle(),
             'contentPillars' => $contentPillars,
             'generating' => $generating,
