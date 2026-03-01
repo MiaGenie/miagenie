@@ -20,9 +20,14 @@ const props = defineProps({
 
 const workspaceCtx = inject('workspaceCtx');
 const ideaStatusTypes = usePage().props.ideaStatusTypes;
+const draftStatusTypes = usePage().props.draftStatusTypes;
 
 const ideaStatus = () => {
     return find(ideaStatusTypes, ['value', Number(props.item.status)]);
+}
+
+const draftStatus = (name) => {
+    return find(draftStatusTypes, ['name', name]);
 }
 
 const statusBadge = () => {
@@ -45,6 +50,12 @@ const edit = () => {
     }));
 }
 
+const draftsByStatus = (status) => {
+    return props.item.drafts.filter( (item) => {
+        return item.status === draftStatus(status).value
+    }).length;
+}
+
 </script>
 <template>
     <TableRow :hoverable="true">
@@ -62,7 +73,20 @@ const edit = () => {
                 </Badge>
             </Flex>
             <Flex class="items-start sm:hidden text-sm">
-                {{ $t('genie.uses') + ': ' + props.item.drafts.length  }}
+                <Flex :responsive="false" gap="gap-0">
+                    {{ $t('genie.drafts') + ': ' }}
+                    <Badge variant="warning" v-tooltip="$t('genie.pending_review')">
+                        {{ draftsByStatus('PENDING_REVIEW') }}
+                    </Badge>
+                    /
+                    <Badge variant="success" v-tooltip="$t('genie.published')">
+                        {{ draftsByStatus('PUBLISHED') }}
+                    </Badge>
+                    /
+                    <Badge v-tooltip="$t('genie.trash')">
+                        {{ draftsByStatus('TRASH') }}
+                    </Badge>
+                </Flex>
             </Flex>
         </TableCell>
 
@@ -72,8 +96,20 @@ const edit = () => {
             </Badge>
         </TableCell>
 
-        <TableCell class="hidden sm:table-cell" :clickable="true" @click="edit">
-            {{  props.item.drafts.length  }}
+        <TableCell class="hidden sm:table-cell text-sm" :clickable="true" @click="edit">
+            <Flex gap="gap-0">
+                <Badge variant="warning" v-tooltip="$t('genie.pending_review')">
+                    {{ draftsByStatus('PENDING_REVIEW') }}
+                </Badge>
+                /
+                <Badge variant="success" v-tooltip="$t('genie.published')">
+                    {{ draftsByStatus('PUBLISHED') }}
+                </Badge>
+                /
+                <Badge v-tooltip="$t('genie.trash')">
+                    {{ draftsByStatus('TRASH') }}
+                </Badge>
+            </Flex>
         </TableCell>
 
 
