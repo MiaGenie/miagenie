@@ -124,7 +124,7 @@ class StrategiesController extends Controller
     public function create()
     {
         $workspace = WorkspaceManager::current();
-        $workspaceVersion = WorkspaceVersion::first();
+        $workspaceVersion = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)->first();
 
         $briefing = Briefing::latest()->first();
 
