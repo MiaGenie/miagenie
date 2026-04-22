@@ -2,15 +2,15 @@
 
 namespace App\Http\Resources\MixpostEnterprise;
 
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Carbon;
 use Inovector\Mixpost\Concerns\ResourceHasParameters;
 use Inovector\MixpostEnterprise\Http\Base\Resources\PlanResource;
 use Inovector\MixpostEnterprise\Http\Base\Resources\SubscriptionResource;
 use Inovector\MixpostEnterprise\Http\Base\Resources\UserResource;
-use Inovector\MixpostEnterprise\Http\Base\Resources\WorkspaceResource as MixpostWorkspaceResource;
 use Inovector\MixpostEnterprise\Util;
 
-class WorkspaceResource extends MixpostWorkspaceResource
+class WorkspaceResource extends JsonResource
 {
     use ResourceHasParameters;
 
@@ -45,7 +45,8 @@ class WorkspaceResource extends MixpostWorkspaceResource
                 ];
             }),
             'locale' => $this->locale,
-            'version' => $this->version?->id
+            'version' => $this->version?->id,
+            'version_name' => $this->version?->name
         ];
     }
 }

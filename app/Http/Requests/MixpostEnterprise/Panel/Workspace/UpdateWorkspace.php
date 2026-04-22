@@ -17,6 +17,10 @@ class UpdateWorkspace extends WorkspaceFormRequest
             }
         }
 
+        if ($workspace->workspaceVersion->version_id !== $this->input('version')) {
+            $workspace->workspaceVersion()->update(['version_id' => $this->input('version')]);
+        }
+
         return $workspace->update($this->requestData());
     }
 }

@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AIModelsController;
 use App\Http\Controllers\Admin\FilesController;
 use App\Http\Controllers\Admin\ConfigsController;
 use App\Http\Controllers\Admin\LogsController;
+use App\Http\Controllers\Admin\PlanInfoController;
 use App\Http\Controllers\Admin\RulesController;
 use App\Http\Controllers\Admin\RuleStepsController;
 use App\Http\Controllers\Admin\RunResponsesController;
@@ -121,6 +122,15 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
     Route::prefix('configs')->name('configs.')->group(function () {
         Route::get('/', [ConfigsController::class, 'form'])->name('form');
         Route::put('/', [ConfigsController::class, 'update'])->name('update');
+    });
+
+    Route::prefix('plans_info')->name('plans_info.')->group(function () {
+        Route::get('/', [PlanInfoController::class, 'index'])->name('index');
+        Route::get('create', [PlanInfoController::class, 'create'])->name('create');
+        Route::put('store/{plan}/{locale}', [RuleStepsController::class, 'store'])->name('store');
+        Route::get('{plan}/{locale}', [PlanInfoController::class, 'edit'])->name('edit');
+        Route::put('{plan}', [PlanInfoController::class, 'update'])->name('update');
+        Route::delete('{plan}', [PlanInfoController::class, 'destroy'])->name('delete');
     });
 
 });

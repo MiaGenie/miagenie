@@ -74,6 +74,22 @@ const redirectToPortal = () => {
 
                     <HorizontalGroup class="mt-lg">
                         <template #title>
+                            {{ $t('genie.language') }}
+                        </template>
+
+                        <div>{{ workspace.locale }}</div>
+                    </HorizontalGroup>
+
+                    <HorizontalGroup class="mt-lg">
+                        <template #title>
+                            {{ $t('genie.version') }}
+                        </template>
+
+                        <div>{{ workspace.version_name }}</div>
+                    </HorizontalGroup>
+
+                    <HorizontalGroup class="mt-lg">
+                        <template #title>
                             {{ $t('enterprise-general.owner') }}
                         </template>
 

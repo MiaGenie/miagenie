@@ -11,6 +11,10 @@ class AssignVersionToWorkspace
 
     public function handle(WorkspaceCreated $workspaceCreated): void
     {
+        if ($workspaceCreated->workspace->workspaceVersion?->version_id) {
+            return;
+        }
+
         $defaultVersion = Version::where('is_default', true)->firstOrFail();
 
         WorkspaceVersion::create([

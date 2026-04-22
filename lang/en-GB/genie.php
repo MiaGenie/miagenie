@@ -299,6 +299,10 @@ return [
     'field_rows' => 'Rows',
     'field_name_invalid' => 'Field name is not snake case (field_name)',
 
+    'payment_plans' => 'Payment Plans',
+    'payment_plan' => 'Payment Plan',
+    'payment_plan_description' => 'Payment Plan Description',
+
     'files' => 'Files',
     'file_library' => 'Genie Files',
     'do_you_want_delete' => 'Are you sure you want to delete selected files?',
