@@ -27,7 +27,7 @@ const { user } = useAuth()
             {{ $t('genie.strategy') }}
         </MenuItem>
         <MenuItem :url="route('genie.strategies.list', {workspace: workspaceCtx.id})"
-                  :active="$page.component === 'Genie/Workspace/Strategies/List'">
+                  :active="$page.component === 'Genie/Workspace/Strategies/List'"
                   :hidden="!user.is_admin"
             >
             <template #icon>
