@@ -15,7 +15,7 @@ use Inovector\Mixpost\Facades\Theme;
 use Inovector\Mixpost\Features;
 use Inovector\Mixpost\Mixpost;
 use Inovector\Mixpost\Util;
-use Tightenco\Ziggy\Ziggy;
+use Tighten\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
 {

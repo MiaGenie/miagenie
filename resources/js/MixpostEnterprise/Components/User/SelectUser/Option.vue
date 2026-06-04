@@ -20,7 +20,8 @@ defineProps({
         </div>
     </Flex>
 </template>
-<style>
+<style lang="css">
+@reference "@css/app.css";
 .vs__selected .user-email {
     @apply text-gray-500;
 }

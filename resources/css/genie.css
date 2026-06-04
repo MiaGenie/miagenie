@@ -23,7 +23,7 @@
 
         }
 
-        @screen md  {
+        @variant md  {
             & > div[class^="c_"] {
                 @apply max-w-[46%] p-3 m-[1%];
             }
@@ -157,7 +157,7 @@
             }
         }
 
-        @screen md  {
+        @variant md  {
             & div[class="c_persona"] {
 
                 & div[class="c_70_key_offline_touchpoints"] {
@@ -223,7 +223,7 @@
             }
         }
 
-        @screen md  {
+        @variant md  {
             & div[class="c_0"], div[class="c_1"], div[class="c_2"], div[class="c_3"], div[class="c_4"], div[class="c_5"], div[class="c_6"], div[class="c_7"], div[class="c_8"], div[class="c_9"] {
 
                 & div[class="c_1_importance"] {

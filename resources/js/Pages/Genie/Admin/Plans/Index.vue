@@ -51,13 +51,6 @@ watch(() => props.records.data, () => {
     stepList.value = cloneDeep(props.records.data);
 })
 
-const closeTranslations = () => {
-    router.get(route('genie.admin.versions.rules.steps.index',
-        {
-            version: props.version.id,
-            rule: props.rule.id
-        }));
-}
 </script>
 <template>
 

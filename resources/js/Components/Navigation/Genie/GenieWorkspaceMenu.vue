@@ -1,15 +1,17 @@
 <script setup>
-import {inject} from "vue";
-import MenuItem from "@/Components/Sidebar/MenuItem.vue"
-import MenuDelimiter from "@/Components/Sidebar/MenuDelimiter.vue"
-import MenuGroupHeader from "@/Components/Sidebar/MenuGroupHeader.vue"
-import MenuGroupBody from "@/Components/Sidebar/MenuGroupBody.vue"
-import CogIcon from "@/Icons/Cog.vue";
-import LampIcon from "@/Icons/Genie/Lamp.vue";
-import DraftIcon from "@/Icons/Genie/Draft.vue";
-import StrategyIcon from "@/Icons/Genie/Strategies.vue";
+import { inject } from 'vue'
+import MenuItem from '@/Components/Sidebar/MenuItem.vue'
+import MenuDelimiter from '@/Components/Sidebar/MenuDelimiter.vue'
+import MenuGroupHeader from '@/Components/Sidebar/MenuGroupHeader.vue'
+import MenuGroupBody from '@/Components/Sidebar/MenuGroupBody.vue'
+import CogIcon from '@/Icons/Cog.vue'
+import LampIcon from '@/Icons/Genie/Lamp.vue'
+import DraftIcon from '@/Icons/Genie/Draft.vue'
+import StrategyIcon from '@/Icons/Genie/Strategies.vue'
+import useAuth from '@/Composables/useAuth'
 
 const workspaceCtx = inject('workspaceCtx');
+const { user } = useAuth()
 </script>
 <template>
     <MenuDelimiter/>
@@ -26,6 +28,8 @@ const workspaceCtx = inject('workspaceCtx');
         </MenuItem>
         <MenuItem :url="route('genie.strategies.list', {workspace: workspaceCtx.id})"
                   :active="$page.component === 'Genie/Workspace/Strategies/List'">
+                  :hidden="!user.is_admin"
+            >
             <template #icon>
                 <StrategyIcon/>
             </template>

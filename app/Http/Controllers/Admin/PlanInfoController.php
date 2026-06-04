@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Requests\Admin\StorePlanInfo;
+use App\Http\Requests\Admin\UpdatePlanInfo;
 use App\Http\Resources\Admin\PlanInfoResource;
 use App\Models\PlanInfo;
 use Arr;
@@ -24,7 +24,7 @@ class PlanInfoController extends Controller
             ->paginate(100)
             ->onEachSide(1);
 
-        $recordsTranslations = PlanInfo::whereIn('id', $records->pluck('id'));
+        $recordsTranslations = PlanInfo::whereIn('plan_id', $records->pluck('id'));
         $translations = $this->getTranslations($recordsTranslations->get());
 
         return Inertia::render('Genie/Admin/Plans/Index', [
@@ -42,36 +42,30 @@ class PlanInfoController extends Controller
     public function edit(Request $request)
     {
 
-        $record = PlanInfo::find($request->route('plan'))->firstOrCreate()->setLocale($request->route('locale'));
+        $record = PlanInfo::firstOrCreate(['plan_id' => $request->route('plan_id')])->setLocale($request->route('locale'));
 
         $locales = Util::config('locales');
         $locale = Arr::first($locales, function ($value) use ($request) {
             return $value['long'] === $request->route('locale');
         });
 
-        return Inertia::render('Genie/Admin/Plans/CreateEdit', [
+        return Inertia::render('Genie/Admin/Plans/Update', [
+            'plan' => new PlanResource(Plan::find($request->route('plan_id'))),
             'record' => new PlanInfoResource($record),
             'locale' => $locale
         ]);
     }
 
     /**
-     * @param StorePlanInfo $storePlanInfo
+     * @param UpdatePlanInfo $updatePlanInfo
      * @return RedirectResponse
      * @throws \Throwable
      */
-    public function store(StorePlanInfo $storePlanInfo)
+    public function update(UpdatePlanInfo $updatePlanInfo)
     {
-        $rule = PlanInfo::firstOrFailByUuid($storePlanInfo->route('plan'));
+        $record = $updatePlanInfo->handle();
 
-        $record = $storePlanInfo->handle();
-
-        return redirect()
-            ->route('genie.admin.versions.rules.steps.edit', [
-                'rule' => $rule->uuid,
-                'step' => $record->uuid,
-            ])
-            ->with('success', __('genie.step_created'));
+        return redirect()->back()->with('success', __('genie.field_updated'));
     }
 
     /**

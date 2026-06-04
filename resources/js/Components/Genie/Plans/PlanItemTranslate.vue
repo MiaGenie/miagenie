@@ -25,7 +25,6 @@ const rule = usePage().props.rule;
         <TableCell>
             <PlanItemTranslateAction
                 :item="plan"
-                :rule="rule"
             />
         </TableCell>
 

@@ -76,14 +76,6 @@ import LogsIcon from "@/Icons/Genie/Logs.vue";
             {{ $t('genie.genie_config') }}
         </MenuItem>
 
-        <MenuItem :url="route('genie.admin.plans_info.index')"
-                  :active="$page.component === 'Genie/Admin/GenieAIConfig'">
-            <template #icon>
-                <CogIcon/>
-            </template>
-            {{ $t('genie.genie_config') }}
-        </MenuItem>
-
     </MenuGroupBody>
     <MenuDelimiter/>
 </template>

@@ -169,6 +169,7 @@ const backToList = () => {
                             :error="form.errors.sub_description !== undefined"
                             id="sub_description"
                             class="w-full placeholder:italic placeholder:text-sm"
+                            :required=true
                             rows="5"
                         />
 

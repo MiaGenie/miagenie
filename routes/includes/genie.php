@@ -126,11 +126,8 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
 
     Route::prefix('plans_info')->name('plans_info.')->group(function () {
         Route::get('/', [PlanInfoController::class, 'index'])->name('index');
-        Route::get('create', [PlanInfoController::class, 'create'])->name('create');
-        Route::put('store/{plan}/{locale}', [RuleStepsController::class, 'store'])->name('store');
-        Route::get('{plan}/{locale}', [PlanInfoController::class, 'edit'])->name('edit');
-        Route::put('{plan}', [PlanInfoController::class, 'update'])->name('update');
-        Route::delete('{plan}', [PlanInfoController::class, 'destroy'])->name('delete');
+        Route::get('{plan_id}/{locale}', [PlanInfoController::class, 'edit'])->name('edit');
+        Route::put('update/{plan_id}/{locale}', [PlanInfoController::class, 'update'])->name('update');
     });
 
 });

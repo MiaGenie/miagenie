@@ -2,30 +2,44 @@
     "private": true,
     "type": "module",
     "scripts": {
+        "dev": "vite",
         "build": "vite build",
-        "dev": "vite"
+        "prepare": "husky",
+        "lint": "eslint . --fix",
+        "lint:check": "eslint .",
+        "lint:staged": "lint-staged",
+        "format": "prettier --write \"resources/**/*.{js,vue,css}\"",
+        "format:check": "prettier --check \"resources/**/*.{js,vue,css}\""
     },
-    "workspaces": ["packages/inovector/mixpost-pro-team", "packages/inovector/mixpost-enterprise"],
+    "workspaces": [
+        "packages/inovector/mixpost-pro-team",
+        "packages/inovector/mixpost-enterprise"
+    ],
     "devDependencies": {
+        "@eslint/js": "^9.32.0",
         "@tailwindcss/aspect-ratio": "^0.4.2",
         "@tailwindcss/forms": "^0.5.2",
+        "@tailwindcss/vite": "^4.0.15",
         "@vitejs/plugin-vue": "^5.1.4",
-        "autoprefixer": "^10.4.13",
+        "@vue/eslint-config-prettier": "^10.2.0",
         "axios": "^1.7.7",
-        "fs": "^0.0.1-security",
         "concurrently": "^9.1.2",
+        "eslint": "^9.32.0",
+        "eslint-plugin-vue": "^10.4.0",
+        "fs": "^0.0.1-security",
+        "husky": "^9.1.7",
         "laravel-echo": "^1.16.1",
         "laravel-vite-plugin": "^1.0.5",
+        "lint-staged": "^16.1.4",
         "lodash": "^4.17.19",
         "os": "^0.1.2",
         "path": "^0.12.7",
-        "postcss": "^8.4.47",
-        "postcss-nesting": "^10.1.10",
+        "prettier": "^3.6.2",
         "pusher-js": "^8.4.0-rc2",
-        "tailwindcss": "^3.2.6",
+    "tailwindcss": "^4.0.15",
         "unplugin-vue-define-options": "^1.2.4",
         "vite": "^5.4.9",
-        "vue": "^3.5.12"
+        "vue": "^3.5.13"
     },
     "dependencies": {
         "@inertiajs/vue3": "^1.0.2",
@@ -47,7 +61,7 @@
         "@tiptap/vue-3": "^2.7.2",
         "chart.js": "^4.1.2",
         "chartjs-plugin-zoom": "^2.0.0",
-        "core-js": "^3.29.0",
+        "core-js": "^3.42.0",
         "date-fns": "^2.29.1",
         "date-fns-tz": "^1.3.7",
         "emoji-mart-vue-fast": "^11.1.1",
@@ -58,12 +72,26 @@
         "nanoid": "^5.0.7",
         "nprogress": "^0.2.0",
         "pretty": "^2.0.0",
+        "prosemirror-keymap": "^1.2.3",
         "tippy.js": "^6.3.7",
         "twemoji-parser": "^14.0.0",
         "twitter-text": "^3.1.0",
         "vue-flatpickr-component": "^9.0.6",
         "vue-i18n": "^9.9.0",
         "vue-select": "^4.0.0-beta.6",
-        "vuedraggable": "^4.1.0"
+        "vuedraggable": "^4.1.0",
+        "ziggy-js": "^2.5.2"
+    },
+    "lint-staged": {
+        "*.{js,mjs,cjs,vue}": [
+            "eslint --fix",
+            "prettier --write"
+        ],
+        "*.{css,pcss}": [
+            "prettier --write"
+        ],
+        "*.php": [
+            "composer format"
+        ]
     }
 }
