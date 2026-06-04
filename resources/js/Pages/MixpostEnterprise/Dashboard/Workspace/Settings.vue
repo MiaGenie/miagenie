@@ -20,7 +20,6 @@ defineOptions({layout: WorkspaceLayout});
 
 const {t: $t} = useI18n()
 
-const routePrefix = 'mixpost_e';
 const {notify} = useNotifications();
 
 const props = defineProps({
@@ -49,10 +48,10 @@ const selectColor = () => {
 }
 
 const save = () => {
-    form.put(route(`${routePrefix}.workspace.settings.update`, {'workspace': props.workspace.uuid}), {
+    form.put(route('mixpost_e.workspace.settings.update', {'workspace': props.workspace.uuid}), {
         preserveScroll: true,
         onSuccess: () => {
-            notify('success', $t('dashboard.settings_saved'));
+            notify('success', $t('enterprise-dashboard.settings_saved'));
         }
     })
 }

@@ -4,10 +4,9 @@ namespace App\Http\Requests\MixpostEnterprise\Panel\Workspace;
 
 use Inovector\Mixpost\Enums\WorkspaceUserRole;
 use Inovector\MixpostEnterprise\Events\Workspace\WorkspaceCreated;
-use Inovector\MixpostEnterprise\Http\Base\Requests\Panel\Workspace\StoreWorkspace as MixpostStoreWorkspace;
 use App\Models\Workspace;
 
-class StoreWorkspace extends MixpostStoreWorkspace
+class StoreWorkspace extends WorkspaceFormRequest
 {
     public function handle(): null|Workspace
     {
@@ -20,6 +19,10 @@ class StoreWorkspace extends MixpostStoreWorkspace
                 canApprove: true
             );
         }
+
+        $workspace->workspaceVersion()->create(
+            ['version_id' => $this->input('version')]
+        );
 
         WorkspaceCreated::dispatch($workspace, true);
 

@@ -44,6 +44,7 @@ return [
     'reordering' => 'Reordering',
 
     'translations' => 'Translations',
+    'translation_updated' => 'Translation Updated',
     'uses' => 'Uses',
     'media_instructions' => 'Media instructions',
 
@@ -298,6 +299,11 @@ return [
     'field_is_identifier_invalid' => 'Invalid Identifier',
     'field_rows' => 'Rows',
     'field_name_invalid' => 'Field name is not snake case (field_name)',
+
+    'payment_plans' => 'Payment Plans',
+    'payment_plan' => 'Payment Plan',
+    'payment_plan_description' => 'Payment Plan Description',
+    'plans_descriptions' => 'Plans Descriptions',
 
     'files' => 'Files',
     'file_library' => 'Genie Files',

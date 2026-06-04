@@ -11,7 +11,7 @@ import "@css/page.pcss";
 import {createApp, h} from 'vue';
 import {router, createInertiaApp} from '@inertiajs/vue3';
 import {resolvePageComponent} from 'laravel-vite-plugin/inertia-helpers';
-import {ZiggyVue} from 'ziggy';
+import {ZiggyVue} from 'ziggy-js';
 import {vTooltip} from 'floating-vue'
 import vSelect from "vue-select";
 import Confirmation from "@/Plugins/Confirmation/Confirmation";

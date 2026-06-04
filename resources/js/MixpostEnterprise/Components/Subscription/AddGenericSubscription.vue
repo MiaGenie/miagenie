@@ -85,7 +85,7 @@ const closeModal = () => {
                 </Alert>
 
                 <VerticalGroup class="mt-lg">
-                    <template #title> {{ $t('enterprise-plan.plan') }}</template>
+                    <template #title> {{ $t('plan.plan') }}</template>
 
                     <Flex :col="true" class="w-full">
                         <template v-for="plan in plans" :key="plan.id">
@@ -123,11 +123,11 @@ const closeModal = () => {
             </template>
 
             <template v-if="!plans.length">
-                <NoResult>{{ $t('enterprise-plan.no_plans') }}</NoResult>
+                <NoResult>{{ $t('plan.no_plans') }}</NoResult>
 
                 <div class="mt-lg">
                     <Link :href="route(`${routePrefix}.plans.create`)">
-                        <PrimaryButton>{{ $t('enterprise-plan.create_plan') }}</PrimaryButton>
+                        <PrimaryButton>{{ $t('plan.create_plan') }}</PrimaryButton>
                     </Link>
                 </div>
             </template>

@@ -15,7 +15,7 @@ use Inovector\Mixpost\Facades\Theme;
 use Inovector\Mixpost\Features;
 use Inovector\Mixpost\Mixpost;
 use Inovector\Mixpost\Util;
-use Tightenco\Ziggy\Ziggy;
+use Tighten\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -55,7 +55,7 @@ class HandleInertiaRequests extends Middleware
         $ziggy = new Ziggy();
 
         return array_merge(parent::share($request), [
-            'auth' => self::auth(),
+            'auth' => $this->auth(),
             'ziggy' => function () use ($request, $ziggy) {
                 return array_merge($ziggy->filter(['genie.*', 'mixpost.*'])->toArray(), [
                     'location' => $request->url(),
@@ -63,7 +63,7 @@ class HandleInertiaRequests extends Middleware
                 ]);
             },
             'broadcast' => Broadcast::echoOptions(),
-            'is_admin_console' => self::isAdminConsole($request),
+            'is_admin_console' => Util::isAdminConsole($request),
             'flash' => function () use ($request) {
                 return [
                     'success' => $request->hasSession() ? $request->session()->get('success') : null,

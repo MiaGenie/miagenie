@@ -94,6 +94,7 @@ defineExpose({ editor });
     <editor-content :editor="editor"/>
 </template>
 <style lang="css">
+@reference "@css/app.css";
 [data-type="mention"] {
     @apply text-primary-500;
 }

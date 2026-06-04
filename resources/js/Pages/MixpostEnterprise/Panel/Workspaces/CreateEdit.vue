@@ -18,7 +18,7 @@ import ColorPicker from "@mJs/Components/Package/ColorPicker.vue";
 import {COLOR_PALLET_LIST} from "@mJs/Constants/ColorPallet";
 import SelectUser from "@/MixpostEnterprise/Components/User/SelectUser/SelectUser.vue";
 import LabelSuffix from "@meJs/Components/Form/LabelSuffix.vue";
-import Actions from "@meJs/Components/Workspace/Actions.vue";
+import Actions from "@/MixpostEnterprise/Components/Workspace/Actions.vue";
 import Select from "@meJs/Components/Form/Select.vue";
 import Alert from "@meJs/Components/Util/Alert.vue";
 import EnterpriseLayout from "@/Layouts/MixpostEnterprise/Panel.vue";
@@ -245,7 +245,7 @@ const submit = () => {
 
                        <Alert v-if="isEdit"
                               :closeable="false"
-                              class="mt-lg">{{ $t('enterprise-panel.add_admin_role')}}
+                              class="mt-lg">{{ $t('panel.add_admin_role')}}
                        </Alert>
 
                        <Error :message="form.errors.owner_id"/>

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MixpostEnterprise\Dashboard\Main\CreateWorkspaceController;
 use App\Http\Controllers\MixpostEnterprise\DashboardController;
 use App\Http\Controllers\Workspace\PostsController;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -10,6 +11,7 @@ use Inovector\Mixpost\Http\Base\Middleware\IdentifyWorkspace;
 use Inovector\Mixpost\Http\Base\Middleware\Localization;
 use Inovector\Mixpost\Mixpost;
 use Inovector\Mixpost\Util;
+use Inovector\MixpostEnterprise\Http\Base\Middleware\AllowMultipleWorkspaces;
 use Inovector\MixpostEnterprise\Util as EnterpriseUtil;
 
 Route::name('genie.')
@@ -70,7 +72,7 @@ Route::prefix(EnterpriseUtil::corePath(true))
             Mixpost::getWebDashboardMiddlewares(),
             [HandleInertiaRequests::class]
         ))->group(function () {
-            require __DIR__ . '/mixpost-includes/panel.php';
+            require __DIR__ . '/mixpost-enterprise-includes/panel.php';
         });
     });
 
@@ -83,7 +85,8 @@ Route::prefix(Util::corePath())
             Mixpost::getWebDashboardMiddlewares(),
             [HandleInertiaRequests::class]
         ))->group(function () {
-            require __DIR__ . '/mixpost-includes/workspace.php';
+            require __DIR__ . '/mixpost-enterprise-includes/main.php';
+            require __DIR__ . '/mixpost-enterprise-includes/workspace.php';
         });
     });
 
