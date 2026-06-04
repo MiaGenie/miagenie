@@ -1,1 +1,0 @@
-import{G as e,Q as u}from"./app-OP8xkROZ.js";const a=()=>{const t=e(()=>u().props.mode),r=e(()=>t.value==="create"),o=e(()=>t.value==="edit"),s=e(()=>t.value==="view");return{isCreate:r,isEdit:o,isView:s}};export{a as u};
