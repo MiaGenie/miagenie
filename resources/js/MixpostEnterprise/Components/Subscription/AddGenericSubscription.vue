@@ -6,7 +6,7 @@ import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import DialogModal from "@/Components/Modal/DialogModal.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import Radio from "@/Components/Form/Radio.vue";
-import LabelGroup from "@meJs/Components/Surface/LabelGroup.vue";
+import LabelGroup from "@/MixpostEnterprise/Components/Surface/LabelGroup.vue";
 import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
 import Error from "@/Components/Form/Error.vue";
 import Input from "@/Components/Form/Input.vue";

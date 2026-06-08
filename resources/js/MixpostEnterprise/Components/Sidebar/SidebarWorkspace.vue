@@ -1,11 +1,11 @@
 <script setup>
-import {Link} from '@inertiajs/vue3';
-import {inject} from "vue";
-import useWorkspace from "@meJs/Composables/useWorkspace";
-import Logo from "@/Components/DataDisplay/Logo.vue"
-import MenuItem from "@/Components/Sidebar/MenuItem.vue"
-import MenuDelimiter from "@/Components/Sidebar/MenuDelimiter.vue"
-import MenuGroupBody from "@/Components/Sidebar/MenuGroupBody.vue"
+import { Link } from "@inertiajs/vue3";
+import { inject } from "vue";
+import useWorkspace from "@/MixpostEnterprise/Composables/useWorkspace";
+import Logo from "@/Components/DataDisplay/Logo.vue";
+import MenuItem from "@/Components/Sidebar/MenuItem.vue";
+import MenuDelimiter from "@/Components/Sidebar/MenuDelimiter.vue";
+import MenuGroupBody from "@/Components/Sidebar/MenuGroupBody.vue";
 import UserMenu from "@/Components/Navigation/UserMenu.vue";
 import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import ArrowLeft from "@/Icons/ArrowLeft.vue";
@@ -16,98 +16,146 @@ import Document from "@/Icons/Document.vue";
 import ShieldCheck from "@meJs/Icons/ShieldCheck.vue";
 import ServerStack from "@/Icons/ServerStack.vue";
 
-const routePrefix = 'mixpost_e'
-const {activeWorkspace, isWorkspaceOwner} = useWorkspace();
+const routePrefix = "mixpost_e";
+const { activeWorkspace, isWorkspaceOwner } = useWorkspace();
 </script>
 <template>
-    <div class="w-full h-full flex flex-col pb-2xl pt-20 bg-white border-r border-gray-200">
+    <div
+        class="w-full h-full flex flex-col pb-2xl pt-20 bg-white border-r border-gray-200"
+    >
         <div class="absolute top-0 w-full text-center">
             <div class="bg-primary-50 border-b border-r border-gray-200 p-xs">
-                <span class="text-black font-medium text-sm">{{ $t('sidebar.workspace_settings') }}</span>
+                <span class="text-black font-medium text-sm">{{
+                    $t("sidebar.workspace_settings")
+                }}</span>
             </div>
         </div>
 
         <div class="relative mb-12 px-xl">
             <Link :href="route(`${routePrefix}.dashboard`)">
-                <Logo class="h-12"/>
+                <Logo class="h-12" />
             </Link>
         </div>
 
         <div class="flex flex-col space-y-lg overflow-y-auto px-xl h-full">
             <MenuGroupBody>
-                <Link :href="route('mixpost.dashboard', {workspace: activeWorkspace.uuid})">
+                <Link
+                    :href="
+                        route('mixpost.dashboard', {
+                            workspace: activeWorkspace.uuid,
+                        })
+                    "
+                >
                     <SecondaryButton size="sm">
                         <template #icon>
-                            <ArrowLeft/>
+                            <ArrowLeft />
                         </template>
-                        {{ $t('enterprise-general.back') }}
+                        {{ $t("enterprise-general.back") }}
                     </SecondaryButton>
                 </Link>
             </MenuGroupBody>
 
             <MenuGroupBody>
-                <MenuItem :url="route(`${routePrefix}.workspace.settings.index`, {workspace: activeWorkspace.uuid})"
-                          :active="$page.component === 'Dashboard/Workspace/Settings'">
+                <MenuItem
+                    :url="
+                        route(`${routePrefix}.workspace.settings.index`, {
+                            workspace: activeWorkspace.uuid,
+                        })
+                    "
+                    :active="$page.component === 'Dashboard/Workspace/Settings'"
+                >
                     <template #icon>
-                        <Cog/>
+                        <Cog />
                     </template>
-                    {{ $t('general.settings') }}
+                    {{ $t("general.settings") }}
                 </MenuItem>
 
-                <MenuItem :url="route(`${routePrefix}.workspace.members`, {workspace: activeWorkspace.uuid})"
-                          :active="$page.component === 'Dashboard/Workspace/Members'">
+                <MenuItem
+                    :url="
+                        route(`${routePrefix}.workspace.members`, {
+                            workspace: activeWorkspace.uuid,
+                        })
+                    "
+                    :active="$page.component === 'Dashboard/Workspace/Members'"
+                >
                     <template #icon>
-                        <Users/>
+                        <Users />
                     </template>
-                    {{ $t('enterprise-team.team') }}
+                    {{ $t("enterprise-team.team") }}
                 </MenuItem>
 
-                <MenuItem :url="route(`${routePrefix}.workspace.services.index`, {workspace: activeWorkspace.uuid})"
-                          :active="$page.component === 'Dashboard/Workspace/Services'">
+                <MenuItem
+                    :url="
+                        route(`${routePrefix}.workspace.services.index`, {
+                            workspace: activeWorkspace.uuid,
+                        })
+                    "
+                    :active="$page.component === 'Dashboard/Workspace/Services'"
+                >
                     <template #icon>
-                        <ServerStack/>
+                        <ServerStack />
                     </template>
-                    {{ $t('enterprise-general.services') }}
+                    {{ $t("enterprise-general.services") }}
                 </MenuItem>
             </MenuGroupBody>
 
-            <MenuDelimiter/>
+            <MenuDelimiter />
 
             <MenuGroupBody>
-                <MenuItem :url="route(`${routePrefix}.workspace.billing`, {workspace: activeWorkspace.uuid})"
-                          :active="$page.component === 'Dashboard/Workspace/Billing'">
+                <MenuItem
+                    :url="
+                        route(`${routePrefix}.workspace.billing`, {
+                            workspace: activeWorkspace.uuid,
+                        })
+                    "
+                    :active="$page.component === 'Dashboard/Workspace/Billing'"
+                >
                     <template #icon>
-                        <CreditCard/>
+                        <CreditCard />
                     </template>
-                    {{ $t('enterprise-general.billing') }}
+                    {{ $t("enterprise-general.billing") }}
                 </MenuItem>
 
-                <MenuItem :url="route(`${routePrefix}.workspace.receipts.index`, {workspace: activeWorkspace.uuid})"
-                          :active="$page.component === 'Dashboard/Workspace/Receipts'">
+                <MenuItem
+                    :url="
+                        route(`${routePrefix}.workspace.receipts.index`, {
+                            workspace: activeWorkspace.uuid,
+                        })
+                    "
+                    :active="$page.component === 'Dashboard/Workspace/Receipts'"
+                >
                     <template #icon>
-                        <Document/>
+                        <Document />
                     </template>
-                    {{ $t('sidebar.receipts') }}
+                    {{ $t("sidebar.receipts") }}
                 </MenuItem>
             </MenuGroupBody>
 
             <template v-if="isWorkspaceOwner">
-                <MenuDelimiter/>
+                <MenuDelimiter />
 
                 <MenuGroupBody>
-                    <MenuItem :url="route(`${routePrefix}.workspace.security.index`, {workspace: activeWorkspace.uuid})"
-                              :active="$page.component === 'Dashboard/Workspace/Security'">
+                    <MenuItem
+                        :url="
+                            route(`${routePrefix}.workspace.security.index`, {
+                                workspace: activeWorkspace.uuid,
+                            })
+                        "
+                        :active="
+                            $page.component === 'Dashboard/Workspace/Security'
+                        "
+                    >
                         <template #icon>
-                            <ShieldCheck/>
+                            <ShieldCheck />
                         </template>
-                        {{ $t('sidebar.security') }}
+                        {{ $t("sidebar.security") }}
                     </MenuItem>
                 </MenuGroupBody>
             </template>
         </div>
 
         <div class="px-xl pt-xl">
-            <UserMenu/>
+            <UserMenu />
         </div>
     </div>
 </template>

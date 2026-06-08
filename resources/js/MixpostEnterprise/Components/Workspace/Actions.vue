@@ -13,7 +13,7 @@ import Plus from "@/Icons/Plus.vue";
 
 const { t: $t } = useI18n()
 
-const routePrefix = inject('routePrefix');
+const routePrefix = inject('routeEntPrefix');
 const confirmation = inject('confirmation');
 
 const props = defineProps({

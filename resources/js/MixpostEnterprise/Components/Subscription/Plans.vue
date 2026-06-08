@@ -4,11 +4,9 @@ import {useI18n} from "vue-i18n";
 import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
 import Flex from "@/Components/Layout/Flex.vue";
 import Radio from "@/Components/Form/Radio.vue";
-import LabelGroup from "@meJs/Components/Surface/LabelGroup.vue";
+import LabelGroup from "@/MixpostEnterprise/Components/Surface/LabelGroup.vue";
 
 const {t: $t} = useI18n()
-
-const routePrefix = inject('routePrefix');
 
 const props = defineProps({
     currentPlan: {

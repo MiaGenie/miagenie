@@ -9,7 +9,7 @@ import "@css/proseMirror.css";
 import "@css/page.pcss";
 
 import {createApp, h} from 'vue';
-import {router, createInertiaApp} from '@inertiajs/vue3';
+import { createInertiaApp, router } from "@inertiajs/vue3";
 import {resolvePageComponent} from 'laravel-vite-plugin/inertia-helpers';
 import {ZiggyVue} from 'ziggy-js';
 import {vTooltip} from 'floating-vue'
@@ -37,7 +37,7 @@ createInertiaApp({
         return createApp({render: () => h(App, props)})
             .use(plugin)
             .directive('tooltip', vTooltip)
-            .use(ZiggyVue, Ziggy)
+            .use(ZiggyVue)
             .use(Confirmation)
             .use(AuthPasswordConfirmation)
             .use(i18n)

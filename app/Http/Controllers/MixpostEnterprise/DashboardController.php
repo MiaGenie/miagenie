@@ -32,6 +32,7 @@ class DashboardController extends Controller
             ->onEachSide(1)
             ->withQueryString();
 
+        EagerLoadPostVersionsMedia::apply($postsPending);
         EagerLoadPostVersionsMedia::apply($postsScheduled);
 
         return Inertia::render('Genie/Workspace/Dashboard', [

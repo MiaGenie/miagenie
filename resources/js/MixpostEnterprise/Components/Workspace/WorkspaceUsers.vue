@@ -23,9 +23,9 @@ import PureButtonLink from "@/Components/Button/PureButtonLink.vue";
 import AttachUser from "./AttachUser.vue";
 import useNotifications from "@/Composables/useNotifications";
 import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
-import CanApprove from "@meJs/Components/Workspace/CanApprove.vue";
+import CanApprove from "@/MixpostEnterprise/Components/Workspace/CanApprove.vue";
 import Flex from "@/Components/Layout/Flex.vue";
-import IsOwner from "@meJs/Components/Workspace/IsOwner.vue";
+import IsOwner from "@/MixpostEnterprise/Components/Workspace/IsOwner.vue";
 
 const {t: $t} = useI18n()
 

@@ -52,12 +52,10 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $ziggy = new Ziggy();
-
         return array_merge(parent::share($request), [
             'auth' => $this->auth(),
-            'ziggy' => function () use ($request, $ziggy) {
-                return array_merge($ziggy->filter(['genie.*', 'mixpost.*'])->toArray(), [
+            'ziggy' => function () use ($request) {
+                return array_merge((new Ziggy)->filter(['genie.*', 'mixpost.*', 'mixpost_e.*'])->toArray(), [
                     'location' => $request->url(),
                     'workspace_id' => self::getWorkspaceId($request)
                 ]);
