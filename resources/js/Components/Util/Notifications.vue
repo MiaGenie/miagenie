@@ -1,74 +1,73 @@
 <script setup>
-import {ref, onMounted, onUnmounted, computed, watch} from "vue";
-import {Link} from '@inertiajs/vue3';
-import {usePage} from "@inertiajs/vue3";
-import emitter from "@/Services/emitter";
-import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
-import CheckIcon from "@/Icons/Check.vue"
-import ExclamationIcon from "@/Icons/Exclamation.vue"
-import XIcon from "@/Icons/X.vue"
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { Link, usePage } from '@inertiajs/vue3'
+import emitter from '@/Services/emitter'
+import SecondaryButton from '@/Components/Button/SecondaryButton.vue'
+import CheckIcon from '@/Icons/Check.vue'
+import ExclamationIcon from '@/Icons/Exclamation.vue'
+import XIcon from '@/Icons/X.vue'
 
-const variant = ref('info');
-const message = ref('');
+const variant = ref('info')
+const message = ref('')
 const button = ref(null)
-const show = ref(false);
+const show = ref(false)
 
-let showTimeout = null;
+let showTimeout = null
 
 onMounted(() => {
-    emitter.on('notify', e => open(e.variant, e.message, e.button));
-});
+  emitter.on('notify', e => open(e.variant, e.message, e.button))
+})
 
 onUnmounted(() => {
-    emitter.off('notify');
-});
+  emitter.off('notify')
+})
 
 const open = (variantName, messageText, buttonObject) => {
-    if (showTimeout) {
-        clearTimeout(showTimeout);
-    }
+  if (showTimeout) {
+    clearTimeout(showTimeout)
+  }
 
-    variant.value = variantName;
-    message.value = messageText.replace(/\n/g, '<br />');
+  variant.value = variantName
+  message.value = messageText.replace(/\n/g, '<br />')
 
-    if (buttonObject) {
-        button.value = buttonObject;
-    }
+  if (buttonObject) {
+    button.value = buttonObject
+  }
 
-    show.value = true;
+  show.value = true
 
-    showTimeout = setTimeout(() => {
-        show.value = false;
-        button.value = null;
-    }, 5000);
+  showTimeout = setTimeout(() => {
+    show.value = false
+    button.value = null
+  }, 5000)
 }
 
 const close = () => {
-    if (showTimeout) {
-        clearTimeout(showTimeout);
-    }
+  if (showTimeout) {
+    clearTimeout(showTimeout)
+  }
 
-    show.value = false
-    button.value = null
+  show.value = false
+  button.value = null
 }
 
 const variantIcon = computed(() => {
-    return {
-        'success': CheckIcon,
-        'warning': ExclamationIcon,
-        'error': ExclamationIcon,
-        'info': ExclamationIcon,
-    }[variant.value]
-});
+  return {
+    success: CheckIcon,
+    warning: ExclamationIcon,
+    error: ExclamationIcon,
+    info: ExclamationIcon
+  }[variant.value]
+})
 
 const variantColorClasses = computed(() => {
-    return {
-        'info': 'bg-cyan-100 text-cyan-600',
-        'success': 'bg-lime-100 text-lime-600',
-        'warning': 'bg-orange-100 text-orange-600',
-        'error': 'bg-red-100 text-red-600',
-    }[variant.value]
-});
+  return {
+    info: 'bg-cyan-100 text-cyan-600',
+    success: 'bg-lime-100 text-lime-600',
+    warning: 'bg-orange-100 text-orange-600',
+    error: 'bg-red-100 text-red-600'
+  }[variant.value]
+})
 
 // Flash Messages
 const flash = computed(() => {

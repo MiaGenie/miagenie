@@ -21,7 +21,6 @@ use Inovector\MixpostEnterprise\Util;
 
 class WorkspacesController extends Controller
 {
-
     public function create(): Response
     {
         $versions = Version::whereIn('status', [VersionStatus::ENABLED, VersionStatus::TESTING])->get(['id', 'name']);
@@ -29,22 +28,7 @@ class WorkspacesController extends Controller
         return Inertia::render('MixpostEnterprise/Panel/Workspaces/CreateEdit', [
             'mode' => 'create',
             'locales' => Util::config('locales'),
-            'versions' => $versions
-        ]);
-    }
-
-    public function edit(Request $request): Response
-    {
-        $workspace = Workspace::firstOrFailByUuid($request->route('workspace'))
-            ->load('owner');
-
-        $versions = Version::whereIn('status', [VersionStatus::ENABLED, VersionStatus::TESTING])->get(['id', 'name']);
-
-        return Inertia::render('MixpostEnterprise/Panel/Workspaces/CreateEdit', [
-            'mode' => 'edit',
-            'workspace' => new WorkspaceResource($workspace),
-            'locales' => Util::config('locales'),
-            'versions' => $versions
+            'versions' => $versions,
         ]);
     }
 
@@ -72,10 +56,10 @@ class WorkspacesController extends Controller
                     'card_brand' => $workspace->pm_card_brand,
                     'card_last_four' => $workspace->pm_card_last_four,
                     'card_expires' => $workspace->pm_card_expires,
-                ]
+                ],
             ]),
             'subscription' => $subscription ? new SubscriptionResource($subscription) : null,
-            'billing_configs' => (new BillingConfig())->all(),
+            'billingConfigs' => (new BillingConfig())->all(),
             'plans' => PlanResource::collection(Plan::get())->resolve(),
         ]);
     }
@@ -87,5 +71,20 @@ class WorkspacesController extends Controller
         return redirect()
             ->back()
             ->with('success', __('mixpost-enterprise::workspace.workspace_updated'));
+    }
+
+    public function edit(Request $request): Response
+    {
+        $workspace = Workspace::firstOrFailByUuid($request->route('workspace'))
+            ->load('owner');
+
+        $versions = Version::whereIn('status', [VersionStatus::ENABLED, VersionStatus::TESTING])->get(['id', 'name']);
+
+        return Inertia::render('MixpostEnterprise/Panel/Workspaces/CreateEdit', [
+            'mode' => 'edit',
+            'workspace' => new WorkspaceResource($workspace),
+            'locales' => Util::config('locales'),
+            'versions' => $versions,
+        ]);
     }
 }

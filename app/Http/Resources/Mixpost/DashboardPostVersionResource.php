@@ -43,18 +43,35 @@ class DashboardPostVersionResource extends JsonResource
 
         return collect($items)->map(function ($item, $index) {
             $data = [
-                'body' => (string)$item['body'],
-                'media' => Arr::map($item['media'], function ($mediaItem) {
+                'body' => (string) $item['body'],
+                'media' => Arr::map($item['media'], function ($mediaItem) use ($item) {
                     if ($mediaItem instanceof Media) {
-                        return new MediaResource($mediaItem);
+                        $mediaResource = new MediaResource($mediaItem);
+
+                        if (isset($item['video_thumb_media']) && $videoThumbMedia = $item['video_thumb_media'][$mediaItem->id] ?? null) {
+                            return $mediaResource->additionalFields([
+                                'video_custom_thumb_url' => $videoThumbMedia->getUrl(),
+                            ]);
+                        }
+
+                        return $mediaResource;
                     }
 
                     return $mediaItem;
                 }),
+                'video_thumbs' => $item['video_thumbs'] ?? [],
                 'url' => $item['url'] ?? '',
                 'opened' => $index === 0,
                 'excerpt' => Str::limit(Util::removeHtmlTags($item['body']), 50)
             ];
+
+            if ($this->isIndexPage()) {
+                $data['excerpt'] = Str::limit(Util::removeHtmlTags($item['body']), 150);
+            }
+
+            if ($this->isCalendarPage()) {
+                $data['excerpt'] = Str::limit(Util::removeHtmlTags($item['body']), 50);
+            }
 
             return $data;
         });
@@ -62,21 +79,10 @@ class DashboardPostVersionResource extends JsonResource
 
     protected function options(): array
     {
-        if (!$this->options) {
-            return [];
-        }
-
         $providers = SocialProviderManager::providers();
 
-        return Arr::map($this->options, function ($options, $keyProvider) use ($providers) {
-            /** @var SocialProvider $provider */
-            $provider = $providers[$keyProvider] ?? null;
-
-            if (!$provider) {
-                return [];
-            }
-
-            return $provider::postOptions()->map(Arr::wrap($options));
+        return Arr::map($providers, function ($provider, $keyProvider) {
+            return $provider::postOptions()->map(Arr::wrap($this->options[$keyProvider] ?? []));
         });
     }
 }

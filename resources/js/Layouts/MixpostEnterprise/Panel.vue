@@ -1,23 +1,21 @@
 <script setup>
-import {provide} from "vue";
+import { provide } from "vue";
 import DefaultLayout from "@/Layouts/MixpostEnterprise/Default.vue";
-import Sidebar from "@meJs/Components/Sidebar/SidebarPanel.vue";
-import Navigation from "@meJs/Components/Navigation/NavBar.vue";
+import Sidebar from "@/MixpostEnterprise/Components/Sidebar/SidebarPanel.vue";
+import Navigation from "@/Components/Navigation/NavBar.vue";
 
-provide('routePrefix', 'mixpost_e')
-
+provide("routePrefix", "mixpost_e");
 </script>
 <template>
     <DefaultLayout>
         <template #sidebar>
-            <Sidebar/>
+            <Sidebar />
         </template>
 
         <template #navigation>
-            <Navigation/>
+            <Navigation />
         </template>
 
-        <slot/>
+        <slot />
     </DefaultLayout>
 </template>
-

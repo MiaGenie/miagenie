@@ -5,24 +5,23 @@ import {
     ACCESS_STATUS_SUBSCRIPTION,
     ACCESS_STATUS_UNLIMITED,
     ACCESS_STATUS_LOCKED,
-} from "@meJs/Constants/Workspace";
+} from "@/MixpostEnterprise/Constants/Workspace";
 import PageHeader from "@/Components/DataDisplay/PageHeader.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import HorizontalGroup from "@/Components/Layout/HorizontalGroup.vue";
 import WorkspaceUsers from "@/MixpostEnterprise/Components/Workspace/WorkspaceUsers.vue";
-import UserLink from "@meJs/Components/User/UserLink.vue";
+import UserLink from "@/MixpostEnterprise/Components/User/UserLink.vue";
 import WorkspaceSubscription from "@/MixpostEnterprise/Components/Workspace/WorkspaceSubscription.vue";
-import Indicators from "@meJs/Components/Workspace/Indicators.vue";
-import Actions from "@meJs/Components/Workspace/Actions.vue";
-import PrimaryButton from "@meJs/Components/Button/PrimaryButton.vue";
+import Indicators from "@/MixpostEnterprise/Components/Workspace/Indicators.vue";
+import Actions from "@/MixpostEnterprise/Components/Workspace/Actions.vue";
+import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import PaymentDetails from "@/MixpostEnterprise/Components/Subscription/PaymentDetails.vue";
-import ClipboardCard from "@meJs/Components/Util/ClipboardCard.vue";
+import ClipboardCard from "@/Components/Util/ClipboardCard.vue";
 import EnterpriseLayout from "@/Layouts/MixpostEnterprise/Panel.vue";
 
 defineOptions({ layout: EnterpriseLayout });
 
 const routePrefix = "mixpost_e";
-const confirmation = inject("confirmation");
 
 const props = defineProps({
     workspace: {
@@ -35,7 +34,7 @@ const props = defineProps({
         type: String,
         default: "USD",
     },
-    billing_configs: {
+    billingConfigs: {
         type: Object,
         required: true,
     },
@@ -165,7 +164,7 @@ const redirectToPortal = () => {
                     :workspace="workspace"
                     :subscription="subscription"
                     :currency="currency"
-                    :billingConfigs="billing_configs"
+                    :billingConfigs="billingConfigs"
                     :plans="plans"
                 />
             </div>
