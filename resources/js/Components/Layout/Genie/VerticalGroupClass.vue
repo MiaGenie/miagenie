@@ -6,25 +6,28 @@ defineProps({
     },
     bodyClass: {
         type: String,
+    },
+    id: {
+        type: String,
+        default: null
     }
 })
 </script>
 <template>
-    <div :class="bodyClass" class="mt-xl mb-xs">
-        <div :class="{'w-full': forceFullWidth,  'form-field': !forceFullWidth}" class="flex justify-between items-center">
-            <div class="w-full flex flex-col sm:items-center sm:justify-between">
-                <div v-if="$slots.title || $slots.description" class="flex flex-col justify-start w-full">
-                    <div v-if="$slots.title"
-                         class="font-medium italic">
+    <div :id="id ? id + '-title' : null" :class="bodyClass" class="mt-md">
+        <div class="flex items-center pt-lg">
+            <div class="flex flex-col sm:items-center sm:justify-between">
+                <div v-if="$slots.title || $slots.description" class="flex flex-col">
+                    <div v-if="$slots.title" class="font-bold font-title">
                         <slot name="title"/>
                     </div>
 
-                    <div v-if="$slots.description" class="text-gray-500 italic">
+                    <div v-if="$slots.description" class="text-sm italic">
                         <slot name="description"/>
                     </div>
                 </div>
 
-                <div v-if="$slots.default" class="w-full flex justify-start mt-xs">
+                <div v-if="$slots.default" class="w-full flex mt-xs">
                     <slot/>
                 </div>
             </div>

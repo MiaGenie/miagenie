@@ -10,9 +10,8 @@ defineProps({
     <div>
         <div :class="{'w-full': forceFullWidth,  'form-field': !forceFullWidth}" class="flex justify-between items-center">
             <div class="w-full flex flex-col sm:items-center sm:justify-between">
-                <div v-if="$slots.title || $slots.description" class="flex flex-col justify-start w-full">
-                    <div v-if="$slots.title"
-                         class="font-medium italic">
+                <div v-if="$slots.title || $slots.description" class="flex flex-col w-full">
+                    <div v-if="$slots.title" class="title">
                         <slot name="title"/>
                     </div>
 
@@ -21,7 +20,7 @@ defineProps({
                     </div>
                 </div>
 
-                <div v-if="$slots.default" class="w-full flex justify-start">
+                <div v-if="$slots.default" class="w-full flex">
                     <slot/>
                 </div>
             </div>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\MixpostEnterprise\Dashboard\Workspace\SettingsController;
+use App\Http\Controllers\MixpostEnterprise\Dashboard\Workspace\UpgradeController;
 use Illuminate\Support\Facades\Route;
 use Inovector\Mixpost\Enums\WorkspaceUserRole;
 use Inovector\Mixpost\Http\Base\Middleware\CheckWorkspaceUser;
@@ -16,4 +17,6 @@ Route::middleware([
             Route::get('/', [SettingsController::class, 'index'])->name('index');
             Route::put('/', [SettingsController::class, 'update'])->name('update');
         });
+
+        Route::get('upgrade', UpgradeController::class)->name('upgrade');
     });

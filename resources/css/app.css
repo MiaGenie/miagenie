@@ -17,6 +17,9 @@
     Inter, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
     'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
+  --font-title:
+    Montserrat, Arial, Helvetica, sans-serif;
+
   --color-primary-50: var(--color-primary-50);
   --color-primary-100: var(--color-primary-100);
   --color-primary-200: var(--color-primary-200);
@@ -73,6 +76,28 @@
   --color-cyan-800: #0b818e;
   --color-cyan-900: #064047;
 
+  --color-miagenie-50: #F7F5FD;
+  --color-miagenie-100: #EEEBFB;
+  --color-miagenie-200: #CDC4F2;
+  --color-miagenie-300: #BCB1ED;
+  --color-miagenie-400: #AC9DE9;
+  --color-miagenie-500: #9B89E5;
+  --color-miagenie-600: #8A76E0;
+  --color-miagenie-700: #7962DC;
+  --color-miagenie-800: #694FD7;
+  --color-miagenie-900: #583BD3;
+
+  --color-miagenie-text-900: #414464;
+  --color-miagenie-text-800: #545774;
+  --color-miagenie-text-700: #676983;
+  --color-miagenie-text-600: #7A7C93;
+  --color-miagenie-text-500: #8D8FA2;
+  --color-miagenie-text-400: #A0A2B2;
+  --color-miagenie-text-300: #B3B4C1;
+  --color-miagenie-text-200: #C6C7D1;
+  --color-miagenie-text-100: #D9DAE0;
+  --color-miagenie-text-50: #ECECF0;
+
   --color-facebook: #1877f2;
   --color-instagram: #e4405f;
   --color-threads: #000000;
@@ -103,6 +128,10 @@
   --animate-spin-slow: spin 8s linear infinite;
 }
 
+html {
+  color: var(--color-miagenie-text-900);
+}
+
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
@@ -128,5 +157,9 @@
     [role="button"]:not(:disabled) {
         cursor: pointer;
     }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-title), sans-serif;
+  }
 }
 

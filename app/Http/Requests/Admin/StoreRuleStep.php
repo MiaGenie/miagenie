@@ -27,7 +27,7 @@ class StoreRuleStep extends FormRequest
             'message' => ['required', 'string', 'max:5000'],
             'output' => ['nullable'],
             'requires_review' => ['required', 'boolean'],
-            'review_message_user' => [ValidationRule::requiredIf($this->input('requires_review'))],
+            'review_message_user' => [ValidationRule::requiredIf((bool) $this->input('requires_review'))],
             'optional' => ['required', 'boolean'],
             'depends_on_field' => [ValidationRule::requiredIf($this->input('rule_sub_type') === RuleSubType::CHANNELS)],
             'depends_on_option' => [ValidationRule::requiredIf($this->input('rule_sub_type') === RuleSubType::CHANNELS)],

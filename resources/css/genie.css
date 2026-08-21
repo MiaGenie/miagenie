@@ -1,7 +1,70 @@
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../fonts/Montserrat-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('../fonts/Montserrat-Medium.ttf');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('../fonts/Montserrat-SemiBold.ttf');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('../fonts/Montserrat-Bold.ttf');
+}
+
 @layer components {
 
     p {
         @apply mb-2;
+    }
+
+    #about-title {
+
+        @apply bg-primary-50;
+        @apply mb-0 pb-0;
+
+        & > div {
+            @apply font-title font-bold;
+            @apply max-w-9/12 mx-auto;
+            @apply px-md py-sm;
+        }
+    }
+
+    #about {
+
+        @apply bg-primary-50;
+
+        & > div {
+            @apply text-sm;
+            @apply max-w-9/12 mx-auto;
+            @apply px-md py-sm;
+        }
+    }
+
+    #brand_values-title {
+        @apply mb-md;
+
+        & > div {
+            @apply justify-center;
+            @apply font-title text-2xl font-bold;
+        }
     }
 
     #brand_values {
@@ -9,18 +72,20 @@
         @apply flex flex-wrap justify-center;
 
         & > div[class^="c_"] {
-            @apply flex flex-wrap flex-row justify-center;
+            @apply flex flex-wrap flex-col justify-start items-start;
             @apply max-w-[98%] p-3 m-[1%];
-            @apply border border-gray-300 rounded-lg;
-            @apply text-justify hyphens-auto
+            @apply border-l-4 border-l-primary-200;
+            @apply text-justify hyphens-auto;
+            @apply bg-primary-50;
         }
 
         & div[class^="c_"] > div[class$="name"] {
             @apply font-medium mb-2;
+            @apply font-title font-bold
         }
 
         & div[class^="c_"] > div[class^="c_"]:not([class$="name"]) {
-
+            @apply text-sm;
         }
 
         @variant md  {
@@ -51,56 +116,183 @@
 
     #unique_positioning, #unique_value_proposition, #biggest_transformation {
         @apply mt-md;
+        @apply px-xl;
+    }
+
+    #unique_positioning-title, #unique_value_proposition-title, #biggest_transformation-title, #big_idea-title, #tone_of_voice-title, #tone_of_voice-faq {
+        @apply px-xl;
+    }
+
+    #unique_positioning-faq, #unique_value_proposition-faq, #biggest_transformation-faq, #big_idea-faq{
+        @apply mx-xl;
     }
 
     #big_idea {
+
+        & div {
+            @apply justify-center;
+        }
+
         & > div {
-            @apply px-md pt-lg text-lg font-medium;
+            @apply px-xl pt-md;
+            @apply text-xl font-medium;
+        }
+    }
+
+    #big_idea-title, #tone_of_voice-title {
+
+        & > div {
+            @apply pb-md border-b;
+            @apply justify-center;
+            @apply font-title text-4xl font-bold;
+        }
+    }
+
+    #secondary_ideas-title {
+
+        & > div {
+            @apply justify-center;
+            @apply font-title text-2xl font-bold;
         }
     }
 
     #secondary_ideas {
-        & > div {
-            @apply px-md py-sm;
+        @apply flex flex-wrap gap-[3%] justify-stretch px-xl;
+
+        & > div[class^="c_"] {
+            @apply flex flex-wrap flex-col justify-start items-start;
+            @apply max-w-1/3 p-2xl mt-md;
+            @apply border rounded-lg;
+            @apply hyphens-auto;
+        }
+
+        @variant md  {
+            & > div[class^="c_"] {
+                @apply w-[31.3333%] p-3;
+            }
         }
     }
 
+    #tone_of_voice-title, #tone_of_voice-faq {
+        @apply bg-primary-50;
+    }
+
     #tone_of_voice {
+
+        @apply bg-primary-50;
 
         &  > div[class^="c_"] {
             @apply pt-lg pb-sm;
         }
 
+        & > .c_tone_of_voice {
+            @apply flex flex-wrap flex-row;
+        }
+
+        & div[class="c_0_summary"] {
+            @apply px-36;
+        }
+
+
+        & label {
+            @apply font-title;
+            @apply font-bold text-center text-xl;
+            @apply my-md w-full inline-block;
+        }
+
         & div[class="c_1_personality_archetype"] {
             @apply pt-lg pb-sm;
+            @apply flex flex-wrap gap-[3%] justify-stretch px-xl;
+
 
             & div[class="c_0"], div[class="c_1"], div[class="c_2"], div[class="c_3"], div[class="c_4"], div[class="c_5"], div[class="c_6"], div[class="c_7"], div[class="c_8"], div[class="c_9"] {
-                @apply px-md pt-md;
+
+                @apply flex flex-wrap flex-col justify-start items-start;
+                @apply max-w-1/3 p-2xl mt-md;
+                @apply border-0 rounded-lg;
+                @apply p-md;
+                @apply bg-white;
 
                 &  div[class="c_0_name"] {
-                    @apply font-medium;
+                    @apply text-xl font-bold;
+                    @apply pb-md;
                 }
+
+                @variant md  {
+                    @apply w-[31.3333%];
+                    @apply p-xl;
+                }
+            }
+
+            @variant md  {
+                @apply px-24;
             }
         }
 
         & div[class="c_2_core_adjectives"] {
-            @apply pt-md;
+            @apply pt-md py-xl w-full;
 
             & div[class="c_0_adjectives"] {
                 @apply px-md pb-sm;
+                @apply flex flex-wrap flex-row justify-center gap-xl items-start;
 
-                & div[class^="c_"] {
-                    @apply pt-xs;
+
+                & > div[class^="c_"] {
+                    @apply max-w-[98%] py-2 px-3 m-[1%];
+                    @apply border-l-4 border-l-primary-200;
+                    @apply bg-white;
                 }
+            }
+
+            & div[class="c_1_word_choice"] span {
+                @apply w-full inline-block text-center;
+            }
+        }
+
+        & div[class="c_3_dos"] {
+            @apply ml-[8.75%];
+            @apply bg-green-50 border-green-300 border-2 rounded-lg;
+
+            & label::before {
+                @apply content-[url(../js/Icons/svg/check-mark.svg)];
+            }
+        }
+
+        & div[class="c_4_donts"] {
+            @apply ml-[2.5%];
+            @apply bg-red-50 border-red-300 border-2 rounded-lg;
+
+            & label::before {
+                @apply content-[url(../js/Icons/svg/cross-mark.svg)];
             }
         }
 
         & div[class="c_3_dos"], div[class="c_4_donts"] {
-            @apply mt-lg;
+            @apply mt-lg p-xl;
+            @apply max-w-[40%];
+            @apply list-disc list-outside;
 
-            & div[class^="c_"]:not(:first-child) {
-                @apply pt-xs;
+            & label {
+                @apply text-2xl font-bold text-left;
             }
+
+            & label::before {
+                @apply align-middle;
+                @apply w-7 h-7 inline-block mr-sm;
+            }
+
+            & div[class^="c_"] > div {
+                @apply pt-xs px-md;
+            }
+
+            & div[class^="c_"] > div span {
+                @apply list-item;
+            }
+/*
+
+            & div[class^="c_"] > div::before {
+                @apply content-['.'] text-2xl font-bold w-4 p-2;
+            }*/
         }
 
         & div[class="c_5_signature_phrase"] {
@@ -115,33 +307,90 @@
 
     #persona {
 
+        @apply py-md px-2xl w-full;
+
+        & .c_0_name {
+            @apply hidden;
+        }
+
+        & > div {
+            @apply flex flex-wrap flex-col justify-start items-start;
+            @apply pt-md m-[1%];
+            @apply border-l-4 border-l-primary-800 border border-primary-500;
+            @apply text-justify hyphens-auto;
+            @apply w-full mb-md;
+
+            & > div:first-child {
+                @apply font-title font-bold text-lg;
+
+                & > div {
+                    @apply pb-md pl-xs;
+                }
+            }
+        }
+
+        & .c_1_segment {
+            @apply font-title font-bold;
+        }
+
         & div[class="c_0"], div[class="c_1"], div[class="c_2"], div[class="c_3"], div[class="c_4"], div[class="c_5"], div[class="c_6"], div[class="c_7"], div[class="c_8"], div[class="c_9"] {
+
+            @apply bg-primary-50;
+            @apply px-2xl py-md;
 
             & > div[class^="c_"]:first-child {
                 @apply pb-sm;
             }
 
-            & > div[class^="c_"]:not(:first-child) {
+            & > div[class^="c_"]:not(:first-child):not([class="c_1_segment"]) {
                 @apply pt-md;
             }
         }
+
     }
 
     #customer_journey {
 
+        @apply py-md px-2xl w-full;
+
+        & > div {
+            @apply flex flex-wrap flex-col justify-start items-start;
+            @apply pt-md m-[1%];
+            @apply border-l-4 border-l-primary-800 border border-primary-500;
+            @apply text-justify hyphens-auto;
+            @apply w-full mb-md;
+
+            & > div:first-child {
+                @apply font-title font-bold text-lg;
+
+                & > div {
+                    @apply pb-md pl-xs;
+                }
+            }
+        }
+
         & div[class="c_persona"] {
+
+            @apply bg-primary-50;
+            @apply px-2xl;
             @apply flex flex-wrap;
 
-            & div[class="c_10_start"] {
-                @apply w-full my-sm;
+            & .title {
+                @apply font-title font-bold;
+                @apply pb-xs;
             }
 
-            & > div[class^="c_"]:not(:first-child) {
-                @apply pt-md;
+            & > div[class="c_10_start"] , div[class="c_20_awareness"], div[class="c_30_problem_awareness"], div[class="c_40_consideration"], div[class="c_50_conversion"] {
+                @apply mt-md;
+                @apply border-l-4 border-l-primary-500;
+                @apply pl-md p-sm;
+                @apply bg-white;
+                @apply w-full;
             }
 
             & div[class="c_70_key_offline_touchpoints"] {
                 @apply w-full;
+                @apply bg-white border border-gray-300 rounded-lg;
 
                 & div {
                     @apply flex flex-col items-start;
@@ -150,6 +399,7 @@
 
             & div[class="c_60_key_digital_channels"] {
                 @apply w-full;
+                @apply bg-white border border-gray-300 rounded-lg;
 
                 & div {
                     @apply flex flex-col items-start;
@@ -187,28 +437,52 @@
 
     #content_pillars {
 
+        @apply py-md w-full;
+
+        & > div {
+            @apply flex flex-wrap flex-col justify-start items-start;
+            @apply pt-md;
+            @apply border-l-4 border-l-primary-800 border border-primary-500;
+            @apply text-justify hyphens-auto;
+            @apply w-full mb-md;
+
+            & > div:first-child {
+                @apply font-title font-bold text-lg;
+
+                & > div {
+                    @apply pb-md pl-xs;
+                }
+            }
+        }
+
         & div[class="c_0"], div[class="c_1"], div[class="c_2"], div[class="c_3"], div[class="c_4"], div[class="c_5"], div[class="c_6"], div[class="c_7"], div[class="c_8"], div[class="c_9"] {
             @apply flex flex-wrap;
+            @apply justify-center;
+            @apply bg-primary-50;
+            @apply px-md;
 
-            & div[class="c_1_importance"]  {
-                @apply w-full flex flex-wrap justify-center;
-            }
-
-            & div[class="c_2_style"]  {
+            & div[class="c_1_importance"], div[class="c_2_style"]  {
                 @apply w-full flex flex-wrap justify-center my-md;
+                @apply border-l-4 border-l-primary-500;
+                @apply pl-md p-xs;
+                @apply bg-white;
             }
 
             & div[class="c_4_topics"] {
                 @apply flex flex-wrap justify-start mt-lg;
+                @apply text-center hyphens-auto;
 
                 & > div[class^="c_"] {
                     @apply w-full pl-xs mt-md;
+                    @apply bg-white border border-gray-300 rounded-lg;
 
                     & > div[class="c_topic_name"] {
+                        @apply mb-xs;
                         @apply w-full;
 
                         &  div {
-                            @apply font-medium;
+                            @apply font-title font-bold;
+                            @apply justify-center text-center;
                         }
                     }
 
@@ -217,6 +491,7 @@
 
                         & > div[class^="c_"] {
                             @apply mt-xs;
+                            @apply bg-white;
                         }
                     }
                 }
@@ -224,21 +499,34 @@
         }
 
         @variant md  {
+
+            @apply py-md px-2xl;
+
             & div[class="c_0"], div[class="c_1"], div[class="c_2"], div[class="c_3"], div[class="c_4"], div[class="c_5"], div[class="c_6"], div[class="c_7"], div[class="c_8"], div[class="c_9"] {
+                @apply px-2xl;
 
                 & div[class="c_1_importance"] {
-                    @apply mt-md mb-lg;
-                    @apply max-w-[26%] mr-[2%];
+                    @apply my-2xl;
+                    @apply max-w-[25%] mr-[5%];
                 }
 
                 & div[class="c_2_style"]  {
-                    @apply mt-md mb-lg;
-                    @apply max-w-[66%] mr-[2%];
+                    @apply my-2xl;
+                    @apply max-w-[25%];
+                }
+
+                & div[class="c_3_description"]  {
+                    @apply px-2xl;
                 }
 
                 & div[class="c_4_topics"] {
                     @apply flex flex-wrap justify-center;
-                    @apply text-justify hyphens-auto;
+                    @apply text-center hyphens-auto;
+
+                    & .title {
+                        @apply font-title font-bold;
+                        @apply mb-xs;
+                    }
 
                     & > div[class^="c_"] {
                         @apply flex flex-wrap justify-center;
@@ -249,6 +537,7 @@
                             @apply mb-xs;
 
                             &  div {
+                                @apply font-title font-bold;
                                 @apply justify-center;
                             }
                         }
@@ -284,6 +573,24 @@
 
             & span {
                 @apply ml-sm mt-xs;
+            }
+        }
+    }
+
+    .plan_description {
+        & > ul > li {
+            @apply ml-lg;
+            @apply text-sm;
+        }
+    }
+
+    .editorClassic {
+        & .ProseMirror {
+            & ul > li {
+                @apply ml-lg;
+            }
+            & ol > li {
+                @apply ml-lg;
             }
         }
     }

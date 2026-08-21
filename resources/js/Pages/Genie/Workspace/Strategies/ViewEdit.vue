@@ -91,7 +91,7 @@ const fieldType = (field) => {
 
     <div class="row-px">
 
-        <Panel>
+        <Panel :withPadding="false">
 
             <template v-for="(field, index) in props.fieldList" :key="index">
                 <StrategyOutputField
