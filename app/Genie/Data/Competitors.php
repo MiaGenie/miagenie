@@ -4,11 +4,12 @@ namespace App\Genie\Data;
 
 use App\Abstracts\GenieData;
 use App\Contracts\GenieDataContract;
+use App\Models\File;
+use App\Models\Vector;
 
 class Competitors extends GenieData implements GenieDataContract
 {
-
-    public function getModel(): \App\Models\File|\App\Models\Vector|\App\Models\Assistant
+    public function getModel(): File|Vector
     {
         // TODO: Implement getModel() method.
     }

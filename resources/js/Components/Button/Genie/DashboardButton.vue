@@ -25,6 +25,8 @@ const btnStyle = () => {
     switch (props.colorStyle) {
         default:
             return  '';
+        case 'briefing':
+            return  'orange-500';
         case 'strategy':
             return  'purple-500';
         case 'ideas':

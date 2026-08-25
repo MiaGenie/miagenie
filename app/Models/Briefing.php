@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\BriefingStatus;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
@@ -26,18 +26,17 @@ class Briefing extends Model
     protected $fillable = [
         'content',
         'version_id',
+        'status',
     ];
 
     /**
      * @var string[]
      */
     protected $casts = [
-        'content' => 'array'
+        'content' => 'array',
+        'status' => BriefingStatus::class,
     ];
 
-    /**
-     * @return HasOne
-     */
     public function runBriefing(): HasOne
     {
         return $this->HasOne(RunBriefing::class)->latest();

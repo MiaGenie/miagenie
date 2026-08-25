@@ -9,23 +9,16 @@ use Inovector\Mixpost\Util;
 
 class UpdateRuleStepTranslations extends FormRequest
 {
-    /**
-     * @return array
-     */
     public function rules(): array
     {
         return [
             'instructions' => ['nullable', 'string', 'min:1', 'max:10000'],
-            'json_schema' => ['nullable', 'json'],
             'message' => ['required', 'string', 'max:5000'],
             'review_message_user' => ['nullable', 'string', 'max:5000'],
-            'review_message_system' => ['nullable', 'string', 'max:5000']
+            'review_message_system' => ['nullable', 'string', 'max:5000'],
         ];
     }
 
-    /**
-     * @return int
-     */
     public function handle(): int
     {
         $record = RuleStep::firstOrFailByUuid($this->route('step'));
@@ -45,5 +38,4 @@ class UpdateRuleStepTranslations extends FormRequest
 
         return $record->save();
     }
-
 }

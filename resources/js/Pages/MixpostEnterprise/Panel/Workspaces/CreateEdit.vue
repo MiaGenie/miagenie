@@ -156,7 +156,7 @@ const submit = () => {
     <div class="row-px">
       <form method="post" @submit.prevent="submit">
         <Panel>
-          <template #title>{{ $t('enterprrise-general.details') }}</template>
+          <template #title>{{ $t('enterprise-general.details') }}</template>
 
           <HorizontalGroup>
             <template #title>
@@ -164,7 +164,7 @@ const submit = () => {
                 >{{ $t('enterprise-general.name') }}
                 <LabelSuffix danger>*</LabelSuffix>
               </label>
-            </template>
+            </template>x
 
             <Input
               id="name"

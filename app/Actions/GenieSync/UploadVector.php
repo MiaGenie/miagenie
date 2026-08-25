@@ -4,28 +4,31 @@ namespace App\Actions\GenieSync;
 
 use App\Abstracts\GenieData;
 use App\Contracts\GenieSyncContract;
-use App\Support\Facades\OpenAI;
 use Illuminate\Support\Facades\Log;
+use Laravel\Ai\Stores;
+use Throwable;
 
 class UploadVector implements GenieSyncContract
 {
-
-    /**
-     * @param GenieData $data
-     * @return ?GenieData
-     */
     public function handle(GenieData $data): ?GenieData
     {
+        $request = $data->getData();
+
         try {
-            $response = OpenAI::vectorStores()->create(
-                $data->getData()
+            $store = Stores::create(
+                name: $request['name'],
+                fileIds: $request['file_ids'] ?? [],
             );
 
-            $data->setResponse($response->toArray());
-            return $data;
+            $data->setResponse(['id' => $store->id, 'name' => $store->name]);
 
-        } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
+            return $data;
+        } catch (Throwable $exception) {
+            Log::error('Genie vector store creation failed', [
+                'vector_id' => $data->getModel()->id,
+                'exception' => $exception->getMessage(),
+            ]);
+
             return null;
         }
     }

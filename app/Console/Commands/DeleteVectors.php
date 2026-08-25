@@ -3,9 +3,8 @@
 namespace App\Console\Commands;
 
 use App\Jobs\Utils\VectorProviderJob as VectorJob;
-use App\Support\Facades\OpenAI;
+use App\Models\Vector;
 use Illuminate\Console\Command;
-
 
 class DeleteVectors extends Command
 {
@@ -17,20 +16,22 @@ class DeleteVectors extends Command
     /**
      * @var string
      */
-    protected $description = 'Delete Provider Vectors';
+    protected $description = 'Delete this application\'s vector stores from the AI provider';
 
     /**
-     * @return void
+     * Queue a delete for every vector store this application has synced.
+     *
+     * See DeleteFiles: this used to sweep every store at the provider, including any created
+     * outside this application.
      */
     public function handle(): void
     {
-        $list = OpenAI::vectorStores()->list();
+        $vectors = Vector::whereNotNull('vector_provider_id')->pluck('vector_provider_id');
 
-        foreach ($list->data as $vector) {
-            VectorJob::dispatch($vector->id, 'delete');
+        foreach ($vectors as $providerId) {
+            VectorJob::dispatch($providerId, 'delete');
         }
 
-        $this->info('All vectors have been deleted to Vector Sync Job');
+        $this->info("Queued {$vectors->count()} vector store(s) for deletion.");
     }
-
 }

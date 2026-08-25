@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Abstracts\GenieJob;
 use App\Enums\GenieSyncAction;
 use App\Enums\RunStatus;
 use App\Jobs\RunJob;
@@ -12,7 +11,6 @@ use App\Models\WorkspaceVersion;
 use Illuminate\Console\Command;
 use Inovector\Mixpost\Facades\WorkspaceManager;
 use Inovector\Mixpost\Models\Workspace;
-
 
 class RunStrategy extends Command
 {
@@ -26,13 +24,11 @@ class RunStrategy extends Command
      */
     protected $description = 'Run Strategy Analysis for given workspace ID';
 
-    /**
-     * @return void
-     */
     public function handle(): void
     {
-        if (!$this->option('workspace')) {
+        if (! $this->option('workspace')) {
             $this->info('Workspace ID is required to run strategy analysis');
+
             return;
         }
 
@@ -40,15 +36,17 @@ class RunStrategy extends Command
         WorkspaceManager::setCurrent($workspace);
         $workspaceVersion = WorkspaceVersion::where('workspace_id', $this->option('workspace'))->first();
 
-        if (!$workspace || !$workspaceVersion) {
+        if (! $workspace || ! $workspaceVersion) {
             $this->info('Workspace ID not found');
+
             return;
         }
 
         $rule = Rule::where('version_id', $workspaceVersion->version_id)->where('rule_type', 1)->first();
 
-        if (!$rule->rule_type) {
+        if (! $rule->rule_type) {
             $this->info('Rule not found');
+
             return;
         }
 
@@ -59,12 +57,11 @@ class RunStrategy extends Command
         ]);
 
         $run->strategy()->create([
-            'workspace_id' => $workspace->id
+            'workspace_id' => $workspace->id,
         ]);
 
         RunJob::dispatch($run, GenieSyncAction::CREATE);
 
-        $this->info('All assistants without sync have been added to Assistant Sync Job');
+        $this->info('Run dispatched.');
     }
-
 }

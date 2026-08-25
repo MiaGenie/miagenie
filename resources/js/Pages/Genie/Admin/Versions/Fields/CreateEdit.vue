@@ -19,6 +19,7 @@ import Select from "@/Components/Form/Select.vue";
 import Textarea from "@/Components/Form/Textarea.vue";
 import VersionHeader from "@/Components/DataDisplay/Genie/VersionHeader.vue";
 import VersionFieldOptionsGroup from "@/Components/Genie/Versions/VersionFieldOptionsGroup.vue";
+import VersionFieldSubFields from "@/Components/Genie/Versions/VersionFieldSubFields.vue";
 import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
@@ -86,6 +87,7 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     input_type: '',
     file_type: '',
     options : [],
+    sub_fields: [],
     min_length: '',
     max_length: '',
     min_value: '',
@@ -104,12 +106,16 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     display_item_title: false,
     display_faq_title: '',
     display_faq_text: '',
+    class: '',
+    block: '',
     position: '',
 });
 
 const {
     formatOptions,
+    formatSubFields,
     optionsErrors,
+    subFieldsErrors,
     currentGroupType,
     currentFieldType,
     currentInputType,
@@ -122,6 +128,7 @@ provide('currentFieldTypeCtx', () => {return currentFieldType});
 provide('formCtx', () => {return form});
 
 onBeforeMount( () => {
+    formatSubFields();
     formatOptions();
 })
 
@@ -478,6 +485,26 @@ const deleteField = () => {
 
                         <template #footer>
                             <Error :message="optionsErrors()"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup
+                        v-if="currentGroupType?.name === 'STRATEGIES'"
+                        :force-full-width="true"
+                        class="form-field-xl mt-lg"
+                    >
+                        <template #title>
+                            {{ $t("genie.sub_fields") }}
+                        </template>
+
+                        <template #description>
+                            {{ $t("genie.sub_fields_description") }}
+                        </template>
+
+                        <VersionFieldSubFields v-model="form.sub_fields" />
+
+                        <template #footer>
+                            <Error :message="subFieldsErrors()"/>
                         </template>
                     </VerticalGroup>
 
@@ -845,6 +872,45 @@ const deleteField = () => {
                             <Error :message="form.errors.display_faq_text"/>
                         </template>
                     </VerticalGroup>
+
+                    <Flex
+                        :responsive="false"
+                        class="form-field mt-lg"
+                    >
+
+                        <VerticalGroup class="form-field basis-1/2">
+                            <template #title>
+                                <label for="class">{{ $t("genie.field_class") }}</label>
+                            </template>
+
+                            <Input
+                                v-model="form.class"
+                                type="text"
+                                id="class"
+                            />
+
+                            <template #footer>
+                                <Error :message="form.errors.class"/>
+                            </template>
+                        </VerticalGroup>
+
+                        <VerticalGroup class="form-field basis-1/2">
+                            <template #title>
+                                <label for="block">{{ $t("genie.field_block") }}</label>
+                            </template>
+
+                            <Input
+                                v-model="form.block"
+                                type="text"
+                                id="block"
+                            />
+
+                            <template #footer>
+                                <Error :message="form.errors.block"/>
+                            </template>
+                        </VerticalGroup>
+
+                    </Flex>
 
                 </Panel>
 

@@ -2,8 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Enums\RunStatus;
-use App\Http\Resources\Admin\RunResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class StrategyResource extends JsonResource
@@ -13,10 +11,6 @@ class StrategyResource extends JsonResource
      */
     public static $wrap = null;
 
-    /**
-     * @param $request
-     * @return array
-     */
     public function toArray($request): array
     {
 

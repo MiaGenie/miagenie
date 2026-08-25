@@ -9,19 +9,14 @@ use Illuminate\Validation\Rule as ValidationRule;
 
 class UpdateRuleStep extends FormRequest
 {
-
-    /**
-     * @return array
-     */
     public function rules(): array
     {
         return [
             'rule_sub_type' => [ValidationRule::enum(RuleSubType::class)],
             'name' => ['required', 'string', 'max:255'],
             'instructions' => ['nullable', 'string', 'max:10000'],
-            'ai_model' => ['required'],
+            'model_profile_id' => ['required', 'exists:genie_model_profiles,id'],
             'response_format' => ['required'],
-            'json_schema' => [ValidationRule::when($this->input('response_format') === 'json_schema', ['required', 'json'])],
             'link_upstream' => ['nullable', 'boolean'],
             'message' => ['required', 'string', 'max:5000'],
             'output' => ['nullable'],
@@ -33,9 +28,6 @@ class UpdateRuleStep extends FormRequest
         ];
     }
 
-    /**
-     * @return int
-     */
     public function handle(): int
     {
         $record = RuleStep::firstOrFailByUuid($this->route('step'));
@@ -44,13 +36,8 @@ class UpdateRuleStep extends FormRequest
             'name' => $this->input('name'),
             'description' => $this->input('description'),
             'instructions' => $this->input('instructions'),
-            'ai_model' => $this->input('ai_model'),
+            'model_profile_id' => $this->input('model_profile_id'),
             'response_format' => $this->input('response_format'),
-            'json_schema' => $this->input('response_format') === 'json_schema' ? $this->input('json_schema') : '',
-            'temperature' => $this->input('temperature'),
-            'top_p' => $this->input('top_p'),
-            'reasoning_effort' => $this->input('reasoning_effort'),
-            'vector_id' => $this->input('vector_id'),
             'link_upstream' => $this->input('link_upstream'),
             'message' => $this->input('message'),
             'output' => $this->input('output'),
@@ -62,5 +49,4 @@ class UpdateRuleStep extends FormRequest
             'depends_on_option' => $this->input('depends_on_option'),
         ]);
     }
-
 }

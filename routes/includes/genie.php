@@ -1,18 +1,17 @@
 <?php
 
-use App\Http\Controllers\Admin\AssistantsController;
-use App\Http\Controllers\Admin\AIModelsController;
-use App\Http\Controllers\Admin\FilesController;
 use App\Http\Controllers\Admin\ConfigsController;
+use App\Http\Controllers\Admin\FilesController;
 use App\Http\Controllers\Admin\LogsController;
+use App\Http\Controllers\Admin\ModelProfilesController;
 use App\Http\Controllers\Admin\PlanInfoController;
 use App\Http\Controllers\Admin\RulesController;
 use App\Http\Controllers\Admin\RuleStepsController;
-use App\Http\Controllers\Admin\RunResponsesController;
 use App\Http\Controllers\Admin\RunsController;
+use App\Http\Controllers\Admin\RunStepsController;
 use App\Http\Controllers\Admin\VectorsController;
-use App\Http\Controllers\Admin\VersionFieldsController;
 use App\Http\Controllers\Admin\VersionFieldOptionsController;
+use App\Http\Controllers\Admin\VersionFieldsController;
 use App\Http\Controllers\Admin\VersionsController;
 use Illuminate\Support\Facades\Route;
 use Inovector\Mixpost\Http\Base\Middleware\Admin;
@@ -77,22 +76,13 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
         Route::delete('{vector}', [VectorsController::class, 'destroy'])->name('delete');
     });
 
-    Route::prefix('ai_models')->name('ai_models.')->group(function () {
-        Route::get('/', [AIModelsController::class, 'index'])->name('index');
-        Route::get('create', [AIModelsController::class, 'create'])->name('create');
-        Route::post('store', [AIModelsController::class, 'store'])->name('store');
-        Route::get('{ai_model}', [AIModelsController::class, 'edit'])->name('edit');
-        Route::put('{ai_model}', [AIModelsController::class, 'update'])->name('update');
-        Route::delete('{ai_model}', [AIModelsController::class, 'destroy'])->name('delete');
-    });
-
-    Route::prefix('assistants')->name('assistants.')->group(function () {
-        Route::get('/', [AssistantsController::class, 'index'])->name('index');
-        Route::get('create', [AssistantsController::class, 'create'])->name('create');
-        Route::post('store', [AssistantsController::class, 'store'])->name('store');
-        Route::get('{assistant}', [AssistantsController::class, 'edit'])->name('edit');
-        Route::put('{assistant}', [AssistantsController::class, 'update'])->name('update');
-        Route::delete('{assistant}', [AssistantsController::class, 'destroy'])->name('delete');
+    Route::prefix('model_profiles')->name('model_profiles.')->group(function () {
+        Route::get('/', [ModelProfilesController::class, 'index'])->name('index');
+        Route::get('create', [ModelProfilesController::class, 'create'])->name('create');
+        Route::post('store', [ModelProfilesController::class, 'store'])->name('store');
+        Route::get('{model_profile}', [ModelProfilesController::class, 'edit'])->name('edit');
+        Route::put('{model_profile}', [ModelProfilesController::class, 'update'])->name('update');
+        Route::delete('{model_profile}', [ModelProfilesController::class, 'destroy'])->name('delete');
     });
 
     Route::prefix('files')->name('files.')->group(function () {
@@ -107,10 +97,10 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
         Route::get('/', [RunsController::class, 'index'])->name('index');
         Route::put('{run}', [RunsController::class, 'resume'])->name('resume');
 
-        Route::prefix('{run}/run_responses')->name('run_responses.')->group(function () {
-            Route::get('/', [RunResponsesController::class, 'index'])->name('index');
-            Route::get('{run_response}', [RunResponsesController::class, 'view'])->name('view');
-            Route::delete('{run_response}', [RunResponsesController::class, 'destroy'])->name('delete');
+        Route::prefix('{run}/steps')->name('steps.')->group(function () {
+            Route::get('/', [RunStepsController::class, 'index'])->name('index');
+            Route::get('{step}', [RunStepsController::class, 'view'])->name('view');
+            Route::delete('{step}', [RunStepsController::class, 'destroy'])->name('delete');
         });
     });
 

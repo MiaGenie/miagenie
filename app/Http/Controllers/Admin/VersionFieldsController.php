@@ -2,8 +2,21 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Builders\VersionGroupQuery;
 use App\Enums\FormFieldFileType;
+use App\Enums\FormFieldType;
+use App\Enums\FormInputType;
+use App\Enums\SubFieldType;
+use App\Enums\VersionGroupType;
+use App\Enums\VersionStatus;
+use App\Http\Requests\Admin\StoreVersionField;
+use App\Http\Requests\Admin\UpdateVersionField;
+use App\Http\Requests\Admin\UpdateVersionFieldPositions;
 use App\Http\Requests\Admin\UpdateVersionFieldTranslations;
+use App\Http\Resources\Admin\VersionFieldResource;
+use App\Http\Resources\Admin\VersionResource;
+use App\Models\Version;
+use App\Models\VersionField;
 use Arr;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -11,25 +24,12 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
-use App\Builders\VersionGroupQuery;
-use App\Enums\FormFieldType;
-use App\Enums\FormInputType;
-use App\Enums\VersionGroupType;
-use App\Enums\VersionStatus;
-use App\Http\Requests\Admin\StoreVersionField;
-use App\Http\Requests\Admin\UpdateVersionField;
-use App\Http\Requests\Admin\UpdateVersionFieldPositions;
-use App\Http\Resources\Admin\VersionFieldResource;
-use App\Http\Resources\Admin\VersionResource;
-use App\Models\Version;
-use App\Models\VersionField;
 use Inertia\Response;
 use Inovector\Mixpost\Util;
 
 class VersionFieldsController extends Controller
 {
     /**
-     * @param Request $request
      * @return Response
      */
     public function index(Request $request)
@@ -51,12 +51,11 @@ class VersionFieldsController extends Controller
             'groupTypes' => VersionGroupType::withGroupOptions(),
             'fieldTypes' => FormFieldType::withFieldOptions(),
             'inputTypes' => FormInputType::withInputOptions(),
-            'statusTypes' => VersionStatus::withTitle()
+            'statusTypes' => VersionStatus::withTitle(),
         ]);
     }
 
     /**
-     * @param Request $request
      * @return Response
      */
     public function indexTranslate(Request $request)
@@ -82,12 +81,11 @@ class VersionFieldsController extends Controller
             'inputTypes' => FormInputType::withInputOptions(),
             'statusTypes' => VersionStatus::withTitle(),
             'translations' => $translations,
-            'locales' => Util::config('locales')
+            'locales' => Util::config('locales'),
         ]);
     }
 
     /**
-     * @param Request $request
      * @return Response
      */
     public function create(Request $request)
@@ -103,13 +101,14 @@ class VersionFieldsController extends Controller
             'fieldTypes' => FormFieldType::withFieldOptions(),
             'fileTypes' => FormFieldFileType::withTitle(),
             'inputTypes' => FormInputType::withInputOptions(),
-            'statusTypes' => VersionStatus::withTitle()
+            'subFieldTypes' => SubFieldType::withSubFieldOptions(),
+            'statusTypes' => VersionStatus::withTitle(),
         ]);
     }
 
     /**
-     * @param StoreVersionField $storeVersionField
      * @return RedirectResponse
+     *
      * @throws \Throwable
      */
     public function store(StoreVersionField $storeVersionField)
@@ -127,14 +126,13 @@ class VersionFieldsController extends Controller
     }
 
     /**
-     * @param Request $request
      * @return Response
      */
     public function edit(Request $request)
     {
         $version = Version::firstOrFailByUuid($request->route('version'));
 
-        $record = VersionField::with('options')
+        $record = VersionField::with(['options', 'rootSubFields.childrenRecursive'])
             ->where('uuid', $request->route('field'))
             ->firstOrFail();
 
@@ -146,12 +144,12 @@ class VersionFieldsController extends Controller
             'fieldTypes' => FormFieldType::withFieldOptions(),
             'fileTypes' => FormFieldFileType::withTitle(),
             'inputTypes' => FormInputType::withInputOptions(),
-            'statusTypes' => VersionStatus::withTitle()
+            'subFieldTypes' => SubFieldType::withSubFieldOptions(),
+            'statusTypes' => VersionStatus::withTitle(),
         ]);
     }
 
     /**
-     * @param Request $request
      * @return Response
      */
     public function translate(Request $request)
@@ -171,13 +169,13 @@ class VersionFieldsController extends Controller
             'record' => new VersionFieldResource($record),
             'groupType' => $request->input('group_type'),
             'statusTypes' => VersionStatus::withTitle(),
-            'locale' => $locale
+            'locale' => $locale,
         ]);
     }
 
     /**
-     * @param UpdateVersionField $updateVersionField
      * @return RedirectResponse
+     *
      * @throws \Throwable
      */
     public function update(UpdateVersionField $updateVersionField)
@@ -188,8 +186,8 @@ class VersionFieldsController extends Controller
     }
 
     /**
-     * @param UpdateVersionFieldTranslations $updateVersionField
      * @return RedirectResponse
+     *
      * @throws \Throwable
      */
     public function updateTranslations(UpdateVersionFieldTranslations $updateVersionField)
@@ -200,7 +198,6 @@ class VersionFieldsController extends Controller
     }
 
     /**
-     * @param UpdateVersionFieldPositions $updateVersionFieldPositions
      * @return JsonResponse
      */
     public function updatePositions(UpdateVersionFieldPositions $updateVersionFieldPositions)
@@ -211,7 +208,6 @@ class VersionFieldsController extends Controller
     }
 
     /**
-     * @param Request $request
      * @return RedirectResponse
      */
     public function destroy(Request $request)
@@ -221,11 +217,11 @@ class VersionFieldsController extends Controller
         $version = Version::firstOrFailByUuid($request->route('version'));
 
         $groupType = $request->query('group_type', '');
-        if (!$result) {
+        if (! $result) {
             return redirect()
                 ->route('genie.admin.versions.fields.index', [
                     'version' => $version->uuid,
-                    'group_type' => $groupType
+                    'group_type' => $groupType,
                 ])
                 ->with('error', __('genie.field_not_found'));
         }
@@ -237,10 +233,6 @@ class VersionFieldsController extends Controller
             ->with('success', __('genie.field_deleted'));
     }
 
-    /**
-     * @param Collection $records
-     * @return array
-     */
     public function getTranslations(Collection $records): array
     {
         $translations = [];
@@ -249,7 +241,7 @@ class VersionFieldsController extends Controller
             $recordTranslations = $record->getTranslations();
             foreach ($recordTranslations as $field => $locales) {
                 array_walk_recursive($locales, function (&$item) {
-                    $item = !empty($item);
+                    $item = ! empty($item);
                 });
                 $translations['fields'][$record->uuid][$field] = $locales;
             }
@@ -257,12 +249,13 @@ class VersionFieldsController extends Controller
                 $optionTranslations = $option->getTranslations();
                 foreach ($optionTranslations as $fieldOption => $locales) {
                     array_walk_recursive($locales, function (&$item) {
-                        $item = !empty($item);
+                        $item = ! empty($item);
                     });
                     $translations['options'][$record->uuid][$option->uuid][$fieldOption] = $locales;
                 }
             }
         }
+
         return $translations;
     }
 }

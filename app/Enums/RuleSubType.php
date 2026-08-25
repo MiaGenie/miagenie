@@ -7,10 +7,9 @@ use App\Concerns\Enum\WithTitle;
 
 enum RuleSubType: int
 {
-    use WithTitle;
     use FromName;
+    use WithTitle;
 
-    case COMPETITORS = 11;
     case BRIEFINGS = 12;
     case BRIEFINGS_MULTIPLE = 13;
     case CHANNELS = 14;
@@ -22,13 +21,9 @@ enum RuleSubType: int
     case PRE_POSTS_INITIAL = 41;
     case PRE_POSTS = 42;
 
-    /**
-     * @return string
-     */
     public function title(): string
     {
         return match ($this) {
-            self::COMPETITORS => 'competitors',
             self::BRIEFINGS => 'briefings',
             self::BRIEFINGS_MULTIPLE => 'briefings_multiple',
             self::CHANNELS => 'channels',

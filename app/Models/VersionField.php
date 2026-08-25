@@ -2,21 +2,20 @@
 
 namespace App\Models;
 
+use App\Concerns\Models\HasTranslations;
 use App\Enums\FormFieldFileType;
 use App\Enums\FormFieldType;
 use App\Enums\FormInputType;
 use App\Enums\VersionGroupType;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
-use App\Concerns\Models\HasTranslations;
 
 class VersionField extends Model
 {
-    use HasUuid;
     use HasTranslations;
+    use HasUuid;
 
     /**
      * @var string
@@ -55,6 +54,8 @@ class VersionField extends Model
         'display_item_title',
         'display_faq_title',
         'display_faq_text',
+        'class',
+        'block',
         'position',
     ];
 
@@ -68,7 +69,7 @@ class VersionField extends Model
         'group_type' => VersionGroupType::class,
         'name' => 'array',
         'description' => 'array',
-        'sub_description' => 'array'
+        'sub_description' => 'array',
     ];
 
     /**
@@ -79,24 +80,35 @@ class VersionField extends Model
         'description',
         'sub_description',
         'display_faq_title',
-        'display_faq_text'
+        'display_faq_text',
     ];
 
-    /**
-     * @return BelongsTo
-     */
     public function version(): BelongsTo
     {
         return $this->belongsTo(Version::class, 'id');
     }
 
-    /**
-     * @return HasMany
-     */
     public function options(): HasMany
     {
         return $this->hasMany(VersionFieldOption::class, 'field_id')
             ->oldest('group')
             ->oldest('position');
+    }
+
+    /**
+     * Every sub-field belonging to this field, at any depth.
+     */
+    public function subFields(): HasMany
+    {
+        return $this->hasMany(VersionFieldSubField::class, 'field_id')
+            ->oldest('position');
+    }
+
+    /**
+     * The top level of the sub-field tree, from which children are walked.
+     */
+    public function rootSubFields(): HasMany
+    {
+        return $this->subFields()->whereNull('parent_id');
     }
 }

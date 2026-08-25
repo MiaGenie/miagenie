@@ -85,6 +85,7 @@ return [
 
     'waits' => [
         'redis:default' => 60,
+        'redis:genie-ai' => 300,
     ],
 
     /*
@@ -193,12 +194,32 @@ return [
             'timeout' => 60,
             'nice' => 0,
         ],
+
+        'genie-ai' => [
+            'connection' => 'redis',
+            'queue' => ['genie-ai'],
+            'balance' => 'auto',
+            'autoScalingStrategy' => 'time',
+            'maxProcesses' => 1,
+            'maxTime' => 0,
+            'maxJobs' => 0,
+            'memory' => 256,
+            'tries' => 3,
+            // Must exceed RunResponseJob::$timeout, or the supervisor kills the job first.
+            'timeout' => 660,
+            'nice' => 0,
+        ],
     ],
 
     'environments' => [
         'production' => [
             'supervisor-1' => [
                 'maxProcesses' => 10,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 3,
+            ],
+            'genie-ai' => [
+                'maxProcesses' => 6,
                 'balanceMaxShift' => 1,
                 'balanceCooldown' => 3,
             ],
@@ -214,6 +235,9 @@ return [
 
         'local' => [
             'supervisor-1' => [
+                'maxProcesses' => 3,
+            ],
+            'genie-ai' => [
                 'maxProcesses' => 3,
             ],
             'mixpost-heavy' => [

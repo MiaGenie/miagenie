@@ -11,10 +11,6 @@ class RuleStepResource extends JsonResource
      */
     public static $wrap = null;
 
-    /**
-     * @param $request
-     * @return array
-     */
     public function toArray($request): array
     {
 
@@ -25,13 +21,8 @@ class RuleStepResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'instructions' => $this->instructions,
-            'ai_model' => $this->ai_model,
+            'model_profile_id' => $this->model_profile_id,
             'response_format' => $this->response_format,
-            'json_schema' => $this->json_schema,
-            'temperature' => $this->temperature,
-            'top_p' => $this->top_p,
-            'reasoning_effort' => $this->reasoning_effort,
-            'vector_id' => $this->vector_id,
             'link_upstream' => $this->link_upstream,
             'message' => $this->message,
             'output' => $this->output,

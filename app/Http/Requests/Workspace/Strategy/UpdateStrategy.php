@@ -12,47 +12,70 @@ class UpdateStrategy extends FormRequest
 {
     use IngestVersionsContent;
 
-    /**
-     * @var array
-     */
     private array $validationRules;
 
-    /**
-     * @var Collection
-     */
     private Collection $fieldList;
+
+    private ?Strategy $strategy = null;
 
     /**
      * @return array
      */
-/*    public function rules(): array
-    {
-        return $this->validationRules;
-    }*/
+    /*    public function rules(): array
+        {
+            return $this->validationRules;
+        }*/
 
     /**
-     * @return bool
+     * Write the edited fields back.
+     *
+     * What the request omits keeps its stored value — the presentation only sends the fields the
+     * run wrote — and a payload cannot introduce a key the version does not define.
      */
     public function handle(): bool
     {
-        $strategy = Strategy::findByUuid($this->input('id'));
+        $strategy = $this->strategy();
 
-        $foo = $strategy->update([
-            'content' => $this->getVersionContent()->toArray()
+        return $strategy->update([
+            'content' => array_merge(
+                $strategy->content ?? [],
+                array_intersect_key(
+                    (array) $this->input('content'),
+                    array_flip($this->fieldList->pluck('code_name')->all())
+                )
+            ),
         ]);
-
-        return $foo;
     }
 
     /**
-     * @return void
      * @throws \Exception
      */
     protected function prepareForValidation(): void
     {
-        $strategy = Strategy::findByUuid($this->input('id'));
-        $this->fieldList = $strategy->run->rule->version->with(['strategies' => ['options']])->firstOrFail()->strategies;
+        $this->fieldList = $this->version()->strategies()->with('options')->get();
 
-//        $this->validationRules = $this->getValidationRules()->toArray();
+        //        $this->validationRules = $this->getValidationRules()->toArray();
+    }
+
+    /**
+     * The strategy being edited.
+     *
+     * Read from the route rather than the payload: every page posting here carries `{strategy}`,
+     * while only the older forms happen to send the record's `id` in the body.
+     */
+    private function strategy(): Strategy
+    {
+        return $this->strategy ??= Strategy::firstOrFailByUuid($this->route('strategy'));
+    }
+
+    /**
+     * The strategy's own version, which is what its `code_name`s belong to — the same name exists
+     * in several versions. A strategy from before the current pipeline has no `aiRun`, so it falls
+     * back to the version the workspace is on.
+     */
+    private function version(): Version
+    {
+        return $this->strategy()->aiRun?->rule?->version
+            ?? Version::findOrFail($this->getVersionId());
     }
 }

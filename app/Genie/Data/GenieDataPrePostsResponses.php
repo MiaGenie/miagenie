@@ -6,10 +6,12 @@ use App\Abstracts\GenieData;
 use App\Concerns\GenieParser;
 use App\Concerns\GenieSchemaParser;
 use App\Contracts\GenieDataContract;
+use App\Contracts\GenieStepDataContract;
 use App\Enums\GenieSyncAction;
 use App\Enums\RuleSubType;
 use App\Enums\RuleType;
 use App\Enums\VersionGroupType;
+use App\Genie\Schema\StepSchemaBuilder;
 use App\Models\Briefing;
 use App\Models\RuleStep;
 use App\Models\RunResponse;
@@ -17,38 +19,21 @@ use App\Models\Strategy;
 use App\Models\VersionField;
 use App\Models\VersionFieldOption;
 use Arr;
-use Illuminate\Support\Str;
 use Inovector\Mixpost\Facades\WorkspaceManager;
 
-class GenieDataPrePostsResponses extends GenieData implements GenieDataContract
+class GenieDataPrePostsResponses extends GenieData implements GenieDataContract, GenieStepDataContract
 {
     use GenieParser;
     use GenieSchemaParser;
 
-    /**
-     * @var RunResponse
-     */
     private RunResponse $runResponse;
 
-    /**
-     * @var ?RunResponse
-     */
     private ?RunResponse $previousRunResponse;
 
-    /**
-     * @var ?RuleStep
-     */
     private ?RuleStep $lastStep;
 
-    /**
-     * @var string
-     */
     private string $locale;
 
-    /**
-     * @param RunResponse $runResponse
-     * @param GenieSyncAction $action
-     */
     public function __construct(
         RunResponse $runResponse,
         GenieSyncAction $action,
@@ -61,128 +46,63 @@ class GenieDataPrePostsResponses extends GenieData implements GenieDataContract
     }
 
     /**
-     * @return array
+     * A record of what was sent, for `genie_logs`. The agent carries the generation options.
      */
     public function getData(): array
     {
         $step = $this->runResponse->step;
+        $profile = $step->modelProfile;
 
-        $data = [
-            'include' => null,
-            'input' => $this->getMessage(),
+        return [
+            'provider' => $profile?->provider,
+            'model' => $profile?->explicitModel() ?? $profile?->model_tier?->value,
             'instructions' => $step->getTranslation('instructions', $this->locale),
-            'max_output_tokens' => null,
-            'model' => $step->ai_model,
-            'previous_response_id' => $this->getPreviousResponseId(),
-            'reasoning' => $step->reasoning_effort,
-            'store' => true,
-            'temperature' => $step->temperature ? (float)$step->temperature : null,
-            'top_p' => $step->top_p ? (float)$step->top_p : null
+            'prompt' => $this->getPrompt(),
+            'response_format' => $step->response_format,
+            'schema' => app(StepSchemaBuilder::class)->tryForStep($step, $this->locale),
         ];
-
-/*        if ($step->vector_id) {
-            $vectorStoreIds = Vector::find($step->vector_id)?->vector_provider_id;
-            $tools['type'] = 'file_search';
-            $tools['vector_store_ids'] = [$vectorStoreIds];
-            $data['tools'] = [$tools];
-        }
-
-        $data['tool_choice'] = 'required';*/
-
-        $format['type'] = $step->response_format;
-        if ($step->response_format === 'json_schema') {
-            $name = preg_replace("/[^\sa-zA-Z0-9_-]/", "", $step->name);
-            $format['name'] = Str::snake($name);
-            $format['strict'] = true;
-            $jsonSchema = $step->getTranslation('json_schema', $this->locale);
-            $format['schema'] = json_decode($jsonSchema, true);
-        }
-        $data['text']['format'] = $format;
-
-        return $data;
     }
 
-    /**
-     * @return string
-     */
+    public function getLocale(): string
+    {
+        return $this->locale;
+    }
+
+    public function getPrompt(): string
+    {
+        return $this->getMessage();
+    }
+
     public function getProviderIdField(): string
     {
         return 'response_provider_id';
     }
 
     /**
-     * @return ?RunResponse
+     * The run's preceding response, used only to carry review feedback forward.
+     *
+     * This used to encode three different `link_upstream` chaining strategies feeding
+     * `previous_response_id`. That concept does not exist without the Responses API, so the
+     * lookup is now simply "the last response in this run".
      */
     private function getPreviousResponse(): ?RunResponse
     {
-        if ($this->runResponse->run->rule->link_upstream) {
-            $previousRunResponse = $this->runResponse->run->runResponses()->whereHas(
-                'runDraftResponse.runDraft',
-                function ($query) {
-                    $query->where('draft_id', $this->runResponse->runDraftResponse?->runDraft->draft_id)
-                        ->where('run_id', $this->runResponse->run->id);
-                }
-            )->whereHas(
-                'step',
-                function ($query) {
-                    $query->where('position', '<', $this->runResponse->step->position);
-                }
-            )
-            ->latest()->first();
-
-            if (!$previousRunResponse) {
-                $previousRunResponse = RunResponse::whereHas(
-                    'drafts',
-                    function ($query) {
-                        $query->where('id', $this->runResponse->runDraftResponse->runDraft->draft_id);
-                    }
-                )->whereKeyNot($this->runResponse->id)->first();
-            }
-            return $previousRunResponse;
-        }
-
-        if (!$this->runResponse->step->link_upstream) {
-            return $this->runResponse->run->runResponses()->whereKeyNot($this->runResponse->id)->latest()->first();
-        }
-
-        $initialStep = $this->ruleInitialStep();
-
-        $previousRunResponse = $this->runResponse->run->runResponses()->where('step_id', $initialStep->id)->latest()->first();
-
-        return $previousRunResponse;
+        return RunResponse::where(['run_id' => $this->runResponse->run->id])
+            ->whereKeyNot($this->runResponse->id)
+            ->latest('id')
+            ->first();
     }
 
-    /**
-     * @return ?string
-     */
-    private function getPreviousResponseId(): ?string
-    {
-        return $this->previousRunResponse?->response_provider_id;
-    }
-
-    /**
-     * @return ?GenieSyncAction
-     */
     public function nextAction(): ?GenieSyncAction
     {
-        if ($this->runResponse->run->rule->link_upstream) {
-            return $this->nextAction;
-        }
-
         return GenieSyncAction::UPDATE;
     }
 
-    /**
-     * @return RuleType
-     */
     public function getRuleType(): RuleType
     {
         return $this->model->step->rule->rule_type;
     }
 
-    /**
-     * @return string
-     */
     private function getMessage(): string
     {
         $msg = $this->runResponse->step->getTranslation('message', $this->locale);
@@ -197,9 +117,6 @@ class GenieDataPrePostsResponses extends GenieData implements GenieDataContract
         return $text;
     }
 
-    /**
-     * @return array
-     */
     private function getReplacements(): array
     {
         $briefings = $this->getBriefingReplacements();
@@ -210,9 +127,6 @@ class GenieDataPrePostsResponses extends GenieData implements GenieDataContract
         return array_merge($briefings, $competitors, $ideas, $drafts);
     }
 
-    /**
-     * @return array
-     */
     private function getIdeasReplacements(): array
     {
         $idea = $this->runResponse->runIdeaResponse?->runIdea->idea->only(
@@ -222,9 +136,6 @@ class GenieDataPrePostsResponses extends GenieData implements GenieDataContract
         return $idea ? Arr::prependKeysWith($idea, 'idea.') : [];
     }
 
-    /**
-     * @return array
-     */
     private function getDraftsReplacements(): array
     {
         $draft = $this->runResponse->runDraftResponse?->runDraft->draft->only(
@@ -234,10 +145,6 @@ class GenieDataPrePostsResponses extends GenieData implements GenieDataContract
         return $draft ? Arr::prependKeysWith($draft, 'draft.') : [];
     }
 
-
-    /**
-     * @return array
-     */
     private function getBriefingReplacements(): array
     {
         $briefing = Briefing::where(['workspace_id' => $this->runResponse->run->workspace_id])->latest()->first()?->content;
@@ -246,9 +153,6 @@ class GenieDataPrePostsResponses extends GenieData implements GenieDataContract
         return Arr::prependKeysWith($briefing, 'briefings.');
     }
 
-    /**
-     * @return array
-     */
     private function getCompetitorReplacements(): array
     {
         $competitor = $this->runResponse->runCompetitor->competitor->content;
@@ -257,9 +161,6 @@ class GenieDataPrePostsResponses extends GenieData implements GenieDataContract
         return Arr::prependKeysWith($competitor, 'competitors.');
     }
 
-    /**
-     * @return array
-     */
     private function getStrategyReplacements(): array
     {
         $strategy['strategy'] = Strategy::where(['workspace_id' => $this->runResponse->run->workspace_id])->latest()->first()?->content;
@@ -267,10 +168,6 @@ class GenieDataPrePostsResponses extends GenieData implements GenieDataContract
         return $strategy;
     }
 
-
-    /**
-     * @return array
-     */
     private function getStrategySchemas(): array
     {
         $schemas = $this->runResponse->run->runStrategy->strategy->run->rule->steps->map(function (RuleStep $step) {
@@ -280,31 +177,22 @@ class GenieDataPrePostsResponses extends GenieData implements GenieDataContract
         $schemas = $schemas->reduce(function (array $list, $item) {
             $item = json_decode($item, true);
             $list['strategy'] = array_merge($list['strategy'], $item['properties']);
+
             return $list;
         }, ['strategy' => []]);
 
         return $schemas;
     }
 
-    /**
-     * @param array $content
-     * @param string $type
-     * @return array
-     */
     private function formatFieldOptions(array $content, string $type): array
     {
         foreach ($content as $key => $item) {
             $content[$key] = is_array($item) ? $this->getFormatedFieldOptions($key, $item, $type) : $item;
         }
+
         return $content;
     }
 
-    /**
-     * @param string $key
-     * @param array $item
-     * @param string $type
-     * @return string
-     */
     private function getFormatedFieldOptions(string $key, array $item, string $type): string
     {
         $field = VersionField::where([
@@ -316,7 +204,7 @@ class GenieDataPrePostsResponses extends GenieData implements GenieDataContract
         $fieldOptions = VersionFieldOption::where('field_id', $field->id)->get()
             ->pluck('name', 'code_name')->toArray();
 
-        if (sizeof($item) === 1) {
+        if (count($item) === 1) {
             return $fieldOptions[$item[0]];
         }
 
@@ -333,12 +221,9 @@ class GenieDataPrePostsResponses extends GenieData implements GenieDataContract
         return implode(', ', $item);
     }
 
-    /**
-     * @return array
-     */
     public function getRequest(): array
     {
-        if (sizeof($this->request) > 0) {
+        if (count($this->request) > 0) {
             return $this->request;
         }
 
@@ -347,9 +232,6 @@ class GenieDataPrePostsResponses extends GenieData implements GenieDataContract
         return $this->request;
     }
 
-    /**
-     * @return void
-     */
     public function setResponseStatus(): void
     {
         parent::setResponseStatus();
@@ -358,21 +240,16 @@ class GenieDataPrePostsResponses extends GenieData implements GenieDataContract
         }
     }
 
-    /**
-     * @return string
-     */
     public function getReviewMessage(): string
     {
         $reviewMsg = '';
         if ($this->previousRunResponse?->step->requires_review && $this->previousRunResponse?->runResponseReview?->id) {
-            $reviewMsg = $this->previousRunResponse->step->getTranslation('instructions', $this->locale) . "\n";
+            $reviewMsg = $this->previousRunResponse->step->getTranslation('instructions', $this->locale)."\n";
         }
+
         return $reviewMsg;
     }
 
-    /**
-     * @return ?RuleStep
-     */
     private function ruleInitialStep(): ?RuleStep
     {
         foreach ($this->runResponse->run->rule->steps as $ruleStep) {
@@ -380,6 +257,7 @@ class GenieDataPrePostsResponses extends GenieData implements GenieDataContract
                 return $ruleStep;
             }
         }
+
         return null;
     }
 }

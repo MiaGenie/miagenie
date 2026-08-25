@@ -11,10 +11,6 @@ class VersionFieldResource extends JsonResource
      */
     public static $wrap = null;
 
-    /**
-     * @param $request
-     * @return array
-     */
     public function toArray($request): array
     {
 
@@ -30,6 +26,7 @@ class VersionFieldResource extends JsonResource
             'input_type' => $this->input_type,
             'file_type' => $this->file_type,
             'options' => VersionFieldOptionResource::collection($this->options),
+            'sub_fields' => VersionFieldSubFieldResource::collection($this->whenLoaded('rootSubFields')),
             'min_length' => $this->min_length,
             'max_length' => $this->max_length,
             'min_value' => $this->min_value,
@@ -48,10 +45,10 @@ class VersionFieldResource extends JsonResource
             'display_item_title' => $this->display_item_title,
             'display_faq_title' => $this->display_faq_title,
             'display_faq_text' => $this->display_faq_text,
+            'class' => $this->class,
+            'block' => $this->block,
             'position' => $this->position,
         ];
 
     }
-
-
 }

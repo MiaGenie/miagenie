@@ -11,10 +11,6 @@ class RuleStepTranslationResource extends JsonResource
      */
     public static $wrap = null;
 
-    /**
-     * @param $request
-     * @return array
-     */
     public function toArray($request): array
     {
 
@@ -23,11 +19,10 @@ class RuleStepTranslationResource extends JsonResource
             'name' => $this->name,
             'instructions' => $this->instructions,
             'response_format' => $this->response_format,
-            'json_schema' => $this->json_schema,
             'message' => $this->message,
             'requires_review' => $this->requires_review,
             'review_message_user' => $this->review_message_user,
-            'review_message_system' => $this->review_message_system
+            'review_message_system' => $this->review_message_system,
         ];
 
     }

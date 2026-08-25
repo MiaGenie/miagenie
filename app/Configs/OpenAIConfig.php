@@ -7,50 +7,35 @@ use App\Contracts\Config as ConfigContract;
 
 class OpenAIConfig extends Config implements ConfigContract
 {
-    /**
-     * @return string
-     */
     public function group(): string
     {
         return 'openai';
     }
 
-    /**
-     * @return array
-     */
     public function form(): array
     {
         return [
             'api_key' => '',
-            'request_timeout' => ''
+            'request_timeout' => '',
         ];
     }
 
-    /**
-     * @return array
-     */
     public function encrypted(): array
     {
         return [
             'api_key' => true,
-            'request_timeout' => false
+            'request_timeout' => false,
         ];
     }
 
-    /**
-     * @return array
-     */
     public function rules(): array
     {
         return [
-            "api_key" => ['required'],
-            'request_timeout' => ['nullable', 'integer', 'min:1', 'max:60'],
+            'api_key' => ['required'],
+            'request_timeout' => ['nullable', 'integer', 'min:1', 'max:3600'],
         ];
     }
 
-    /**
-     * @return array
-     */
     public function messages(): array
     {
         return [

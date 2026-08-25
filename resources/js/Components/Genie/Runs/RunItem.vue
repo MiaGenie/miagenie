@@ -25,33 +25,40 @@ const versions = usePage().props.versions;
 const ruleTypes = usePage().props.ruleTypes;
 const runStatus = usePage().props.runStatus;
 
-const getRuleType = () => {
-    let ruleType = find(rules, ['id', props.item.rule_id]).rule_type;
-    return find(ruleTypes, ['value', ruleType]).name;
-}
+/**
+ * A run keeps its row when the rule it ran is deleted, so neither the rule nor anything reached
+ * through it can be taken for granted.
+ */
+const rule = () => find(rules, ['id', props.item.rule_id]);
+
+const versionName = () => find(versions, ['id', rule()?.version_id])?.name ?? '—';
+
+const ruleType = () => find(ruleTypes, ['value', rule()?.rule_type])?.name ?? '—';
+
+const status = () => find(runStatus, ['value', Number(props.item.status)])?.name ?? '—';
 
 </script>
 <template>
     <TableRow :hoverable="true">
 
         <TableCell>
-            {{ workspaces[item.workspace_id]  + item.workspace_id }}
+            {{ workspaces[item.workspace_id] ?? '—' }}
         </TableCell>
 
         <TableCell>
-            {{ find(versions, ['id', find(rules, ['id', props.item.rule_id] ).version_id]).name }}
+            {{ versionName() }}
         </TableCell>
 
-        <TableCell >
-            {{ getRuleType() }}
+        <TableCell>
+            {{ ruleType() }}
         </TableCell>
 
-        <TableCell >
-            {{ props.item.created_at }}
+        <TableCell>
+            {{ item.created_at }}
         </TableCell>
 
-        <TableCell >
-            {{ find(runStatus,['value', props.item.status]).name }}
+        <TableCell>
+            {{ status() }}
         </TableCell>
 
         <TableCell>

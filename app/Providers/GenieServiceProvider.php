@@ -9,7 +9,6 @@ use App\Actions\GenieOutput\GenieOutputIdeas;
 use App\Actions\GenieOutput\GenieOutputPrePosts;
 use App\Actions\GenieOutput\GenieOutputStrategy;
 use App\Actions\GenieRun\CreateResponse;
-use App\Actions\GenieRun\RetrieveResponse;
 use App\Actions\GenieState\GenieStateRunResponses;
 use App\Actions\GenieState\GenieStateSyncs;
 use App\Actions\GenieSync\CreateFile;
@@ -23,7 +22,6 @@ use App\Contracts\GenieSyncContract;
 use App\Enums\GenieSyncAction;
 use App\Enums\GenieType;
 use App\Enums\RuleType;
-use App\Genie\Data\GenieDataAssistants;
 use App\Genie\Data\GenieDataDraftsResponses;
 use App\Genie\Data\GenieDataFiles;
 use App\Genie\Data\GenieDataIdeasResponses;
@@ -34,10 +32,10 @@ use App\Genie\Data\GenieRunData;
 use App\Genie\Data\GenieRunDataDrafts;
 use App\Genie\Data\GenieRunDataIdeas;
 use App\Genie\Data\GenieRunDataPrePosts;
+use App\Models\Workspace;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Inovector\Mixpost\Mixpost;
-use App\Models\Workspace;
 
 class GenieServiceProvider extends ServiceProvider
 {
@@ -55,19 +53,18 @@ class GenieServiceProvider extends ServiceProvider
 
             switch ($type) {
                 case GenieType::RUN_RESPONSE:
-                    return match($action) {
-                        GenieSyncAction::CREATE => new CreateResponse(),
-                        GenieSyncAction::RETRIEVE => new RetrieveResponse(),
+                    return match ($action) {
+                        GenieSyncAction::CREATE => new CreateResponse,
                     };
                 case GenieType::FILE:
-                    return match($action) {
-                        GenieSyncAction::CREATE => new CreateFile(),
-                        GenieSyncAction::DELETE => new DeleteFile()
+                    return match ($action) {
+                        GenieSyncAction::CREATE => new CreateFile,
+                        GenieSyncAction::DELETE => new DeleteFile
                     };
                 case GenieType::VECTOR:
-                    return match($action) {
-                        GenieSyncAction::CREATE => new UploadVector(),
-                        GenieSyncAction::DELETE => new DeleteVector()
+                    return match ($action) {
+                        GenieSyncAction::CREATE => new UploadVector,
+                        GenieSyncAction::DELETE => new DeleteVector
                     };
             }
         });
@@ -112,8 +109,6 @@ class GenieServiceProvider extends ServiceProvider
                     return new GenieDataFiles($model, $action);
                 case GenieType::VECTOR:
                     return new GenieDataVectors($model, $action);
-                case GenieType::ASSISTANT:
-                    return new GenieDataAssistants($model, $action);
             }
 
         });
@@ -126,25 +121,25 @@ class GenieServiceProvider extends ServiceProvider
                 case GenieType::RUN_RESPONSE:
                     switch ($model->run->rule->rule_type) {
                         case RuleType::STRATEGY:
-                            return new GenieOutputStrategy();
+                            return new GenieOutputStrategy;
                         case RuleType::IDEAS:
-                            return new GenieOutputIdeas();
+                            return new GenieOutputIdeas;
                         case RuleType::DRAFTS:
-                            return new GenieOutputDrafts();
+                            return new GenieOutputDrafts;
                         case RuleType::PRE_POSTS:
-                            return new GenieOutputPrePosts();
+                            return new GenieOutputPrePosts;
                     }
                 case GenieType::FILE:
                 case GenieType::VECTOR:
-                    return new GenieOutput();
+                    return new GenieOutput;
             }
         });
 
         $this->app->bind(GenieStateContract::class, function ($app, $params) {
             return match ($params['type']) {
                 GenieType::FILE,
-                GenieType::VECTOR => new GenieStateSyncs(),
-                GenieType::RUN_RESPONSE => new GenieStateRunResponses(),
+                GenieType::VECTOR => new GenieStateSyncs,
+                GenieType::RUN_RESPONSE => new GenieStateRunResponses,
             };
         });
 

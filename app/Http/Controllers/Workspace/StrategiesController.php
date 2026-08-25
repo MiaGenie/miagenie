@@ -100,7 +100,7 @@ class StrategiesController extends Controller
     public function review(Request $request)
     {
         $strategy = Strategy::firstOrFailByUuid($request->strategy);
-        $step = $strategy->run->runResponses->last()->step;
+        $step = $strategy->aiRun->runResponses->last()->step;
         $fieldName = $step->output[0];
         $field = VersionField::where('code_name', $fieldName)->with('options')->firstOrFail();
 
@@ -113,7 +113,7 @@ class StrategiesController extends Controller
                 'fieldName' => $fieldName,
                 'fieldTypes' => FormFieldType::withFieldOptions(),
                 'step' => $step,
-                'record' => $record
+                'record' => $record,
             ]
         );
     }
@@ -137,7 +137,7 @@ class StrategiesController extends Controller
         ]);
 
         $run->runBriefing()->create([
-            'briefing_id' => $briefing->id
+            'briefing_id' => $briefing->id,
         ]);
 
         $strategy = $run->strategy()->create([
@@ -204,7 +204,6 @@ class StrategiesController extends Controller
 
         return redirect()->back()->with('success', __('genie.strategy_updated'));
     }
-
 
     /**
      * @return RedirectResponse

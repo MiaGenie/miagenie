@@ -5,12 +5,12 @@ namespace App\Actions\GenieOutput;
 use App\Abstracts\GenieData;
 use App\Actions\GenieOutput;
 use App\Concerns\CleanAsterisks;
+use App\Concerns\PersistsStepResponse;
 use App\Contracts\GenieOutputContract;
 use App\Enums\DraftStatus;
 use App\Enums\PrePostStatus;
-use App\Enums\RunResponseError;
-use App\Enums\RunResponseStatus;
 use App\Models\PrePost;
+use App\Models\RunResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inovector\Mixpost\Enums\PostStatus;
@@ -19,26 +19,17 @@ use Inovector\Mixpost\Models\Post;
 class GenieOutputPrePosts extends GenieOutput implements GenieOutputContract
 {
     use CleanAsterisks;
+    use PersistsStepResponse;
 
-    /**
-     * @param GenieData $data
-     */
     public function handle(GenieData $data): void
     {
         try {
             parent::handle($data);
-            /** @var \App\Models\RunResponse  $model */
+            /** @var RunResponse $model */
             $model = $data->getModel();
             $response = $data->getResponse();
 
-            $model->update([
-                'provider_status' => RunResponseStatus::fromName($response['status']),
-                'output' => $response['output'],
-                'output_text' => $response['output_text'],
-                'error' => $response['error'] ? RunResponseError::fromName($response['error']['code']) : null,
-                'error_details' => $response['error'] ? $response['error']['message'] : null,
-                'incomplete_details' => $response['incomplete_details'] ? $response['incomplete_details']['reason'] : null,
-            ]);
+            $this->persistResponse($model, $response);
 
             if (empty($model->step->output)) {
                 return;
@@ -50,9 +41,7 @@ class GenieOutputPrePosts extends GenieOutput implements GenieOutputContract
                 'draft_id' => $model->runDraftResponse->runDraft->draft_id,
                 'status' => PrePostStatus::CREATED,
             ];
-            $responseOutput = $response['output'][0]['content'][0]['text'];
-            $responseOutput = $this->cleanAsterisks($responseOutput);
-            $output = json_decode($responseOutput, true);
+            $output = $this->structuredOutput($response) ?? [];
             foreach ($model->step->output as $stepOutput) {
                 $prePostData[$stepOutput] = $output[$stepOutput] ?? '';
             }
@@ -79,83 +68,77 @@ class GenieOutputPrePosts extends GenieOutput implements GenieOutputContract
                         'media' => [],
                         'url' => null,
                     ]],
-                    'options' => $this->versionOptions()
+                    'options' => $this->versionOptions(),
                 ]);
 
                 return $post;
             });
 
-            $prePost->update(['post_id' =>  $post->id]);
+            $prePost->update(['post_id' => $post->id]);
 
         } catch (\Exception $exception) {
             Log::error($exception->getMessage());
         }
     }
 
-    /**
-     * @param string $text
-     * @return string
-     */
     private function lineToDiv(string $text): string
     {
-        $output = "<div>";
-        $output .= str_replace("\n", "</div><div>", $text);
-        $output .= "</div>";
+        $output = '<div>';
+        $output .= str_replace("\n", '</div><div>', $text);
+        $output .= '</div>';
+
         return $output;
     }
 
-    /**
-     * @return array
-     */
     private function versionOptions(): array
     {
         return [
             'tiktok' => [
                 'allow_duet' => [
-                    'account-0' => false
+                    'account-0' => false,
                 ],
                 'allow_stitch' => [
-                    'account-0' => false
+                    'account-0' => false,
                 ],
                 'privacy_level' => [
-                    'account-0' => null
+                    'account-0' => null,
                 ],
                 'allow_comments' => [
-                    'account-0' => false
+                    'account-0' => false,
                 ],
                 'content_disclosure' => [
-                    'account-0' => false
+                    'account-0' => false,
                 ],
                 'brand_content_toggle' => [
-                    'account-0' => false
+                    'account-0' => false,
                 ],
                 'brand_organic_toggle' => [
-                    'account-0' => false
-                ]
+                    'account-0' => false,
+                ],
             ],
             'youtube' => [
                 'title' => null,
-                'status' => 'public'
+                'status' => 'public',
             ],
             'linkedin' => [
-                'visibility' => 'PUBLIC'
+                'visibility' => 'PUBLIC',
             ],
             'mastodon' => [
-                'sensitive' => false
+                'sensitive' => false,
             ],
             'instagram' => [
-                'type' => 'post'
+                'type' => 'post',
             ],
             'pinterest' => [
                 'link' => null,
                 'title' => null,
                 'boards' => [
-                    'account-0' => null
-                ]
+                    'account-0' => null,
+                ],
             ],
             'facebook_page' => [
-                'type' => 'post'
-            ]
+                'type' => 'post',
+            ],
         ];
     }
 }

@@ -8,9 +8,9 @@ use App\Concerns\Enum\WithTitle;
 
 enum RunStatus: int
 {
-    use WithTitle;
     use FromName;
     use HasState;
+    use WithTitle;
 
     case OPEN = 1;
     case RUNNING = 2;
@@ -18,12 +18,8 @@ enum RunStatus: int
     case PENDING_REVIEW = 4;
     case REVIEWED = 5;
     case COMPLETE = 6;
+    case SKIPPED = 7;
 
-
-
-    /**
-     * @return string
-     */
     public function title(): string
     {
         return match ($this) {
@@ -33,12 +29,10 @@ enum RunStatus: int
             self::PENDING_REVIEW => 'pending_review',
             self::REVIEWED => 'reviewed',
             self::COMPLETE => 'complete',
+            self::SKIPPED => 'skipped',
         };
     }
 
-    /**
-     * @return bool
-     */
     public function isError(): bool
     {
         return match ($this) {
@@ -47,9 +41,6 @@ enum RunStatus: int
         };
     }
 
-    /**
-     * @return bool
-     */
     public function requiresUpdate(): bool
     {
         return match ($this) {
@@ -58,13 +49,10 @@ enum RunStatus: int
         };
     }
 
-    /**
-     * @return bool
-     */
     public function isComplete(): bool
     {
         return match ($this) {
-            self::COMPLETE => true,
+            self::COMPLETE, self::SKIPPED => true,
             default => false,
         };
     }

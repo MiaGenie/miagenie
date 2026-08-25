@@ -18,12 +18,12 @@ import LogsIcon from "@/Icons/Genie/Logs.vue";
 
     <MenuGroupBody>
 
-        <MenuItem :url="route('genie.admin.ai_models.index')"
-                  :active="$page.component === 'Genie/Admin/AIModels/Index'">
+        <MenuItem :url="route('genie.admin.model_profiles.index')"
+                  :active="$page.component === 'Genie/Admin/ModelProfiles/Index'">
             <template #icon>
                 <AIModelIcon/>
             </template>
-            {{ $t('genie.ai_models') }}
+            {{ $t('genie.model_profiles') }}
         </MenuItem>
 
         <MenuItem :url="route('genie.admin.vectors.index')"

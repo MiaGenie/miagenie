@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Workspace;
 
 use App\Concerns\Controller\HasFieldOptions;
+use App\Concerns\Controller\HasWorkspaceLocale;
 use App\Enums\FormFieldFileType;
 use App\Enums\FormFieldType;
 use App\Enums\FormInputType;
+use App\Http\Requests\Workspace\Briefing\SaveBriefingWizard;
 use App\Http\Requests\Workspace\Briefing\StoreBriefing;
 use App\Http\Requests\Workspace\Briefing\UpdateBriefing;
 use App\Http\Resources\BriefingResource;
 use App\Models\Briefing;
 use App\Models\WorkspaceVersion;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Inertia\Inertia;
@@ -20,6 +23,7 @@ use Inovector\Mixpost\Facades\WorkspaceManager;
 class BriefingsController extends Controller
 {
     use HasFieldOptions;
+    use HasWorkspaceLocale;
 
     /**
      * @return Response
@@ -33,16 +37,16 @@ class BriefingsController extends Controller
             ->onEachSide(1)
             ->withQueryString();
 
-        $fieldList = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
+        $version = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
             ->with(['version' => ['briefings']])
             ->firstOrFail()
-            ->version
-            ->briefings
-            ->toArray();
+            ->version;
+
+        $fieldList = $this->localizedFields($version->briefings);
 
         return Inertia::render('Genie/Workspace/Briefings/Index', [
             'records' => BriefingResource::collection($records),
-            'fieldList' => $fieldList
+            'fieldList' => $fieldList,
         ]);
     }
 
@@ -51,13 +55,14 @@ class BriefingsController extends Controller
      */
     public function create()
     {
-        $fieldList = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
+        $version = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
             ->with(['version' => ['briefings' => ['options']]])
             ->firstOrFail()
-            ->version
-            ->toArray();
+            ->version;
 
-        $fieldList['briefings'] = $this->groupFieldOptions($fieldList['briefings']);
+        $fieldList = $version->toArray();
+
+        $fieldList['briefings'] = $this->groupFieldOptions($this->localizedFields($version->briefings));
 
         return Inertia::render('Genie/Workspace/Briefings/CreateEdit', [
             'mode' => 'create',
@@ -65,13 +70,59 @@ class BriefingsController extends Controller
             'fieldTypes' => FormFieldType::withFieldOptions(),
             'fileTypes' => FormFieldFileType::withTitle(),
             'inputTypes' => FormInputType::withInputOptions(),
-            'record' => null
+            'record' => null,
         ]);
     }
 
     /**
-     * @param StoreBriefing $storeBriefing
+     * The guided, one-question-at-a-time briefing. A workspace holds a single briefing, so an
+     * existing one is edited rather than a second being created.
+     *
+     * @return Response
      */
+    public function wizard()
+    {
+        $record = Briefing::latest()->first();
+
+        $version = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
+            ->with(['version' => ['briefings' => ['options']]])
+            ->firstOrFail()
+            ->version;
+
+        $fieldList = $version->toArray();
+
+        $fieldList['briefings'] = $this->groupFieldOptions($this->localizedFields($version->briefings));
+
+        return Inertia::render('Genie/Workspace/Briefings/Wizard', [
+            'mode' => $record ? 'edit' : 'create',
+            'fieldList' => $fieldList,
+            'fieldTypes' => FormFieldType::withFieldOptions(),
+            'fileTypes' => FormFieldFileType::withTitle(),
+            'inputTypes' => FormInputType::withInputOptions(),
+            'record' => $record ? new BriefingResource($record) : null,
+        ]);
+    }
+
+    /**
+     * Write what the wizard has so far.
+     *
+     * A draft answers back without a flash: this runs on every question, and Notifications.vue
+     * toasts whatever it finds in the flash bag.
+     */
+    public function wizardSave(SaveBriefingWizard $request): RedirectResponse
+    {
+        $record = $request->handle();
+
+        if ($request->boolean('draft')) {
+            return redirect()->back();
+        }
+
+        return redirect()->back()->with(
+            'success',
+            __($record->wasRecentlyCreated ? 'genie.briefing_created' : 'genie.briefing_updated')
+        );
+    }
+
     public function store(StoreBriefing $storeBriefing)
     {
         $record = $storeBriefing->handle();
@@ -80,25 +131,23 @@ class BriefingsController extends Controller
             'genie.briefings.edit',
             [
                 'workspace' => WorkspaceManager::current()->uuid,
-                'briefing' => $record->uuid
+                'briefing' => $record->uuid,
             ]
         )->with('success', __('genie.briefing_created'));
     }
 
-    /**
-     * @param Request $request
-     */
     public function edit(Request $request)
     {
         $record = Briefing::firstOrFailByUuid($request->route('briefing'));
 
-        $fieldList = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
+        $version = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
             ->with(['version' => ['briefings' => ['options']]])
             ->firstOrFail()
-            ->version
-            ->toArray();
+            ->version;
 
-        $fieldList['briefings'] = $this->groupFieldOptions($fieldList['briefings']);
+        $fieldList = $version->toArray();
+
+        $fieldList['briefings'] = $this->groupFieldOptions($this->localizedFields($version->briefings));
 
         return Inertia::render('Genie/Workspace/Briefings/CreateEdit', [
             'mode' => 'edit',
@@ -106,13 +155,10 @@ class BriefingsController extends Controller
             'fieldTypes' => FormFieldType::withFieldOptions(),
             'fileTypes' => FormFieldFileType::withTitle(),
             'inputTypes' => FormInputType::withInputOptions(),
-            'record' => new BriefingResource($record)
+            'record' => new BriefingResource($record),
         ]);
     }
 
-    /**
-     * @param UpdateBriefing $updateBriefing
-     */
     public function update(UpdateBriefing $updateBriefing)
     {
         $updateBriefing->handle();
@@ -120,16 +166,13 @@ class BriefingsController extends Controller
         return redirect()->back()->with('success', __('genie.briefing_updated'));
     }
 
-    /**
-     * @param Request $request
-     */
     public function destroy(Request $request)
     {
         $query = Briefing::byWorkspace(WorkspaceManager::current())
             ->where('uuid', $request->route('briefing'))
             ->delete();
 
-        if (!$query) {
+        if (! $query) {
             return redirect()
                 ->route('genie.briefings.index', ['workspace' => $request->route('workspace')])
                 ->with('error', __('genie.briefing_not_found'));
