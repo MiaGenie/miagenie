@@ -1,4 +1,4 @@
-FROM serversideup/php:8.2-fpm-nginx
+FROM serversideup/php:8.4-fpm-nginx
 
 USER root
 
@@ -11,9 +11,7 @@ RUN apt update &&\
     apt clean &&\
     install-php-extensions bcmath gd intl
 
-RUN --mount=type=secret,id=composer-auth \
-    COMPOSER_AUTH=$(cat /run/secrets/composer-auth) \
-    composer install --no-scripts --no-dev --ansi --no-interaction &&\
+RUN composer install --no-scripts --no-dev --ansi --no-interaction &&\
     composer clear-cache &&\
     mkdir -p /var/www/html/public/vendor/genie-pro &&\
     cp -r /var/www/html/vendor/inovector/mixpost-pro-team/resources/dist/vendor/genie-pro \
