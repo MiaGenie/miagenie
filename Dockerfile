@@ -11,8 +11,7 @@ RUN apt update &&\
     apt clean &&\
     install-php-extensions bcmath gd intl
 
-RUN COMPOSER_AUTH='{"github-oauth": {"github.com": "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"}}' 
-    composer install --no-scripts --no-dev --ansi --no-interaction &&\
+RUN composer install --no-scripts --no-dev --ansi --no-interaction &&\
     composer clear-cache &&\
     mkdir -p /var/www/html/public/vendor/genie-pro &&\
     cp -r /var/www/html/vendor/inovector/mixpost-pro-team/resources/dist/vendor/genie-pro \
