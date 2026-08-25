@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url'
 
 const projectRoot = path.dirname(fileURLToPath(import.meta.url))
 
-export default defineConfig(({ _command, mode }) => {
+export default defineConfig(({ _command, mode = '' }) => {
   const env = loadEnv(mode, process.cwd(), '')
   let serverConfig = {}
 
@@ -84,6 +84,17 @@ export default defineConfig(({ _command, mode }) => {
             DefineOptions(),
         ],
         resolve: {
+            dedupe: [
+                "vue",
+                "@inertiajs/vue3",
+                "@inertiajs/core",
+                "vue-i18n",
+                "@intlify/core-base",
+                "@intlify/shared",
+                "@intlify/message-compiler",
+                "floating-vue",
+                "emoji-mart-vue-fast",
+            ],
             alias: {
                 "@mRs": "/vendor/inovector/mixpost-pro-team/resources",
                 "@mJs": "/vendor/inovector/mixpost-pro-team/resources/js",

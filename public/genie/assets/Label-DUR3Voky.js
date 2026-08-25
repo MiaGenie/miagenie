@@ -1,0 +1,1 @@
+import{c as e,o as s,v as o,r as l}from"./app-DR9klmFA.js";const n={class:"block font-medium text-gray-700 mb-xs"},c={key:0},r={key:1},m={__name:"Label",props:["value"],setup(t){return(a,_)=>(s(),e("label",n,[t.value?(s(),e("span",c,o(t.value),1)):(s(),e("span",r,[l(a.$slots,"default")]))]))}};export{m as _};

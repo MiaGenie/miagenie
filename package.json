@@ -93,5 +93,12 @@
         "*.php": [
             "composer format"
         ]
+    },
+    "allowScripts": {
+        "core-js@3.50.0": true,
+        "core-js@2.6.12": true,
+        "esbuild@0.21.5": true,
+        "file:../packages/inovector/mixpost-enterprise": true,
+        "file:../packages/inovector/mixpost-pro-team": true
     }
 }

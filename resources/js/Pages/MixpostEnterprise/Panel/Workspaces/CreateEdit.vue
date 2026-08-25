@@ -164,7 +164,7 @@ const submit = () => {
                 >{{ $t('enterprise-general.name') }}
                 <LabelSuffix danger>*</LabelSuffix>
               </label>
-            </template>x
+            </template>
 
             <Input
               id="name"
