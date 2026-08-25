@@ -3,27 +3,20 @@
 namespace App\Http\Requests\Workspace\Briefing;
 
 use App\Concerns\IngestVersionsContent;
-use App\Enums\WorkspaceFileSource;
-use App\Enums\WorkspaceFileType;
+use App\Concerns\Requests\UploadsContentImages;
 use App\Models\Briefing;
 use App\Models\Version;
 use App\Models\WorkspaceVersion;
-use App\Support\FileUploader;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Collection;
 
 class UpdateBriefing extends FormRequest
 {
     use IngestVersionsContent;
+    use UploadsContentImages;
 
-    /**
-     * @var array
-     */
     private array $validationRules;
 
-    /**
-     * @var Collection
-     */
     private Collection $fieldList;
 
     /**
@@ -34,16 +27,13 @@ class UpdateBriefing extends FormRequest
         return $this->validationRules;
     }
 
-    /**
-     * @return int
-     */
     public function handle(): int
     {
         $record = Briefing::firstOrFailByUuid($this->route('briefing'));
 
         $content = $this->getVersionContent()->toArray();
 
-        if (sizeof($this->files) > 0) {
+        if (count($this->files) > 0) {
             $imageFields = $this->processImages();
             foreach ($imageFields as $fieldName => $imageData) {
                 $content[$fieldName] = $imageData;
@@ -52,41 +42,11 @@ class UpdateBriefing extends FormRequest
 
         return $record->update([
             'content' => $content,
-            'version_id' => $this->getVersionId()
+            'version_id' => $this->getVersionId(),
         ]);
     }
 
     /**
-     * @return array
-     */
-    private function processImages(): array
-    {
-        $files = [];
-        foreach ($this->files as $fields) {
-            foreach ($fields as $field => $fieldFiles) {
-                $i = 0;
-                foreach ($fieldFiles as $file) {
-                    $record = FileUploader::createFromBase($file)
-                        ->path('workspace/' . $this->route('workspace') . '/images')
-                        ->disk('public')
-                        ->uploadAndInsertWorkspaceFile(
-                            WorkspaceFileType::BRIEFING,
-                            WorkspaceFileSource::USER
-                        );
-                    $files[$field][$i]['id'] = $record->name;
-                    $files[$field][$i]['path'] = $record->getUrl();
-                    $i++;
-                }
-                $files[$field] = sizeof($fieldFiles) === 1 ? $files[$field][0] : $files[$field];
-            }
-        }
-
-
-        return $files;
-    }
-
-    /**
-     * @return void
      * @throws \Exception
      */
     protected function prepareForValidation(): void

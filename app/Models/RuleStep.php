@@ -12,8 +12,8 @@ use Inovector\Mixpost\Concerns\Model\HasUuid;
 
 class RuleStep extends Model
 {
-    use HasUuid;
     use HasTranslations;
+    use HasUuid;
 
     protected $fillable = [
         'uuid',
@@ -23,13 +23,8 @@ class RuleStep extends Model
         'name',
         'description',
         'instructions',
-        'ai_model',
+        'model_profile_id',
         'response_format',
-        'json_schema',
-        'temperature',
-        'top_p',
-        'reasoning_effort',
-        'vector_id',
         'message',
         'output',
         'requires_review',
@@ -38,7 +33,7 @@ class RuleStep extends Model
         'optional',
         'position',
         'depends_on_field',
-        'depends_on_option'
+        'depends_on_option',
     ];
 
     public $table = 'genie_rule_steps';
@@ -54,30 +49,25 @@ class RuleStep extends Model
     public array $translatable = [
         'instructions',
         'message',
-        'json_schema',
         'review_message_user',
-        'review_message_system'
+        'review_message_system',
     ];
 
-    /**
-     * @return BelongsTo
-     */
     public function rule(): BelongsTo
     {
         return $this->belongsTo(Rule::class, 'rule_id');
     }
 
-    /**
-     * @return HasMany
-     */
+    public function modelProfile(): BelongsTo
+    {
+        return $this->belongsTo(ModelProfile::class, 'model_profile_id');
+    }
+
     public function competitors(): HasMany
     {
         return $this->hasMany(RunResponse::class, 'step_id');
     }
 
-    /**
-     * @return HasOne
-     */
     public function dependsOnField(): HasOne
     {
         return $this->hasOne(VersionField::class, 'id', 'depends_on_field');
@@ -85,6 +75,6 @@ class RuleStep extends Model
 
     public function dependsOnOption(): HasOne
     {
-        return $this->hasOne(VersionFieldOption::class, 'id', 'depends_on_option');
+        return $this->hasOne(VersionFieldSubField::class, 'id', 'depends_on_option');
     }
 }

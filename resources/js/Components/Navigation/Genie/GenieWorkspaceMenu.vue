@@ -19,13 +19,21 @@ const { user } = useAuth()
         {{ $t('genie.genie') }}
     </MenuGroupHeader>
     <MenuGroupBody>
-        <MenuItem :url="route('genie.strategies.index', {workspace: workspaceCtx.id})"
+        <MenuItem :url="route('genie.strategies.overview', {workspace: workspaceCtx.id})"
+                  :active="$page.component === 'Genie/Workspace/Strategies/Overview'">
+            <template #icon>
+                <StrategyIcon/>
+            </template>
+            {{ $t('genie.strategy') }}
+        </MenuItem>
+<!--        <MenuItem :url="route('genie.strategies.index', {workspace: workspaceCtx.id})"
                   :active="$page.component === 'Genie/Workspace/Strategies/Index'">
             <template #icon>
                 <StrategyIcon/>
             </template>
             {{ $t('genie.strategy') }}
         </MenuItem>
+
         <MenuItem :url="route('genie.strategies.list', {workspace: workspaceCtx.id})"
                   :active="$page.component === 'Genie/Workspace/Strategies/List'"
                   :hidden="!user.is_admin"
@@ -55,6 +63,6 @@ const { user } = useAuth()
                 <CogIcon/>
             </template>
             {{ $t('genie.setup') }}
-        </MenuItem>
+        </MenuItem>-->
     </MenuGroupBody>
 </template>

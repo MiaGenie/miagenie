@@ -5,36 +5,27 @@ namespace App\Actions\GenieOutput;
 use App\Abstracts\GenieData;
 use App\Actions\GenieOutput;
 use App\Concerns\CleanAsterisks;
+use App\Concerns\PersistsStepResponse;
 use App\Contracts\GenieOutputContract;
 use App\Enums\DraftStatus;
-use App\Enums\RunResponseError;
-use App\Enums\RunResponseStatus;
 use App\Models\Draft;
+use App\Models\RunResponse;
 use Illuminate\Support\Facades\Log;
 
 class GenieOutputDrafts extends GenieOutput implements GenieOutputContract
 {
     use CleanAsterisks;
+    use PersistsStepResponse;
 
-    /**
-     * @param GenieData $data
-     */
     public function handle(GenieData $data): void
     {
         try {
             parent::handle($data);
-            /** @var \App\Models\RunResponse  $model */
+            /** @var RunResponse $model */
             $model = $data->getModel();
             $response = $data->getResponse();
 
-            $model->update([
-                'provider_status' => RunResponseStatus::fromName($response['status']),
-                'output' => $response['output'],
-                'output_text' => $response['output_text'],
-                'error' => $response['error'] ? RunResponseError::fromName($response['error']['code']) : null,
-                'error_details' => $response['error'] ? $response['error']['message'] : null,
-                'incomplete_details' => $response['incomplete_details'] ? $response['incomplete_details']['reason'] : null,
-            ]);
+            $this->persistResponse($model, $response);
 
             if (empty($model->step->output)) {
                 return;
@@ -45,9 +36,7 @@ class GenieOutputDrafts extends GenieOutput implements GenieOutputContract
                 'idea_id' => $model->runIdeaResponse->runIdea->idea_id,
                 'status' => DraftStatus::PENDING_REVIEW,
             ];
-            $responseOutput = $response['output'][0]['content'][0]['text'];
-            $responseOutput = $this->cleanAsterisks($responseOutput);
-            $output = json_decode($responseOutput, true);
+            $output = $this->structuredOutput($response) ?? [];
             foreach ($model->step->output as $stepOutput) {
                 $draftData[$stepOutput] = $output[$stepOutput] ?? '';
             }
@@ -58,5 +47,4 @@ class GenieOutputDrafts extends GenieOutput implements GenieOutputContract
             Log::error($exception->getMessage());
         }
     }
-
 }

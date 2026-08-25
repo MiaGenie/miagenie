@@ -13,6 +13,7 @@ use App\Http\Controllers\Workspace\PrePostsController;
 use App\Http\Controllers\Workspace\RestoreDraftsController;
 use App\Http\Controllers\Workspace\RestoreIdeasController;
 use App\Http\Controllers\Workspace\StrategiesController;
+use App\Http\Controllers\Workspace\StrategyPresentationController;
 use Illuminate\Support\Facades\Route;
 use Inovector\Mixpost\Enums\WorkspaceUserRole;
 use Inovector\Mixpost\Http\Base\Middleware\CheckWorkspaceUser;
@@ -21,12 +22,12 @@ use Inovector\Mixpost\Mixpost;
 
 Route::middleware(array_merge([
     IdentifyWorkspace::class,
-    CheckWorkspaceUser::class
+    CheckWorkspaceUser::class,
 ], Mixpost::getWorkspaceMiddlewares()))
     ->prefix('{workspace}')
     ->group(function () {
 
-        $editorMiddleware = CheckWorkspaceUser::class . ':' . WorkspaceUserRole::ADMIN->name . '|' . WorkspaceUserRole::MEMBER->name;
+        $editorMiddleware = CheckWorkspaceUser::class.':'.WorkspaceUserRole::ADMIN->name.'|'.WorkspaceUserRole::MEMBER->name;
 
         // dashboard
         Route::prefix('dashboard')->name('dashboard.')->group(function () {
@@ -51,6 +52,8 @@ Route::middleware(array_merge([
         Route::prefix('briefings')->name('briefings.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
             Route::get('/', [BriefingsController::class, 'index'])->name('index')->withoutMiddleware($editorMiddleware);
             Route::get('create', [BriefingsController::class, 'create'])->name('create');
+            Route::get('wizard', [BriefingsController::class, 'wizard'])->name('wizard');
+            Route::post('wizard', [BriefingsController::class, 'wizardSave'])->name('wizard_save');
             Route::post('store', [BriefingsController::class, 'store'])->name('store');
             Route::get('{briefing}', [BriefingsController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
             Route::post('update/{briefing}', [BriefingsController::class, 'update'])->name('update');
@@ -61,6 +64,12 @@ Route::middleware(array_merge([
         Route::prefix('strategies')->name('strategies.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
             Route::get('/', [StrategiesController::class, 'index'])->name('index')->withoutMiddleware($editorMiddleware);
             Route::get('list', [StrategiesController::class, 'list'])->name('list')->withoutMiddleware($editorMiddleware);
+            Route::get('overview', [StrategyPresentationController::class, 'overview'])->name('overview')->withoutMiddleware($editorMiddleware);
+            Route::post('generate', [StrategyPresentationController::class, 'generate'])->name('generate');
+            Route::get('step-review', [StrategyPresentationController::class, 'review'])->name('step_review')->withoutMiddleware($editorMiddleware);
+            Route::put('step-review/{runStep}', [StrategyPresentationController::class, 'approveReview'])->name('step_review_approve');
+            Route::get('presentation', [StrategyPresentationController::class, 'index'])->name('presentation')->withoutMiddleware($editorMiddleware);
+            Route::put('presentation/{strategy}', [StrategyPresentationController::class, 'update'])->name('presentation_update');
             Route::get('create', [StrategiesController::class, 'create'])->name('create');
             Route::post('store', [StrategiesController::class, 'store'])->name('store');
             Route::get('edit/{strategy}', [StrategiesController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);

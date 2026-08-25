@@ -5,7 +5,6 @@ namespace App\Genie\Data;
 use App\Concerns\GenieParser;
 use App\Contracts\GenieRunDataContract;
 use App\Enums\GenieSyncAction;
-use App\Enums\RunStatus;
 use App\Models\RuleStep;
 use App\Models\Run;
 use App\Models\RunResponse;
@@ -20,34 +19,16 @@ class GenieRunDataIdeas implements GenieRunDataContract
 
     protected const TYPE = 'RUN';
 
-    /**
-     * @var Run
-     */
     private Run $run;
 
-    /**
-     * @var GenieSyncAction
-     */
     private GenieSyncAction $action;
 
-    /**
-     * @var ?RuleStep
-     */
     private ?RuleStep $lastStep;
 
-    /**
-     * @var ?RuleStep
-     */
     private ?RuleStep $nextStep;
 
-    /**
-     * @var array
-     */
     private array $channelFields;
 
-    /**
-     * @param Run $model
-     */
     public function __construct(
         Run $model,
         GenieSyncAction $action,
@@ -59,25 +40,16 @@ class GenieRunDataIdeas implements GenieRunDataContract
         $this->nextStep = $this->nextStep($this->lastStep);
     }
 
-    /**
-     * @return GenieSyncAction
-     */
     public function getAction(): GenieSyncAction
     {
         return $this->action;
     }
 
-    /**
-     * @return Run
-     */
     public function getModel(): Run
     {
         return $this->run;
     }
 
-    /**
-     * @return ?RuleStep
-     */
     private function lastStep(): ?RuleStep
     {
         if (isset($this->lastStep)) {
@@ -90,10 +62,6 @@ class GenieRunDataIdeas implements GenieRunDataContract
         return $this->lastStep;
     }
 
-    /**
-     * @param ?RuleStep $lastStep
-     * @return ?RuleStep
-     */
     public function nextStep(?RuleStep $lastStep = null): ?RuleStep
     {
         if (isset($this->nextStep)) {
@@ -102,8 +70,8 @@ class GenieRunDataIdeas implements GenieRunDataContract
 
         $lastRunResponse = $this->getLastRunResponse();
 
-        if ($lastRunResponse && ($lastRunResponse?->status->isError() || !$lastRunResponse?->status->isComplete())
-            && !$lastRunResponse?->status->requiresUpdate()
+        if ($lastRunResponse && ($lastRunResponse?->status->isError() || ! $lastRunResponse?->status->isComplete())
+            && ! $lastRunResponse?->status->requiresUpdate()
         ) {
             $this->nextStep = $this->lastStep();
         } else {
@@ -116,95 +84,70 @@ class GenieRunDataIdeas implements GenieRunDataContract
         return $this->nextStep;
     }
 
-    /**
-     * @return ?RunResponse
-     */
     private function getLastRunResponse(): ?RunResponse
     {
         return RunResponse::where(['run_id' => $this->run->id])->latest('id')->first();
     }
 
-    /**
-     * @return ?RuleStep
-     */
     private function getNextStepIterator(): ?RuleStep
     {
         $todoIterators = $this->getTodoIterators($this->lastStep);
         if ($todoIterators->count() === 0) {
             return $this->getNextStep();
         }
+
         return $this->lastStep;
     }
 
-    /**
-     * @return int
-     */
     public function getNextIteratorId(): int
     {
-        //TODO - check when both nulls
+        // TODO - check when both nulls
         $todoIterators = $this->getTodoIterators($this->nextStep);
+
         return (int) $todoIterators->first();
     }
 
-    /**
-     * @return Collection
-     */
     private function getIterators(RuleStep $step): Collection
     {
         $fieldValues = collect($this->run->runStrategy->strategy->content[$step->dependsOnField->code_name] ?? []);
         $fieldValues = $fieldValues->map(function ($value, $index) {
             $value['id'] = $index;
+
             return $value;
         });
+
         return $fieldValues;
     }
 
-    /**
-     * @param RuleStep $step
-     * @return Collection
-     */
     private function getDoneIterators(RuleStep $step): Collection
     {
         $stepRunIterators = $this->run->runFieldIterators;
+
         return $stepRunIterators;
     }
 
-    /**
-     * @param RuleStep $step
-     * @return ?Collection
-     */
     private function getTodoIterators(RuleStep $step): ?Collection
     {
         $allIterators = $this->getIterators($step);
         $doneIterators = $this->getDoneIterators($step);
+
         return $allIterators->pluck('id')->diff($doneIterators->pluck('field_index'));
     }
 
-    /**
-     * @param ?int $lastPosition
-     * @return ?RuleStep
-     */
     private function getNextStep(?int $lastPosition = null): ?RuleStep
     {
         $lastPosition ??= $this->getLastPosition();
         $nextStep = $this->getNextStepByPosition($lastPosition);
-        if ($nextStep?->rule_sub_type->name ===  'IDEAS_INITIAL' && $nextStep?->link_upstream) {
-            $initialResponse = RunResponse::with(['run' => function ($query) {$query->where('workspace_id', $this->run->workspace->id);}])
-                ->where(['step_id' => $nextStep->id, 'status' => RunStatus::COMPLETE])
-                ->first();
-            if ($initialResponse) {
-                $lastPosition = $nextStep->position;
-                return $this->getNextStep($lastPosition);
-            }
-            return $nextStep;
-        } elseif ($nextStep?->rule_sub_type->name === 'IDEAS_MULTIPLE' && $this->getIterators($nextStep)->count() === 0) {
+        if ($nextStep?->rule_sub_type->name === 'IDEAS_MULTIPLE' && $this->getIterators($nextStep)->count() === 0) {
             $lastPosition = $nextStep->position;
+
             return $this->getNextStep($lastPosition);
         } elseif ($nextStep?->rule_sub_type->name === 'CHANNELS') {
             if ($this->isValidChannelStep($nextStep)) {
                 return $nextStep;
             } else {
                 $lastPosition = $nextStep->position;
+
                 return $this->getNextStep($lastPosition);
             }
         } else {
@@ -212,10 +155,6 @@ class GenieRunDataIdeas implements GenieRunDataContract
         }
     }
 
-    /**
-     * @param int $lastPosition
-     * @return ?RuleStep
-     */
     private function getNextStepByPosition(int $lastPosition): ?RuleStep
     {
         return RuleStep::where(
@@ -226,18 +165,11 @@ class GenieRunDataIdeas implements GenieRunDataContract
         )->oldest('position')->first();
     }
 
-    /**
-     * @return int
-     */
     private function getLastPosition(): int
     {
         return $this->lastStep?->position ?? 0;
     }
 
-    /**
-     * @param RuleStep|null $nextStep
-     * @return bool
-     */
     private function isValidChannelStep(?RuleStep $nextStep): bool
     {
         $fieldName = VersionField::findOrFail($nextStep->depends_on_field)->code_name;

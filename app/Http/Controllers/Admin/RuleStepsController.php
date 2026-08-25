@@ -16,13 +16,12 @@ use App\Http\Resources\Admin\RuleResource;
 use App\Http\Resources\Admin\RuleStepResource;
 use App\Http\Resources\Admin\RuleStepTranslationResource;
 use App\Http\Resources\Admin\VersionResource;
-use App\Models\AIModel;
 use App\Models\Draft;
 use App\Models\Idea;
+use App\Models\ModelProfile;
 use App\Models\PrePost;
 use App\Models\Rule;
 use App\Models\RuleStep;
-use App\Models\Vector;
 use App\Models\Version;
 use App\Models\VersionField;
 use Arr;
@@ -39,9 +38,7 @@ class RuleStepsController extends Controller
 {
     use GenieFields;
 
-
     /**
-     * @param Request $request
      * @return Response
      */
     public function index(Request $request)
@@ -62,12 +59,11 @@ class RuleStepsController extends Controller
             'version' => new VersionResource($version),
             'records' => RuleStepResource::collection($records),
             'versionStatusTypes' => VersionStatus::withTitle(),
-            'ruleStatusTypes' => RuleStatus::withTitle()
+            'ruleStatusTypes' => RuleStatus::withTitle(),
         ]);
     }
 
     /**
-     * @param Request $request
      * @return Response
      */
     public function indexTranslate(Request $request)
@@ -92,12 +88,11 @@ class RuleStepsController extends Controller
             'versionStatusTypes' => VersionStatus::withTitle(),
             'ruleStatusTypes' => RuleStatus::withTitle(),
             'translations' => $translations,
-            'locales' => Util::config('locales')
+            'locales' => Util::config('locales'),
         ]);
     }
 
     /**
-     * @param Request $request
      * @return Response
      */
     public function create(Request $request)
@@ -110,7 +105,7 @@ class RuleStepsController extends Controller
                 'version_id' => $rule->version_id,
                 'group_type' => VersionGroupType::STRATEGIES,
             ]
-        )->with('options')->get();
+        )->with('subFields')->get();
 
         return Inertia::render('Genie/Admin/Versions/Rules/Steps/CreateEdit', [
             'mode' => 'create',
@@ -119,20 +114,19 @@ class RuleStepsController extends Controller
             'ruleSubTypes' => RuleSubType::withTitle('', $rule->rule_type->value),
             'record' => null,
             'version' => new VersionResource($version),
-            'models' => AIModel::all(),
-            'vectorIds' => Vector::all('id', 'name', 'vector_type'),
+            'modelProfiles' => ModelProfile::orderBy('position')->get(),
             'outputFields' => $outputFields,
-            'outputIdeaFields' => (new Idea())->getGenieFields(),
-            'outputDraftFields' => (new Draft())->getGenieFields(),
-            'outputPrePostFields' => (new PrePost())->getGenieFields(),
+            'outputIdeaFields' => (new Idea)->getGenieFields(),
+            'outputDraftFields' => (new Draft)->getGenieFields(),
+            'outputPrePostFields' => (new PrePost)->getGenieFields(),
             'versionStatusTypes' => VersionStatus::withTitle(),
-            'ruleStatusTypes' => RuleStatus::withTitle()
+            'ruleStatusTypes' => RuleStatus::withTitle(),
         ]);
     }
 
     /**
-     * @param StoreRuleStep $storeRuleStep
      * @return RedirectResponse
+     *
      * @throws \Throwable
      */
     public function store(StoreRuleStep $storeRuleStep)
@@ -152,7 +146,6 @@ class RuleStepsController extends Controller
     }
 
     /**
-     * @param Request $request
      * @return Response
      */
     public function edit(Request $request)
@@ -167,7 +160,7 @@ class RuleStepsController extends Controller
                 'version_id' => $rule->version_id,
                 'group_type' => VersionGroupType::STRATEGIES,
             ]
-        )->with('options')->get();
+        )->with('subFields')->get();
 
         return Inertia::render('Genie/Admin/Versions/Rules/Steps/CreateEdit', [
             'mode' => 'edit',
@@ -176,19 +169,17 @@ class RuleStepsController extends Controller
             'ruleSubTypes' => RuleSubType::withTitle('', $rule->rule_type->value),
             'record' => new RuleStepResource($record),
             'version' => new VersionResource($version),
-            'models' => AIModel::all(),
-            'vectorIds' => Vector::all('id', 'name', 'vector_type'),
+            'modelProfiles' => ModelProfile::orderBy('position')->get(),
             'outputFields' => $outputFields,
-            'outputIdeaFields' => (new Idea())->getGenieFields(),
-            'outputDraftFields' => (new Draft())->getGenieFields(),
-            'outputPrePostFields' => (new PrePost())->getGenieFields(),
+            'outputIdeaFields' => (new Idea)->getGenieFields(),
+            'outputDraftFields' => (new Draft)->getGenieFields(),
+            'outputPrePostFields' => (new PrePost)->getGenieFields(),
             'versionStatusTypes' => VersionStatus::withTitle(),
-            'ruleStatusTypes' => RuleStatus::withTitle()
+            'ruleStatusTypes' => RuleStatus::withTitle(),
         ]);
     }
 
     /**
-     * @param Request $request
      * @return Response
      */
     public function translate(Request $request)
@@ -207,13 +198,13 @@ class RuleStepsController extends Controller
             'rule' => new RuleResource($rule),
             'record' => new RuleStepTranslationResource($record),
             'version' => new VersionResource($version),
-            'locale' => $locale
+            'locale' => $locale,
         ]);
     }
 
     /**
-     * @param UpdateRuleStep $updateRuleStep
      * @return RedirectResponse
+     *
      * @throws \Throwable
      */
     public function update(UpdateRuleStep $updateRuleStep)
@@ -224,8 +215,8 @@ class RuleStepsController extends Controller
     }
 
     /**
-     * @param UpdateRuleStepTranslations $updateRuleStepTranslations
      * @return RedirectResponse
+     *
      * @throws \Throwable
      */
     public function updateTranslations(UpdateRuleStepTranslations $updateRuleStepTranslations)
@@ -236,7 +227,6 @@ class RuleStepsController extends Controller
     }
 
     /**
-     * @param UpdateRuleStepPositions $updateRuleStepPositions
      * @return JsonResponse
      */
     public function updatePositions(UpdateRuleStepPositions $updateRuleStepPositions)
@@ -247,7 +237,6 @@ class RuleStepsController extends Controller
     }
 
     /**
-     * @param Request $request
      * @return RedirectResponse
      */
     public function destroy(Request $request)
@@ -257,26 +246,22 @@ class RuleStepsController extends Controller
         $rule = Rule::firstOrFailByUuid($request->route('rule'));
         $version = Version::firstOrFailByUuid($request->route('version'));
 
-        if (!$result) {
+        if (! $result) {
             return redirect()
                 ->route('genie.admin.versions.rules.steps.index', [
-                        'version' => $version->uuid,
-                        'rule' => $rule->uuid,
-                    ])
+                    'version' => $version->uuid,
+                    'rule' => $rule->uuid,
+                ])
                 ->with('error', __('genie.step_not_found'));
         }
 
         return redirect()->route('genie.admin.versions.rules.steps.index', [
-                'version' => $version->uuid,
-                'rule' => $rule->uuid
-            ])
+            'version' => $version->uuid,
+            'rule' => $rule->uuid,
+        ])
             ->with('success', __('genie.step_deleted'));
     }
 
-    /**
-     * @param Collection $records
-     * @return array
-     */
     public function getTranslations(Collection $records): array
     {
         $translations = [];
@@ -285,11 +270,12 @@ class RuleStepsController extends Controller
             $recordTranslations = $record->getTranslations();
             foreach ($recordTranslations as $field => $locales) {
                 array_walk_recursive($locales, function (&$item) {
-                    $item = !empty($item);
+                    $item = ! empty($item);
                 });
                 $translations[$record->uuid][$field] = $locales;
             }
         }
+
         return $translations;
     }
 }

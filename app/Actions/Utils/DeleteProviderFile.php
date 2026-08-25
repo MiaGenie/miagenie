@@ -2,26 +2,23 @@
 
 namespace App\Actions\Utils;
 
-use App\Support\Facades\OpenAI;
 use Illuminate\Support\Facades\Log;
+use Laravel\Ai\Files;
+use Throwable;
 
 class DeleteProviderFile
 {
-
-    /**
-     * @param string $file
-     * @return bool
-     */
     public function __invoke(string $file): bool
     {
         try {
-            $upload = OpenAI::files()->delete($file);
+            Files::delete($file);
 
-            if ($upload->deleted) {
-                return true;
-            }
-        } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
+            return true;
+        } catch (Throwable $exception) {
+            Log::error('Genie provider file delete failed', [
+                'provider_id' => $file,
+                'exception' => $exception->getMessage(),
+            ]);
         }
 
         return false;

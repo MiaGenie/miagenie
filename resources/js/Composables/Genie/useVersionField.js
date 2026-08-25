@@ -17,6 +17,22 @@ const useVersionField = (form) => {
         form.defaults(cloneDeep(form.data()));
     }
 
+    /**
+     * Guarantee every sub-field node has the arrays the tree editor binds to, so an
+     * existing field loaded without them still renders and stays editable.
+     */
+    const normalizeSubFields = (list) => {
+        return (list ?? []).map((subField) => ({
+            ...subField,
+            enum_values: subField.enum_values ?? [],
+            children: normalizeSubFields(subField.children),
+        }));
+    }
+
+    const formatSubFields = () => {
+        form.sub_fields = normalizeSubFields(form.sub_fields);
+    }
+
 
     const validationOptions = computed (() => {
         return currentFieldType.value.hasGroups ? form.options : form.options.slice(0,1);
@@ -108,8 +124,21 @@ const useVersionField = (form) => {
     }
 
 
+    const subFieldsErrors = () => {
+
+        const errors = filter(form.errors, (error, key) => {
+            return error ? includes(key, 'sub_field') : false;
+        });
+
+        return join(uniq(errors), ', ');
+
+    }
+
+
     return {
         formatOptions,
+        formatSubFields,
+        subFieldsErrors,
         checkForm,
         setCodeName,
         currentGroupType,

@@ -11,6 +11,7 @@ use App\Enums\RunStatus;
 use App\Models\Rule;
 use App\Models\Run;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -22,40 +23,21 @@ use Throwable;
 class RunIdeaJob extends GenieJob implements ShouldQueue
 {
     use Dispatchable;
+    use GenieLogger;
     use InteractsWithQueue;
     use Queueable;
     use SerializesModels;
-    use GenieLogger;
 
-    /**
-     * @var int
-     */
     public int $tries = 3;
 
-    /**
-     * @var int
-     */
-    public int $timeout = 30;
+    public int $timeout = 120;
 
-    /**
-     * @var Rule
-     */
     private Rule $rule;
 
-    /**
-     * @var Run
-     */
     private Run $run;
 
-    /**
-     * @var GenieSyncAction
-     */
     protected GenieSyncAction $action;
 
-    /**
-     * @param Run $run
-     * @param GenieSyncAction $action
-    */
     public function __construct(Run $run, GenieSyncAction $action)
     {
         parent::__construct($run, $action);
@@ -64,8 +46,7 @@ class RunIdeaJob extends GenieJob implements ShouldQueue
     }
 
     /**
-     * @return void
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws BindingResolutionException
      */
     public function handle(): void
     {
@@ -75,9 +56,9 @@ class RunIdeaJob extends GenieJob implements ShouldQueue
 
         if ($nextStep) {
 
-            $runResponse =  $this->run->runResponses()->where('status', '!=', RunStatus::COMPLETE)->firstOrCreate(
+            $runResponse = $this->run->runResponses()->where('status', '!=', RunStatus::COMPLETE)->firstOrCreate(
                 [
-                    'step_id' => $nextStep->id
+                    'step_id' => $nextStep->id,
                 ]
             );
             if ($nextStep?->rule_sub_type === RuleSubType::IDEAS_MULTIPLE) {
@@ -94,10 +75,6 @@ class RunIdeaJob extends GenieJob implements ShouldQueue
         }
     }
 
-    /**
-     * @param Throwable|null $exception
-     * @return void
-     */
     public function failed(?Throwable $exception): void
     {
         $data = $this->getGenieRunData();
@@ -107,8 +84,7 @@ class RunIdeaJob extends GenieJob implements ShouldQueue
     }
 
     /**
-     * @return GenieRunDataContract
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws BindingResolutionException
      */
     public function getGenieRunData(): GenieRunDataContract
     {
@@ -117,7 +93,7 @@ class RunIdeaJob extends GenieJob implements ShouldQueue
             [
                 'model' => $this->run,
                 'action' => $this->action,
-                'type' => $this->run->rule->rule_type
+                'type' => $this->run->rule->rule_type,
             ]
         );
     }

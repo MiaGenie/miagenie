@@ -6,6 +6,9 @@ import DefineOptions from 'unplugin-vue-define-options/vite'
 import fs from 'fs'
 import path from 'path'
 import { homedir } from 'os'
+import { fileURLToPath } from 'url'
+
+const projectRoot = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig(({ _command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
@@ -64,10 +67,10 @@ export default defineConfig(({ _command, mode }) => {
         publicDir: "genie",
         plugins: [
             laravel({
-                input: 'resources/js/app.js',
-                publicDirectory: '/public',
-                buildDirectory: 'genie',
-                refresh: true
+                input: "resources/js/app.js",
+                publicDirectory: "/public",
+                buildDirectory: "genie",
+                refresh: true,
             }),
             vue({
                 template: {
@@ -82,17 +85,18 @@ export default defineConfig(({ _command, mode }) => {
         ],
         resolve: {
             alias: {
-                '@mRs': '/vendor/inovector/mixpost-pro-team/resources',
-                '@mJs': '/vendor/inovector/mixpost-pro-team/resources/js',
-                '@mCss': '/vendor/inovector/mixpost-pro-team/resources/css',
-                '@mimg': '/vendor/inovector/mixpost-pro-team/resources/img',
-                '@meRs': '/vendor/inovector/mixpost-enterprise/resources',
-                '@meJs': '/vendor/inovector/mixpost-enterprise/resources/js',
-                '@meCss': '/vendor/inovector/mixpost-enterprise/resources/css',
-                '@css': '/resources/css',
-                '@img': 'resources/img'
+                "@mRs": "/vendor/inovector/mixpost-pro-team/resources",
+                "@mJs": "/vendor/inovector/mixpost-pro-team/resources/js",
+                "@mCss": "/vendor/inovector/mixpost-pro-team/resources/css",
+                "@mimg": "/vendor/inovector/mixpost-pro-team/resources/img",
+                "@meRs": "/vendor/inovector/mixpost-enterprise/resources",
+                "@meJs": "/vendor/inovector/mixpost-enterprise/resources/js",
+                "@meCss": "/vendor/inovector/mixpost-enterprise/resources/css",
+
+                "@css": path.resolve(projectRoot, "resources/css"),
+                "@img": path.resolve(projectRoot, "resources/img"),
             },
         },
-    server: serverConfig
-  }
+        server: serverConfig,
+    };
 })

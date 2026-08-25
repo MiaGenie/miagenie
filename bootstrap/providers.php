@@ -1,8 +1,11 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\GenieServiceProvider;
+use App\Providers\HorizonServiceProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\GenieServiceProvider::class,
-    App\Providers\HorizonServiceProvider::class,
-    App\Providers\OpenAIServiceProvider::class
+    AppServiceProvider::class,
+    GenieServiceProvider::class,
+    HorizonServiceProvider::class,
 ];

@@ -43,7 +43,6 @@ const confirmation = inject('confirmation');
 
 const form = useForm({
     instructions: props.record.instructions,
-    json_schema: props.record.json_schema,
     message: props.record.message,
     review_message_user: props.record.review_message_user,
     review_message_system: props.record.review_message_system
@@ -135,27 +134,6 @@ const backToList = () => {
 
                         <template #footer>
                             <Error :message="form.errors.message"/>
-                        </template>
-                    </VerticalGroup>
-
-                    <VerticalGroup
-                        v-if="record.response_format==='json_schema'"
-                        class="form-field mt-lg"
-                    >
-                        <template #title>
-                            <label for="json_schema">{{ $t("genie.step_json_schema") }}</label>
-                            <LabelSuffix :danger="true">*</LabelSuffix>
-                        </template>
-
-                        <Textarea v-model="form.json_schema"
-                                  :error="form.errors.json_schema !== undefined"
-                                  id="response_format"
-                                  class="w-full"
-                                  required
-                                  rows="10"/>
-
-                        <template #footer>
-                            <Error :message="form.errors.json_schema"/>
                         </template>
                     </VerticalGroup>
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Concerns\Requests\HandlesSubFields;
 use App\Concerns\Requests\IngestVersionFields;
 use App\Constants\FormTypeDefaults;
 use App\Enums\FormFieldFileType;
@@ -20,21 +21,16 @@ use Illuminate\Validation\Rule;
 
 class UpdateVersionField extends FormRequest
 {
+    use HandlesSubFields;
     use IngestVersionFields;
 
-    /**
-     * @var Version
-     */
     private Version $version;
 
-    /**
-     * @return array
-     */
     public function rules(): array
     {
         $this->version ??= Version::firstOrFailByUuid($this->route('version'));
 
-        return [
+        return array_merge($this->subFieldRules(), [
             'group_type' => ['required', Rule::enum(VersionGroupType::class)],
             'field_type' => ['required', Rule::enum(FormFieldType::class)],
             'input_type' => ['nullable', Rule::enum(FormInputType::class)],
@@ -42,29 +38,28 @@ class UpdateVersionField extends FormRequest
             'name' => ['required', 'string', 'max:500'],
             'code_name' => [
                 'required',
-                new SnakeCase(),
+                new SnakeCase,
                 Rule::unique(VersionField::class, 'code_name')
                     ->where('group_type', $this->input('group_type'))
                     ->where('version_id', $this->version->id)
-                    ->whereNot('uuid', $this->route('field'))
-                , 'max:255'
+                    ->whereNot('uuid', $this->route('field')), 'max:255',
             ],
-            'options' => [new FieldOptions()],
+            'options' => [new FieldOptions],
             'options.*.name' => ['required', 'string', 'max:255'],
             'options.*.code_name' => ['required', 'distinct', 'max:255'],
-            'rows' => ['nullable', 'integer', 'between:' . FormTypeDefaults::ROWS_MIN . ',' . FormTypeDefaults::ROWS_MAX],
-            'min_length' => ['nullable', 'integer', $this->filled('max_height') ? 'lt:max_length' : '', 'max:' . $this->getMaxLength()],
-            'max_length' => ['nullable', 'integer', $this->filled('min_length') ? 'gt:min_length' : '', 'max:' . $this->getMaxLength()],
+            'rows' => ['nullable', 'integer', 'between:'.FormTypeDefaults::ROWS_MIN.','.FormTypeDefaults::ROWS_MAX],
+            'min_length' => ['nullable', 'integer', $this->filled('max_height') ? 'lt:max_length' : '', 'max:'.$this->getMaxLength()],
+            'max_length' => ['nullable', 'integer', $this->filled('min_length') ? 'gt:min_length' : '', 'max:'.$this->getMaxLength()],
             'min_value' => ['nullable', 'numeric', $this->filled('max_value') ? 'lt:max_value' : ''],
-            'max_value' => ['nullable', 'numeric', $this->filled('min_value') ? 'gt:min_value' : '' ],
+            'max_value' => ['nullable', 'numeric', $this->filled('min_value') ? 'gt:min_value' : ''],
             'step' => ['nullable', 'numeric'],
             'is_identifier' => [
-                new IsIdentifier(),
+                new IsIdentifier,
                 Rule::unique(VersionField::class, 'is_identifier')
                     ->where('is_identifier', true)
                     ->where('group_type', $this->input('group_type'))
                     ->where('version_id', $this->version->id)
-                    ->whereNot('uuid', $this->route('field'))
+                    ->whereNot('uuid', $this->route('field')),
             ],
             'required' => ['nullable', 'boolean'],
             'genie_required' => ['nullable', 'boolean'],
@@ -76,11 +71,12 @@ class UpdateVersionField extends FormRequest
             'display_item_title' => ['nullable', 'boolean'],
             'display_faq_title' => ['nullable', 'string', 'max:5000'],
             'display_faq_text' => ['nullable', 'string', 'max:5000'],
-        ];
+            'class' => ['nullable', 'string', 'max:255'],
+            'block' => ['nullable', 'string', 'max:255'],
+        ]);
     }
 
     /**
-     * @return int
      * @throws \Throwable
      */
     public function handle(): int
@@ -117,7 +113,9 @@ class UpdateVersionField extends FormRequest
                 'display_field_title' => $this->input('display_field_title'),
                 'display_item_title' => $this->input('display_item_title'),
                 'display_faq_title' => $this->input('display_faq_title'),
-                'display_faq_text' => $this->input('display_faq_text')
+                'display_faq_text' => $this->input('display_faq_text'),
+                'class' => $this->input('class'),
+                'block' => $this->input('block'),
             ]);
 
             $this->handleChildren($record);
@@ -127,22 +125,15 @@ class UpdateVersionField extends FormRequest
 
     }
 
-    /**
-     * @param VersionField $record
-     * @return void
-     */
     public function handleChildren(VersionField $record): void
     {
         $this->deleteChildren($record);
 
         $this->updateChildren($record);
+
+        $this->handleSubFields($record);
     }
 
-
-    /**
-     * @param VersionField $record
-     * @return void
-     */
     public function deleteChildren(VersionField $record): void
     {
         $updateUuids = array_column($this->input('options'), 'id');
@@ -159,10 +150,6 @@ class UpdateVersionField extends FormRequest
         }
     }
 
-    /**
-     * @param VersionField $record
-     * @return void
-     */
     public function updateChildren(VersionField $record): void
     {
         foreach ($this->input('options') as $child) {
@@ -175,9 +162,6 @@ class UpdateVersionField extends FormRequest
         }
     }
 
-    /**
-     * @return void
-     */
     protected function prepareForValidation(): void
     {
         $this->ingestParameters();

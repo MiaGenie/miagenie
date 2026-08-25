@@ -84,7 +84,7 @@ const fieldsErrors = computed ( () => {
                           :required="field.required"
                           :id="field.code_name"
                           class="w-full placeholder:italic placeholder:text-sm"
-                          :rows="field.size ?? 4"
+                          :rows="field.rows ?? 4"
                 />
 
             </template>

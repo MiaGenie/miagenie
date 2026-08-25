@@ -4,31 +4,19 @@ namespace App\Genie\Data;
 
 use App\Abstracts\GenieData;
 use App\Contracts\GenieDataContract;
+use App\Models\File;
 use App\Models\RuleStep;
 use App\Models\Thread;
+use App\Models\Vector;
 
 class Channels extends GenieData implements GenieDataContract
 {
-    /**
-     * @var Thread
-     */
     private Thread $thread;
 
-    /**
-     * @var ?RuleStep
-     */
     private ?RuleStep $lastStep;
 
-    /**
-     * @var ?RuleStep
-     */
     private ?RuleStep $currentStep;
 
-    /**
-     * @param string $type
-     * @param string $action
-     * @param Thread $thread
-     */
     public function __construct(
         string $type,
         string $action,
@@ -42,7 +30,7 @@ class Channels extends GenieData implements GenieDataContract
         $this->data = $this->getData();
     }
 
-    public function getModel(): \App\Models\File|\App\Models\Vector|\App\Models\Assistant
+    public function getModel(): File|Vector
     {
         // TODO: Implement getModel() method.
     }

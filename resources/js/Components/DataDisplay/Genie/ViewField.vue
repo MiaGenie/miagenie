@@ -114,10 +114,10 @@ const attemptClose = () => {
 </script>
 <template>
 
-    <VerticalGroupClass bodyClass="text-lg" :forceFullWidth="true" class="mt-lg">
+    <VerticalGroupClass :id="props.id" bodyClass="text-lg" :forceFullWidth="true" class="mt-lg">
         <template #title>
-            <Flex class="justify-between">
-                <Flex :responsive="false" v-if="field.display_title && !(schemas[field.code_name]?.type === 'object' && field.display_grouped && !field.is_multiple)">
+            <Flex>
+                <Flex class="items-center" :responsive="false" v-if="field.display_title && !(schemas[field.code_name]?.type === 'object' && field.display_grouped && !field.is_multiple)">
                     <StrategyFieldIcon
                         :field="field.code_name"
                         :icon="field.code_name"
@@ -167,14 +167,18 @@ const attemptClose = () => {
 
     <template v-if="field.display_faq_title">
 
-        <CollapseSmall>
+        <div :id="id ? id + '-faq' : null">
 
-            <template #title>{{  field.display_faq_title  }}</template>
-            <template #default>
-                <span v-html="field.display_faq_text"></span>
-            </template>
+            <CollapseSmall>
 
-        </CollapseSmall>
+                <template #title>{{  field.display_faq_title  }}</template>
+                <template #default>
+                    <span v-html="field.display_faq_text"></span>
+                </template>
+
+            </CollapseSmall>
+
+        </div>
 
     </template>
 
@@ -196,7 +200,12 @@ const attemptClose = () => {
 
             <template v-if="schemas[field.code_name]?.type === 'array'">
 
-                <Collapse v-if="field.display_grouped" v-for="(item, key) in form.content[field.code_name]" :key="key">
+                <CollapseSmall
+                    v-if="field.display_grouped"
+                    v-for="(item, key) in form.content[field.code_name]"
+                    :key="key"
+                    colorClass=""
+                >
 
                     <template #title>
                         {{ groupedTitle(item, key) }}
@@ -211,7 +220,7 @@ const attemptClose = () => {
                             :grouped="true"
                         />
 
-                </Collapse>
+                </CollapseSmall>
 
                 <template v-else v-for="(item, key) in form.content[field.code_name]">
 
@@ -229,7 +238,11 @@ const attemptClose = () => {
             </template>
             <template v-else-if="Boolean(field.is_multiple)">
 
-                <Collapse v-for="(item, key) in form.content[field.code_name]" :key="key">
+                <CollapseSmall
+                    v-for="(item, key) in form.content[field.code_name]"
+                    :key="key"
+                    colorClass=""
+                >
 
                     <template #title>
                         {{ multipleTitle(item, key) }}
@@ -244,13 +257,15 @@ const attemptClose = () => {
                             :titled="false"
                         />
 
-                </Collapse>
+                </CollapseSmall>
 
 
             </template>
             <template v-else-if="field.display_grouped">
 
-                <Collapse>
+                <Collapse
+                    colorClass=""
+                >
 
                     <template #title>
                         <Flex>
