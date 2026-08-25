@@ -4,8 +4,8 @@
     "description": "MiaGenie App",
     "require": {
         "php": "^8.4",
-        "inovector/mixpost-enterprise": "dev-new-dev",
-        "inovector/mixpost-pro-team": "dev-new-dev",
+        "inovector/mixpost-enterprise": "dev-main",
+        "inovector/mixpost-pro-team": "dev-main",
         "laravel/ai": "^0.11.0",
         "laravel/framework": "^13.0",
         "laravel/horizon": "^5.15",
