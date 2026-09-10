@@ -72,29 +72,35 @@ class StrategyPrompt
     }
 
     /**
-     * The strategy written so far.
+     * The strategy written so far, field by field, plus `FULL` — everything decided so far in one
+     * block, for a step that builds on the whole strategy rather than a handful of named fields.
      *
      * Scoped to the run's own strategy rather than "the newest strategy in the workspace", which
      * is what the previous implementation looked up and which went wrong as soon as a workspace
      * had more than one.
      *
+     * As on the briefing side, `FULL` cannot shadow a field: a code_name goes through
+     * App\Rules\SnakeCase and is always lowercase.
+     *
      * @return array<string, mixed>
      */
     protected function strategyReplacements(): array
     {
-        $content = $this->run->strategy?->content;
+        $strategy = new StrategyContext($this->run, $this->locale);
 
-        if (blank($content)) {
-            return [];
-        }
-
-        return Arr::prependKeysWith(array_map($this->flatten(...), $content), 'strategy.');
+        return Arr::prependKeysWith(
+            array_merge($strategy->answers(), ['FULL' => $strategy->full()]),
+            'strategy.'
+        );
     }
 
     /**
-     * A field whose sub-field tree nests objects cannot be flattened by the parser's implode,
-     * which would emit the literal string "Array", so anything deeper than a list of strings is
-     * passed through as JSON instead.
+     * A reviewed value whose sub-field tree nests objects cannot be flattened by the parser's
+     * implode, which would emit the literal string "Array", so anything deeper than a list of
+     * strings is passed through as JSON instead.
+     *
+     * Only the review block still reads values this way: it is a diff of what the customer edited
+     * rather than the strategy itself. The strategy is rendered by StrategyContext.
      */
     protected function flatten(mixed $value): mixed
     {
