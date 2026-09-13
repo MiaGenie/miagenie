@@ -7,6 +7,7 @@ import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import Flex from "@/Components/Layout/Flex.vue";
 import useIdeaLabels from "@/Composables/Genie/useIdeaLabels.js";
+import ProviderIcon from "@/Components/Account/ProviderIcon.vue";
 
 const {t: $t} = useI18n();
 
@@ -56,6 +57,19 @@ const edit = () => {
 
         <TableCell class="hidden md:table-cell text-sm" :clickable="true" @click="edit">
             {{ item.content_pillar }}
+        </TableCell>
+
+        <TableCell class="hidden md:table-cell" :clickable="true" @click="edit">
+            <div class="flex flex-wrap items-center gap-xs">
+                <span
+                    v-for="provider in item.publish_to"
+                    :key="provider"
+                    v-tooltip="provider"
+                    class="w-4 h-4 flex items-center justify-center"
+                >
+                    <ProviderIcon :provider="provider"/>
+                </span>
+            </div>
         </TableCell>
 
         <TableCell class="hidden sm:table-cell" :clickable="true" @click="edit">

@@ -238,6 +238,29 @@ trait HandlesSubFields
     }
 
     /**
+     * The allowed values are translated by position, so once the source list changes the other
+     * locales no longer line up with it and are dropped rather than left to mislabel the schema.
+     */
+    protected function forgetStaleEnumTranslations(VersionFieldSubField $model): void
+    {
+        if (! $model->wasChanged('enum_values')) {
+            return;
+        }
+
+        $stale = array_diff(array_keys($model->getTranslations('enum_values')), [$model->getLocale()]);
+
+        if ($stale === []) {
+            return;
+        }
+
+        foreach ($stale as $locale) {
+            $model->forgetTranslation('enum_values', $locale);
+        }
+
+        $model->save();
+    }
+
+    /**
      * Walk the tree depth first, creating parents before their children so the real parent id
      * is known by the time the children are written.
      *
@@ -255,6 +278,8 @@ trait HandlesSubFields
         array &$keptIds
     ): void {
         foreach (array_values($subFields) as $position => $subField) {
+            $enumValues = array_values(array_filter((array) ($subField['enum_values'] ?? []), 'filled'));
+
             $model = $record->subFields()->updateOrCreate(
                 ['uuid' => $this->resolveSubFieldUuid($existing, $subField, $parentId, $claimedUuids, $keptIds)],
                 [
@@ -270,13 +295,15 @@ trait HandlesSubFields
                     'max_items' => $subField['max_items'] ?? null,
                     'required' => $subField['required'] ?? true,
                     'editable' => $this->resolveEditable($subField),
-                    'enum_values' => $subField['enum_values'] ?? null,
+                    'enum_values' => $enumValues ?: null,
                     'icon' => $subField['icon'] ?? null,
                     'class' => $subField['class'] ?? null,
                     'block' => $subField['block'] ?? null,
                     'position' => $position,
                 ]
             );
+
+            $this->forgetStaleEnumTranslations($model);
 
             $keptIds[] = $model->id;
 

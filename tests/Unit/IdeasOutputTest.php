@@ -8,6 +8,7 @@ use App\Enums\IdeaStatus;
 use App\Enums\PostFormat;
 use App\Genie\Ideas\IdeasOutput;
 use App\Genie\Ideas\IdeasRequest;
+use App\Genie\Ideas\PublishTargets;
 use App\Models\AiRun;
 use App\Models\AiRunStep;
 use App\Models\RuleStep;
@@ -16,6 +17,11 @@ use Tests\TestCase;
 
 class IdeasOutputTest extends TestCase
 {
+    protected function ideasOutput(array $configured = ['instagram', 'youtube', 'gbp']): IdeasOutput
+    {
+        return new IdeasOutput(new PublishTargets($configured));
+    }
+
     protected function runStep(IdeasRequest $request, PostFormat $format = PostFormat::CAROUSEL): AiRunStep
     {
         $run = new AiRun(['workspace_id' => 7, 'strategy_id' => 3, 'parameters' => $request->toArray()]);
@@ -51,7 +57,7 @@ class IdeasOutputTest extends TestCase
     {
         $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5));
 
-        $rows = new IdeasOutput()->resolve($runStep, ['ideas' => [$this->idea(), $this->idea(['title' => 'Second'])]]);
+        $rows = $this->ideasOutput()->resolve($runStep, ['ideas' => [$this->idea(), $this->idea(['title' => 'Second'])]]);
 
         $this->assertCount(2, $rows);
 
@@ -75,7 +81,7 @@ class IdeasOutputTest extends TestCase
     {
         $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5));
 
-        $row = new IdeasOutput()->resolve($runStep, ['ideas' => [$this->idea()]])[0];
+        $row = $this->ideasOutput()->resolve($runStep, ['ideas' => [$this->idea()]])[0];
 
         $this->assertSame(FunnelStage::CONSIDERATION, $row['funnel_stage']);
         $this->assertSame('Craft', $row['content_pillar']);
@@ -85,7 +91,7 @@ class IdeasOutputTest extends TestCase
     {
         $runStep = $this->runStep(new IdeasRequest(null, 'Client Stories', FunnelStage::AWARENESS, 5));
 
-        $row = new IdeasOutput()->resolve($runStep, ['ideas' => [$this->idea()]])[0];
+        $row = $this->ideasOutput()->resolve($runStep, ['ideas' => [$this->idea()]])[0];
 
         $this->assertSame(FunnelStage::AWARENESS, $row['funnel_stage']);
         $this->assertSame('Client Stories', $row['content_pillar']);
@@ -95,7 +101,7 @@ class IdeasOutputTest extends TestCase
     {
         $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5));
 
-        $row = new IdeasOutput()->resolve($runStep, ['ideas' => [$this->idea(['funnel_stage' => 'decision'])]])[0];
+        $row = $this->ideasOutput()->resolve($runStep, ['ideas' => [$this->idea(['funnel_stage' => 'decision'])]])[0];
 
         $this->assertNull($row['funnel_stage']);
     }
@@ -106,14 +112,14 @@ class IdeasOutputTest extends TestCase
 
         $this->expectException(RuntimeException::class);
 
-        new IdeasOutput()->resolve($runStep, ['text' => 'nothing structured']);
+        $this->ideasOutput()->resolve($runStep, ['text' => 'nothing structured']);
     }
 
     public function test_an_item_that_is_not_an_object_is_skipped(): void
     {
         $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5));
 
-        $rows = new IdeasOutput()->resolve($runStep, ['ideas' => ['stray string', $this->idea()]]);
+        $rows = $this->ideasOutput()->resolve($runStep, ['ideas' => ['stray string', $this->idea()]]);
 
         $this->assertCount(1, $rows);
     }
@@ -122,7 +128,7 @@ class IdeasOutputTest extends TestCase
     {
         $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5), PostFormat::CAROUSEL);
 
-        $row = new IdeasOutput()->resolve($runStep, ['ideas' => [$this->idea()]])[0];
+        $row = $this->ideasOutput()->resolve($runStep, ['ideas' => [$this->idea()]])[0];
 
         $this->assertSame(
             ['Slide one: the workbench', 'Slide two: the tools', 'Slide three: the result'],
@@ -134,7 +140,7 @@ class IdeasOutputTest extends TestCase
     {
         $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5), PostFormat::CAROUSEL);
 
-        $row = new IdeasOutput()->resolve($runStep, ['ideas' => [
+        $row = $this->ideasOutput()->resolve($runStep, ['ideas' => [
             $this->idea(['images' => ['First', '', null, ['nested'], 'Last']]),
         ]])[0];
 
@@ -145,7 +151,7 @@ class IdeasOutputTest extends TestCase
     {
         $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5), PostFormat::SIMPLE_POST);
 
-        $row = new IdeasOutput()->resolve($runStep, ['ideas' => [$this->idea(['images' => ['The hero shot']])]])[0];
+        $row = $this->ideasOutput()->resolve($runStep, ['ideas' => [$this->idea(['images' => ['The hero shot']])]])[0];
 
         $this->assertSame(['The hero shot'], $row['images']);
     }
@@ -154,8 +160,26 @@ class IdeasOutputTest extends TestCase
     {
         $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5), PostFormat::LONG_VIDEO);
 
-        $row = new IdeasOutput()->resolve($runStep, ['ideas' => [$this->idea()]])[0];
+        $row = $this->ideasOutput()->resolve($runStep, ['ideas' => [$this->idea()]])[0];
 
         $this->assertNull($row['images']);
+    }
+
+    public function test_a_generated_idea_targets_every_configured_provider_that_accepts_its_format(): void
+    {
+        $carousel = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5), PostFormat::CAROUSEL);
+        $video = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5), PostFormat::LONG_VIDEO);
+
+        $this->assertSame(['instagram'], $this->ideasOutput()->resolve($carousel, ['ideas' => [$this->idea()]])[0]['publish_to']);
+        $this->assertSame(['youtube'], $this->ideasOutput()->resolve($video, ['ideas' => [$this->idea()]])[0]['publish_to']);
+    }
+
+    public function test_no_matching_account_stores_no_targets(): void
+    {
+        $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5), PostFormat::CAROUSEL);
+
+        $row = $this->ideasOutput(['youtube'])->resolve($runStep, ['ideas' => [$this->idea()]])[0];
+
+        $this->assertNull($row['publish_to']);
     }
 }

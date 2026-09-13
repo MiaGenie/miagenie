@@ -11,6 +11,7 @@ use App\Enums\RunStatus;
 use App\Enums\StrategyStatus;
 use App\Genie\Ideas\ContentPillars;
 use App\Genie\Ideas\IdeasRequest;
+use App\Genie\Ideas\PublishTargets;
 use App\Genie\Runs\PostFormatGate;
 use App\Http\Requests\Workspace\Idea\GenerateIdeas;
 use App\Http\Requests\Workspace\Idea\StoreIdea;
@@ -27,6 +28,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Inovector\Mixpost\Facades\SocialProviderManager;
 use Inovector\Mixpost\Facades\WorkspaceManager;
 
 class IdeasController
@@ -76,6 +78,7 @@ class IdeasController
             'postFormatImages' => PostFormat::imageRanges(),
             'funnelStage' => $request->input('funnel_stage'),
             'contentPillars' => ContentPillars::titles(Strategy::latest()->first()),
+            'publishTargets' => $this->publishTargets(),
             'record' => null,
         ]);
     }
@@ -105,6 +108,7 @@ class IdeasController
             'postFormatImages' => PostFormat::imageRanges(),
             'funnelStage' => $request->input('funnel_stage'),
             'contentPillars' => ContentPillars::titles(Strategy::latest()->first()),
+            'publishTargets' => $this->publishTargets(),
             'record' => IdeaResource::make($record),
         ]);
     }
@@ -184,6 +188,30 @@ class IdeasController
         }
 
         return $redirect->with('error', __('genie.idea_not_found'));
+    }
+
+    /**
+     * What the form can offer as publish targets: the providers with an account, per format and
+     * for no format at all, with the names Mixpost gives them.
+     *
+     * @return array{any: list<string>, byFormat: array<int, list<string>>, names: array<string, string>}
+     */
+    protected function publishTargets(): array
+    {
+        $targets = PublishTargets::forWorkspace(WorkspaceManager::current()->id);
+        $providers = SocialProviderManager::providers();
+
+        $names = [];
+
+        foreach ($targets->configured() as $provider) {
+            $names[$provider] = isset($providers[$provider]) ? $providers[$provider]::name() : $provider;
+        }
+
+        return [
+            'any' => $targets->available(null),
+            'byFormat' => $targets->byFormat(),
+            'names' => $names,
+        ];
     }
 
     /**

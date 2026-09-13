@@ -6,10 +6,12 @@ use App\Enums\FunnelStage;
 use App\Enums\IdeaSource;
 use App\Enums\IdeaStatus;
 use App\Enums\PostFormat;
+use App\Genie\Ideas\PublishTargets;
 use App\Models\Idea;
 use App\Models\Strategy;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule as ValidationRule;
+use Inovector\Mixpost\Facades\WorkspaceManager;
 
 class StoreIdea extends FormRequest
 {
@@ -23,6 +25,8 @@ class StoreIdea extends FormRequest
             'production_instructions' => ['nullable', 'string', 'max:5000'],
             'images' => ['nullable', 'array', 'max:10'],
             'images.*' => ['required', 'string', 'max:5000'],
+            'publish_to' => ['nullable', 'array'],
+            'publish_to.*' => ['required', 'string', ValidationRule::in($this->availableTargets())],
             'status' => [ValidationRule::enum(IdeaStatus::class)],
             'source' => [ValidationRule::enum(IdeaSource::class)],
             'funnel_stage' => [ValidationRule::enum(FunnelStage::class), 'nullable'],
@@ -41,6 +45,7 @@ class StoreIdea extends FormRequest
             'multimedia_suggestion' => $this->input('multimedia_suggestion'),
             'production_instructions' => $this->input('production_instructions'),
             'images' => $this->images(),
+            'publish_to' => $this->publishTo(),
             'status' => $this->input('status'),
             'source' => $this->input('source'),
             'funnel_stage' => $this->input('funnel_stage'),
@@ -59,5 +64,29 @@ class StoreIdea extends FormRequest
         $images = array_values((array) $this->input('images', []));
 
         return $images === [] ? null : $images;
+    }
+
+    /**
+     * The providers to publish to as a list, or null when there are none.
+     *
+     * @return list<string>|null
+     */
+    protected function publishTo(): ?array
+    {
+        $providers = array_values(array_unique((array) $this->input('publish_to', [])));
+
+        return $providers === [] ? null : $providers;
+    }
+
+    /**
+     * The providers on offer for the submitted format: those with an account that accept it.
+     *
+     * @return list<string>
+     */
+    protected function availableTargets(): array
+    {
+        $format = PostFormat::tryFrom((int) $this->input('post_format'));
+
+        return PublishTargets::forWorkspace(WorkspaceManager::current()->id)->available($format);
     }
 }

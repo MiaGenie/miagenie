@@ -26,7 +26,7 @@ const useVersionField = (form) => {
         return (list ?? []).map((subField) => ({
             ...subField,
             random_key: subField.random_key ?? nanoid(),
-            enum_values: subField.enum_values ?? [],
+            enum_values: Array.isArray(subField.enum_values) ? subField.enum_values : [],
             children: normalizeSubFields(subField.children),
         }));
     }

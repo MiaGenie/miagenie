@@ -1,4 +1,8 @@
 <script setup>
+import {inject} from "vue";
+import TranslateButton from "@/Components/Genie/Translations/TranslateButton.vue";
+
+const translateCtx = inject('translateCtx', () => ({enabled: false, dirty: false}));
 import Draggable from "vuedraggable";
 import useSubFields from "@/Composables/Genie/useSubFields.js";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
@@ -181,6 +185,14 @@ const setEnumText = (subField, value) => {
                                                     >*</LabelSuffix
                                                 >
                                             </label>
+                                            <TranslateButton
+                                                v-if="translateCtx().enabled"
+                                                type="sub_field"
+                                                :id="element.id"
+                                                attribute="name"
+                                                :label="element.sub_code_name"
+                                                :disabled="translateCtx().dirty"
+                                            />
                                         </template>
 
                                         <Input
@@ -236,6 +248,14 @@ const setEnumText = (subField, value) => {
                                                 )
                                             }}
                                         </label>
+                                        <TranslateButton
+                                            v-if="translateCtx().enabled"
+                                            type="sub_field"
+                                            :id="element.id"
+                                            attribute="description"
+                                            :label="element.sub_code_name"
+                                            :disabled="translateCtx().dirty"
+                                        />
                                     </template>
 
                                     <Textarea
@@ -388,6 +408,14 @@ const setEnumText = (subField, value) => {
                                                 )
                                             }}
                                         </label>
+                                        <TranslateButton
+                                            v-if="translateCtx().enabled"
+                                            type="sub_field"
+                                            :id="element.id"
+                                            attribute="enum_values"
+                                            :label="element.sub_code_name"
+                                            :disabled="translateCtx().dirty"
+                                        />
                                     </template>
 
                                     <template #description>
