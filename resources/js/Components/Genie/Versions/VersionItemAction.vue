@@ -5,6 +5,7 @@ import PureButtonLink from "@/Components/Button/PureButtonLink.vue";
 import PencilSquare from "@/Icons/PencilSquare.vue";
 import QueueList from "@/Icons/QueueList.vue";
 import RulesIcon from "@/Icons/Genie/Rules.vue";
+import ArrowRightOnRectangle from "@/Icons/ArrowRightOnRectangle.vue";
 
 const {t: $t} = useI18n()
 const routePrefix = inject('routePrefix');
@@ -27,6 +28,10 @@ const getRoute = (name) => {
             });
         case 'fields':
             return route('genie.admin.versions.fields.index', {
+                version: props.itemId,
+            });
+        case 'export':
+            return route('genie.admin.versions.export', {
                 version: props.itemId,
             });
         default:
@@ -59,6 +64,16 @@ const getRoute = (name) => {
                 </template>
                 <template #default>
                     {{ $t('genie.rules') }}
+                </template>
+            </PureButtonLink>
+
+            <PureButtonLink
+                :href="getRoute('export')"
+                :native="true"
+                v-tooltip="$t('genie.export_version')"
+            >
+                <template #icon>
+                    <ArrowRightOnRectangle/>
                 </template>
             </PureButtonLink>
 

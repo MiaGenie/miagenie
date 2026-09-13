@@ -2,6 +2,7 @@ import {computed} from "vue";
 import {usePage} from "@inertiajs/vue3";
 import {cloneDeep, filter, find, groupBy, includes, join, snakeCase, uniq, values} from "lodash";
 import {useI18n} from "vue-i18n";
+import {nanoid} from "nanoid";
 
 const useVersionField = (form) => {
 
@@ -24,6 +25,7 @@ const useVersionField = (form) => {
     const normalizeSubFields = (list) => {
         return (list ?? []).map((subField) => ({
             ...subField,
+            random_key: subField.random_key ?? nanoid(),
             enum_values: subField.enum_values ?? [],
             children: normalizeSubFields(subField.children),
         }));

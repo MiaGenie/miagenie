@@ -22,7 +22,9 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
         Route::get('/', [VersionsController::class, 'index'])->name('index');
         Route::get('create', [VersionsController::class, 'create'])->name('create');
         Route::post('store', [VersionsController::class, 'store'])->name('store');
+        Route::post('import', [VersionsController::class, 'import'])->name('import');
         Route::get('{version}', [VersionsController::class, 'edit'])->name('edit');
+        Route::get('{version}/export', [VersionsController::class, 'export'])->name('export');
         Route::put('update/{version}', [VersionsController::class, 'update'])->name('update');
         Route::put('clone/{version}', [VersionsController::class, 'clone'])->name('clone');
         Route::delete('{version}', [VersionsController::class, 'destroy'])->name('delete');

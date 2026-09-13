@@ -1,6 +1,6 @@
 <script setup>
 import {Head, router, useForm} from '@inertiajs/vue3';
-import {inject} from "vue";
+import {computed, inject} from "vue";
 import {useI18n} from "vue-i18n";
 import useRouter from "@/Composables/useRouter";
 import {cloneDeep, find} from "lodash";
@@ -23,6 +23,8 @@ import SuccessButton from "@/Components/Button/SuccessButton.vue";
 import Check from "@/Icons/Check.vue";
 import Badge from "@/Components/DataDisplay/Badge.vue";
 import ArrowUturnLeft from "@/Icons/ArrowUturnLeft.vue";
+import PureDangerButton from "@/Components/Button/PureDangerButton.vue";
+import Plus from "@/Icons/Plus.vue";
 
 const {t: $t} = useI18n()
 
@@ -42,6 +44,10 @@ const props = defineProps({
     postFormats: {
         type: Object,
         required: true
+    },
+    postFormatImages: {
+        type: Object,
+        default: () => ({})
     },
     ideaStatusTypes: {
         type: Object,
@@ -73,6 +79,7 @@ const nullToBlank = (record) => ({
     post_format: record.post_format ?? '',
     content_pillar: record.content_pillar ?? '',
     funnel_stage: record.funnel_stage ?? '',
+    images: Array.isArray(record.images) ? [...record.images] : [],
 });
 
 const form = useForm(isEdit.value ? nullToBlank(cloneDeep(props.record)) : {
@@ -81,6 +88,7 @@ const form = useForm(isEdit.value ? nullToBlank(cloneDeep(props.record)) : {
     suggested_content: '',
     multimedia_suggestion: '',
     production_instructions: '',
+    images: [],
     post_format: '',
     content_pillar: '',
     funnel_stage: props.funnelStage ?? '',
@@ -118,6 +126,24 @@ const blankToNull = (data) => ({
     content_pillar: data.content_pillar === '' ? null : data.content_pillar,
     funnel_stage: data.funnel_stage === '' ? null : data.funnel_stage,
 });
+
+/**
+ * The [min, max] number of images the chosen format carries, or null for a video format. The
+ * briefs are kept on the form either way, so switching format and back loses nothing.
+ */
+const imageRange = computed(() => props.postFormatImages[form.post_format] ?? null);
+
+const canAddImage = computed(() => imageRange.value !== null && form.images.length < imageRange.value[1]);
+
+const addImage = () => {
+    if (canAddImage.value) {
+        form.images.push('');
+    }
+}
+
+const removeImage = (index) => {
+    form.images.splice(index, 1);
+}
 
 const restore = () => {
     confirmation()
@@ -343,6 +369,60 @@ const approveIdea = () => {
                         <template #footer>
                             <div class="text-sm text-gray-500">{{ $t(`genie.idea_${text}_desc`) }}</div>
                             <Error :message="form.errors[text]"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup v-if="imageRange" class="form-field mt-lg mx-auto">
+                        <template #title>
+                            <label>{{ $t('genie.idea_images') }}</label>
+                        </template>
+
+                        <div class="flex flex-col gap-md">
+                            <div
+                                v-for="(image, index) in form.images"
+                                :key="index"
+                                class="flex flex-row items-start gap-xs"
+                            >
+                                <div class="grow">
+                                    <label :for="`image_${index}`" class="text-sm text-gray-500">
+                                        {{ $t('genie.idea_image', {n: index + 1}) }}
+                                    </label>
+                                    <Textarea v-model="form.images[index]"
+                                              :error="form.errors[`images.${index}`] !== undefined"
+                                              :id="`image_${index}`"
+                                              class="w-full"
+                                              rows="3"
+                                    />
+                                    <Error :message="form.errors[`images.${index}`]"/>
+                                </div>
+
+                                <PureDangerButton
+                                    @click="removeImage(index)"
+                                    v-tooltip="$t('genie.idea_remove_image')"
+                                    class="mt-lg"
+                                >
+                                    <Trash/>
+                                </PureDangerButton>
+                            </div>
+
+                            <div>
+                                <SecondaryButton
+                                    @click="addImage"
+                                    type="button"
+                                    :disabled="!canAddImage"
+                                    size="sm"
+                                >
+                                    <template #icon>
+                                        <Plus/>
+                                    </template>
+                                    {{ $t('genie.idea_add_image') }}
+                                </SecondaryButton>
+                            </div>
+                        </div>
+
+                        <template #footer>
+                            <div class="text-sm text-gray-500">{{ $t('genie.idea_images_desc') }}</div>
+                            <Error :message="form.errors.images"/>
                         </template>
                     </VerticalGroup>
 

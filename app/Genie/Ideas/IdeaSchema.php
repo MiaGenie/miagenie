@@ -3,6 +3,7 @@
 namespace App\Genie\Ideas;
 
 use App\Enums\FunnelStage;
+use App\Enums\PostFormat;
 use App\Genie\Runs\SchemaDefinition;
 use App\Models\AiRun;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -29,29 +30,34 @@ class IdeaSchema implements SchemaDefinition
 
     /**
      * @param  list<string>  $pillarTitles  the pillars the model may name; empty leaves it free text
+     * @param  PostFormat|null  $format  the step's format, which decides whether — and how many —
+     *                                   per-image briefs are asked for
      */
     public function __construct(
         protected FunnelStage $stage,
         protected array $pillarTitles,
         protected int $share,
         protected string $locale,
+        protected ?PostFormat $format = null,
     ) {}
 
     /**
      * The schema for one generator step of a run: the pillar the customer chose, or all of the
-     * strategy's; the stage they chose, or all of them; and this step's share of the total.
+     * strategy's; the stage they chose, or all of them; this step's share of the total; and the
+     * image briefs the step's format calls for.
      */
-    public static function forRun(AiRun $run, IdeasRequest $request, int $share, string $locale): self
+    public static function forRun(AiRun $run, IdeasRequest $request, int $share, string $locale, ?PostFormat $format = null): self
     {
         $titles = $request->wantsAnyPillar()
             ? ContentPillars::titles($run->strategy)
             : [$request->contentPillar];
 
-        return new self($request->funnelStage, $titles, $share, $locale);
+        return new self($request->funnelStage, $titles, $share, $locale, $format);
     }
 
     /**
-     * The shape with nothing requested, for an admin preview of an ideas step.
+     * The shape with nothing requested and no format, for an admin preview of an ideas step. The
+     * per-image briefs only appear on the schema a run sends, since they depend on the format.
      */
     public static function preview(string $locale): self
     {
@@ -67,7 +73,11 @@ class IdeaSchema implements SchemaDefinition
 
         return [
             self::ROOT => $schema->array()
-                ->items($schema->object($this->idea($schema)))
+                ->items(
+                    $schema->object($this->idea($schema))
+                        ->title($this->text('idea_item'))
+                        ->description($this->text('idea_item_desc'))
+                )
                 ->min($count)
                 ->max($count)
                 ->title($this->text('ideas'))
@@ -105,6 +115,24 @@ class IdeaSchema implements SchemaDefinition
         $properties['content_pillar'] = $this->pillarTitles === []
             ? $pillar->required()->nullable()
             : $pillar->enum($this->pillarTitles)->required();
+
+        // Only a format that is a set of images asks for briefs; strict mode would otherwise force
+        // an empty list onto a video idea.
+        if ($range = $this->format?->imageRange()) {
+            [$min, $max] = $range;
+
+            $properties['images'] = $schema->array()
+                ->items(
+                    $schema->string()
+                        ->title($this->text('idea_image_brief'))
+                        ->description($this->text('idea_image_brief_desc'))
+                )
+                ->min($min)
+                ->max($max)
+                ->title($this->text('idea_images'))
+                ->description($this->text('idea_images_desc'))
+                ->required();
+        }
 
         return $properties;
     }

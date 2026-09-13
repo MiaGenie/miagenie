@@ -64,6 +64,7 @@ class IdeasOutput implements StepOutput
                 'suggested_content' => $this->string($idea['suggested_content'] ?? null),
                 'multimedia_suggestion' => $this->string($idea['multimedia_suggestion'] ?? null),
                 'production_instructions' => $this->string($idea['production_instructions'] ?? null),
+                'images' => $format?->imageRange() ? $this->strings($idea['images'] ?? null) : null,
                 'post_format' => $format,
                 'funnel_stage' => $request->wantsAnyStage()
                     ? FunnelStage::fromTitle((string) ($idea['funnel_stage'] ?? ''))
@@ -82,5 +83,21 @@ class IdeasOutput implements StepOutput
     protected function string(mixed $value): ?string
     {
         return is_scalar($value) && filled($value) ? (string) $value : null;
+    }
+
+    /**
+     * A list of texts in the order given, with anything blank or not a text left out.
+     *
+     * @return list<string>
+     */
+    protected function strings(mixed $value): array
+    {
+        if (! is_array($value)) {
+            return [];
+        }
+
+        $strings = array_map($this->string(...), array_values($value));
+
+        return array_values(array_filter($strings, fn (?string $string) => $string !== null));
     }
 }

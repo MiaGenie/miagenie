@@ -2,17 +2,21 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Requests\Admin\CloneVersion;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
-use Inertia\Inertia;
 use App\Enums\VersionStatus;
+use App\Genie\Versions\VersionExporter;
+use App\Http\Requests\Admin\CloneVersion;
+use App\Http\Requests\Admin\ImportVersion;
 use App\Http\Requests\Admin\StoreVersion;
 use App\Http\Requests\Admin\UpdateVersion;
 use App\Http\Resources\Admin\VersionResource;
 use App\Models\Version;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class VersionsController extends Controller
 {
@@ -29,7 +33,7 @@ class VersionsController extends Controller
 
         return Inertia::render('Genie/Admin/Versions/Index', [
             'records' => VersionResource::collection($records),
-            'statusTypes' => VersionStatus::withTitle()
+            'statusTypes' => VersionStatus::withTitle(),
         ]);
     }
 
@@ -41,12 +45,11 @@ class VersionsController extends Controller
         return Inertia::render('Genie/Admin/Versions/CreateEdit', [
             'mode' => 'create',
             'record' => null,
-            'statusTypes' => VersionStatus::withTitle()
+            'statusTypes' => VersionStatus::withTitle(),
         ]);
     }
 
     /**
-     * @param StoreVersion $storeVersion
      * @return RedirectResponse
      */
     public function store(StoreVersion $storeVersion)
@@ -59,7 +62,6 @@ class VersionsController extends Controller
     }
 
     /**
-     * @param Request $request
      * @return Response
      */
     public function edit(Request $request)
@@ -69,12 +71,11 @@ class VersionsController extends Controller
         return Inertia::render('Genie/Admin/Versions/CreateEdit', [
             'mode' => 'edit',
             'record' => new VersionResource($record),
-            'statusTypes' => VersionStatus::withTitle()
+            'statusTypes' => VersionStatus::withTitle(),
         ]);
     }
 
     /**
-     * @param UpdateVersion $updateVersion
      * @return RedirectResponse
      */
     public function update(UpdateVersion $updateVersion)
@@ -85,7 +86,6 @@ class VersionsController extends Controller
     }
 
     /**
-     * @param CloneVersion $cloneVersion
      * @return RedirectResponse
      */
     public function clone(CloneVersion $cloneVersion)
@@ -99,14 +99,43 @@ class VersionsController extends Controller
     }
 
     /**
-     * @param Request $request
+     * Download the version, with its fields, rules and steps, as a portable JSON file.
+     */
+    public function export(Request $request, VersionExporter $exporter): StreamedResponse
+    {
+        $record = Version::firstOrFailByUuid($request->route('version'));
+
+        $payload = $exporter->export($record);
+
+        return response()->streamDownload(
+            function () use ($payload) {
+                echo json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            },
+            'version-'.Str::slug($record->name).'.json',
+            ['Content-Type' => 'application/json']
+        );
+    }
+
+    /**
+     * Create a new version from an exported JSON file.
+     */
+    public function import(ImportVersion $importVersion): RedirectResponse
+    {
+        $record = $importVersion->handle();
+
+        return redirect()
+            ->route('genie.admin.versions.edit', ['version' => $record->uuid])
+            ->with('success', __('genie.version_imported'));
+    }
+
+    /**
      * @return RedirectResponse
      */
     public function destroy(Request $request)
     {
         $query = Version::where('uuid', $request->route('version'))->delete();
 
-        if (!$query) {
+        if (! $query) {
             return redirect()
                 ->route('genie.admin.versions.index')
                 ->with('error', __('genie.version_not_found'));

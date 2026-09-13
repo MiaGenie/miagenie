@@ -28,15 +28,15 @@ class IdeasContextTest extends TestCase
      */
     protected function runWithPillars(array $content = []): AiRun
     {
-        $topics = $this->sub('4_topics', 'Topics & Subtopics', SubFieldType::ARRAY, [
+        $topics = $this->sub('topics', 'Topics & Subtopics', SubFieldType::ARRAY, [
             $this->sub('topic_name', 'Topic', SubFieldType::STRING, [], 0),
             $this->sub('topic_subtopics', 'Sub Topics', SubFieldType::ARRAY, [], 1),
         ], 4);
 
         $pillars = $this->sub('content_pillars', 'Content Pillars', SubFieldType::ARRAY, [
-            $this->sub('0_title', 'Title', SubFieldType::STRING, [], 0),
-            $this->sub('1_importance', 'Relative Importance', SubFieldType::STRING, [], 1),
-            $this->sub('3_description', 'Description', SubFieldType::STRING, [], 3),
+            $this->sub('title', 'Title', SubFieldType::STRING, [], 0),
+            $this->sub('importance', 'Relative Importance', SubFieldType::STRING, [], 1),
+            $this->sub('description', 'Description', SubFieldType::STRING, [], 3),
             $topics,
         ]);
 
@@ -54,16 +54,16 @@ class IdeasContextTest extends TestCase
         $run->setRelation('strategy', new Strategy(['content' => $content ?: [
             'content_pillars' => [
                 [
-                    '0_title' => 'Craft',
-                    '1_importance' => 'High',
-                    '3_description' => 'How things are made',
-                    '4_topics' => [['topic_name' => 'Tools', 'topic_subtopics' => ['Chisels', 'Planes']]],
+                    'title' => 'Craft',
+                    'importance' => 'High',
+                    'description' => 'How things are made',
+                    'topics' => [['topic_name' => 'Tools', 'topic_subtopics' => ['Chisels', 'Planes']]],
                 ],
                 [
-                    '0_title' => 'Stories',
-                    '1_importance' => 'Medium',
-                    '3_description' => 'Who we made them for',
-                    '4_topics' => [['topic_name' => 'Clients', 'topic_subtopics' => ['Homes']]],
+                    'title' => 'Stories',
+                    'importance' => 'Medium',
+                    'description' => 'Who we made them for',
+                    'topics' => [['topic_name' => 'Clients', 'topic_subtopics' => ['Homes']]],
                 ],
             ],
         ]]));

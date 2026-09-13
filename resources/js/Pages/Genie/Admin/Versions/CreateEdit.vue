@@ -25,6 +25,7 @@ import Trash from "@/Icons/Trash.vue";
 import X from "@/Icons/X.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import Clipboard from "@/Icons/Clipboard.vue";
+import ArrowRightOnRectangle from "@/Icons/ArrowRightOnRectangle.vue";
 import WarningButton from "@/Components/Button/WarningButton.vue";
 
 defineOptions({layout: AdminLayout});
@@ -152,6 +153,11 @@ const deleteVersion = () => {
                 }
             );
         }).show();
+}
+
+const exportVersion = () => {
+    // A file download, not an Inertia visit: the browser handles the response itself.
+    window.location.assign(route('genie.admin.versions.export', {version: props.record.id}));
 }
 
 const currentStatus = () => {
@@ -298,6 +304,18 @@ const statusEnabled = () => {
 
                     </div>
                     <div v-if="isEdit" class="flex gap-6">
+
+                        <SecondaryButton
+                            @click="exportVersion"
+                            type="button"
+                            :disabled="form.processing"
+                            :hidden-text-on-small-screen=true
+                        >
+                            {{ $t("genie.export_version") }}
+                            <template #icon>
+                                <ArrowRightOnRectangle/>
+                            </template>
+                        </SecondaryButton>
 
                         <WarningButton
                             @click="cloneVersion"

@@ -64,7 +64,7 @@ const setEnumText = (subField, value) => {
                 :list="modelValue"
                 :group="`sub_fields_${depth}`"
                 handle=".handle"
-                item-key="sub_code_name"
+                item-key="random_key"
             >
                 <template #item="{ element, index }">
                     <ListItem class="group">

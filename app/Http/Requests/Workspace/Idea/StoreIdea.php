@@ -21,6 +21,8 @@ class StoreIdea extends FormRequest
             'suggested_content' => ['nullable', 'string', 'max:5000'],
             'multimedia_suggestion' => ['nullable', 'string', 'max:5000'],
             'production_instructions' => ['nullable', 'string', 'max:5000'],
+            'images' => ['nullable', 'array', 'max:10'],
+            'images.*' => ['required', 'string', 'max:5000'],
             'status' => [ValidationRule::enum(IdeaStatus::class)],
             'source' => [ValidationRule::enum(IdeaSource::class)],
             'funnel_stage' => [ValidationRule::enum(FunnelStage::class), 'nullable'],
@@ -38,11 +40,24 @@ class StoreIdea extends FormRequest
             'suggested_content' => $this->input('suggested_content'),
             'multimedia_suggestion' => $this->input('multimedia_suggestion'),
             'production_instructions' => $this->input('production_instructions'),
+            'images' => $this->images(),
             'status' => $this->input('status'),
             'source' => $this->input('source'),
             'funnel_stage' => $this->input('funnel_stage'),
             'post_format' => $this->input('post_format'),
             'content_pillar' => $this->input('content_pillar'),
         ]);
+    }
+
+    /**
+     * The image briefs as a list, or null when there are none: an empty list is nothing to keep.
+     *
+     * @return list<string>|null
+     */
+    protected function images(): ?array
+    {
+        $images = array_values((array) $this->input('images', []));
+
+        return $images === [] ? null : $images;
     }
 }
