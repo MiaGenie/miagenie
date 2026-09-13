@@ -1,9 +1,11 @@
 <script setup>
-import {Head, Link} from '@inertiajs/vue3';
-import {inject} from "vue";
+import {Head, Link, router} from '@inertiajs/vue3';
+import {inject, ref} from "vue";
 import {useI18n} from "vue-i18n";
+import useNotifications from "@/Composables/useNotifications.js";
 import AdminLayout from "@/Layouts/Admin.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
 import Table from "@/Components/DataDisplay/Table.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
@@ -13,10 +15,12 @@ import Pagination from "@/Components/Navigation/Pagination.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import NoResult from "@/Components/Util/NoResult.vue";
 import Plus from "@/Icons/Plus.vue";
+import ArrowLeftOnRectangle from "@/Icons/ArrowLeftOnRectangle.vue";
 
 defineOptions({layout: AdminLayout});
 
 const {t: $t} = useI18n()
+const {notify} = useNotifications();
 
 const props = defineProps({
     records: {
@@ -27,6 +31,34 @@ const props = defineProps({
         required: true
     }
 });
+
+const importInput = ref(null);
+const importing = ref(false);
+
+const browseImport = () => {
+    importInput.value.click();
+}
+
+const importVersion = (e) => {
+    const file = e.target.files[0];
+
+    // Reset so picking the same file again still fires `change`.
+    e.target.value = null;
+
+    if (!file) {
+        return;
+    }
+
+    router.post(route('genie.admin.versions.import'), {file}, {
+        forceFormData: true,
+        onStart: () => importing.value = true,
+        onFinish: () => importing.value = false,
+        onError: (errors) => {
+            // No form holds these errors, so the message is surfaced as a notification.
+            notify('error', errors.file ?? Object.values(errors).join(' '));
+        },
+    });
+}
 
 </script>
 <template>
@@ -43,12 +75,36 @@ const props = defineProps({
 
         <div class="w-full row-px mt-lg">
 
-            <Link :href="route('genie.admin.versions.create')">
-                <PrimaryButton size="sm">
-                    <Plus class="mr-xs" />
-                    {{ $t('genie.create_version') }}
-                </PrimaryButton>
-            </Link>
+            <div class="flex flex-wrap items-center gap-sm">
+                <Link :href="route('genie.admin.versions.create')">
+                    <PrimaryButton size="sm">
+                        <Plus class="mr-xs" />
+                        {{ $t('genie.create_version') }}
+                    </PrimaryButton>
+                </Link>
+
+                <SecondaryButton
+                    size="sm"
+                    @click="browseImport"
+                    :is-loading="importing"
+                    :disabled="importing"
+                    v-tooltip="$t('genie.import_version_desc')"
+                >
+                    <template #icon>
+                        <ArrowLeftOnRectangle class="w-5 h-5" />
+                    </template>
+                    {{ $t('genie.import_version') }}
+                </SecondaryButton>
+
+                <input
+                    ref="importInput"
+                    type="file"
+                    accept="application/json,.json"
+                    class="hidden"
+                    :aria-label="$t('genie.version_import_file')"
+                    @change="importVersion"
+                />
+            </div>
 
             <Panel
                 :with-padding="false"

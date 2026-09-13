@@ -1,6 +1,7 @@
 import { snakeCase } from "lodash";
 import { usePage } from "@inertiajs/vue3";
 import { find } from "lodash";
+import { nanoid } from "nanoid";
 
 /**
  * Helpers for editing a strategy field's sub-field tree.
@@ -19,6 +20,7 @@ const useSubFields = () => {
 
     const emptySubField = () => ({
         id: null,
+        random_key: nanoid(),
         name: "",
         sub_code_name: "",
         description: "",
