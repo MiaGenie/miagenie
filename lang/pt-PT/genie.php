@@ -45,6 +45,17 @@ return [
     'reordering' => 'Reordenando',
 
     'translations' => 'Traduções',
+    'translate' => 'Traduzir',
+    'translate_to' => 'Traduzir para :locale',
+    'translate_all' => 'Traduzir para todos',
+    'translated' => 'Traduzido',
+    'translation_failed' => 'A tradução falhou, tente novamente',
+    'translation_source' => 'Origem (:locale)',
+    'translation_source_empty' => 'Nada para traduzir — o texto de origem está vazio',
+    'translation_attribute_invalid' => 'O atributo ":attribute" não é traduzível',
+    'translation_locale_invalid' => 'Idioma desconhecido: :locale',
+    'translate_requires_save' => 'Guarde o formulário antes de traduzir',
+    'translation_ai_hint' => 'As traduções por IA são guardadas assim que são geradas; as edições feitas aqui são guardadas com Atualizar.',
     'uses' => 'Usos',
     'media_instructions' => 'Instruções de media',
 

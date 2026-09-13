@@ -142,6 +142,26 @@ class StepSchemaBuilderTest extends TestCase
         $this->assertSame(['main_goal', 'stretch_goal'], $schema['properties']['goals']['required']);
     }
 
+    public function test_the_enum_follows_the_locale_of_the_run(): void
+    {
+        $tone = $this->subField('tone', SubFieldType::STRING, [
+            'enum_values' => ['en-GB' => ['formal', 'casual'], 'pt-PT' => ['formal', 'informal']],
+        ]);
+
+        $fields = [$this->field('tone_of_voice', [$tone])];
+
+        $this->assertSame(
+            ['formal', 'informal'],
+            (new StepSchemaBuilder)->forFields($fields, 'pt-PT')['properties']['tone_of_voice']['enum']
+        );
+
+        // A locale without its own list falls back to the source values rather than to nothing.
+        $this->assertSame(
+            ['formal', 'casual'],
+            (new StepSchemaBuilder)->forFields($fields, 'es-ES')['properties']['tone_of_voice']['enum']
+        );
+    }
+
     public function test_it_maps_length_and_enum_constraints_and_omits_presentation_columns(): void
     {
         $tone = $this->subField('tone', SubFieldType::STRING, [

@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\RulesController;
 use App\Http\Controllers\Admin\RuleStepsController;
 use App\Http\Controllers\Admin\RunsController;
 use App\Http\Controllers\Admin\RunStepsController;
+use App\Http\Controllers\Admin\TranslationsController;
 use App\Http\Controllers\Admin\VectorsController;
 use App\Http\Controllers\Admin\VersionFieldOptionsController;
 use App\Http\Controllers\Admin\VersionFieldsController;
@@ -17,6 +18,12 @@ use Illuminate\Support\Facades\Route;
 use Inovector\Mixpost\Http\Base\Middleware\Admin;
 
 Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(function () {
+
+    Route::prefix('translations/{type}/{record}/{attribute}')->name('translations.')->group(function () {
+        Route::get('/', [TranslationsController::class, 'show'])->name('show');
+        Route::put('/', [TranslationsController::class, 'update'])->name('update');
+        Route::post('translate', [TranslationsController::class, 'translate'])->name('translate');
+    });
 
     Route::prefix('versions')->name('versions.')->group(function () {
         Route::get('/', [VersionsController::class, 'index'])->name('index');

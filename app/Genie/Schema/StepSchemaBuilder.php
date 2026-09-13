@@ -270,7 +270,7 @@ class StepSchemaBuilder
                 $this->buildProperties($children, $all, $locale)
             ),
             SubFieldType::ARRAY => $this->buildArray($subField, $children, $all, $locale),
-            SubFieldType::STRING => $this->buildString($subField),
+            SubFieldType::STRING => $this->buildString($subField, $locale),
             SubFieldType::BOOLEAN => $this->factory->boolean(),
         };
 
@@ -295,7 +295,7 @@ class StepSchemaBuilder
         $type = $this->factory->array();
 
         $type = $children->isEmpty()
-            ? $type->items($this->buildString($subField))
+            ? $type->items($this->buildString($subField, $locale))
             : $type->items($this->factory->object($this->buildProperties($children, $all, $locale)));
 
         if ($subField->min_items !== null) {
@@ -311,8 +311,11 @@ class StepSchemaBuilder
 
     /**
      * Build a string type with its length and enum constraints.
+     *
+     * The allowed values are translated per locale, so the enum the model must pick from is
+     * the one written in the language the run is generating in.
      */
-    protected function buildString(VersionFieldSubField $subField): Type
+    protected function buildString(VersionFieldSubField $subField, string $locale): Type
     {
         $type = $this->factory->string();
 
@@ -328,7 +331,7 @@ class StepSchemaBuilder
             $type = $type->pattern($subField->pattern);
         }
 
-        $enum = array_values(array_filter((array) ($subField->enum_values ?? [])));
+        $enum = array_values(array_filter((array) $subField->getTranslation('enum_values', $locale)));
 
         if ($enum !== []) {
             $type = $type->enum($enum);

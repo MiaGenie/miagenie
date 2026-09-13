@@ -15,6 +15,7 @@ import Input from "@/Components/Form/Input.vue";
 import LabelSuffix from "@/Components/Form/LabelSuffix.vue";
 import Select from "@/Components/Form/Select.vue";
 import Textarea from "@/Components/Form/Textarea.vue";
+import TranslateButton from "@/Components/Genie/Translations/TranslateButton.vue";
 import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
@@ -524,6 +525,7 @@ const cloneStepInto = (target) => {
                             <label for="instructions">{{
                                 $t("genie.step_instructions")
                             }}</label>
+                            <TranslateButton v-if="isEdit" type="step" :id="record.id" attribute="instructions" :label="$t('genie.step_instructions')" :disabled="form.isDirty"/>
                         </template>
 
                         <Textarea
@@ -574,6 +576,7 @@ const cloneStepInto = (target) => {
                                 $t("genie.step_message")
                             }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
+                            <TranslateButton v-if="isEdit" type="step" :id="record.id" attribute="message" :label="$t('genie.step_message')" :disabled="form.isDirty"/>
                         </template>
 
                         <Textarea
@@ -751,10 +754,11 @@ const cloneStepInto = (target) => {
                         class="form-field mt-lg"
                     >
                         <template #title>
-                            <label for="message">{{
+                            <label for="review_message_user">{{
                                 $t("genie.step_review_message_user")
                             }}</label>
                             <LabelSuffix :danger="true">*</LabelSuffix>
+                            <TranslateButton v-if="isEdit" type="step" :id="record.id" attribute="review_message_user" :label="$t('genie.step_review_message_user')" :disabled="form.isDirty"/>
                         </template>
 
                         <Textarea
@@ -778,9 +782,10 @@ const cloneStepInto = (target) => {
                         class="form-field mt-lg"
                     >
                         <template #title>
-                            <label for="message">{{
+                            <label for="review_message_system">{{
                                 $t("genie.step_review_message_system")
                             }}</label>
+                            <TranslateButton v-if="isEdit" type="step" :id="record.id" attribute="review_message_system" :label="$t('genie.step_review_message_system')" :disabled="form.isDirty"/>
                         </template>
 
                         <Textarea

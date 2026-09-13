@@ -20,6 +20,7 @@ import Textarea from "@/Components/Form/Textarea.vue";
 import VersionHeader from "@/Components/DataDisplay/Genie/VersionHeader.vue";
 import VersionFieldOptionsGroup from "@/Components/Genie/Versions/VersionFieldOptionsGroup.vue";
 import VersionFieldSubFields from "@/Components/Genie/Versions/VersionFieldSubFields.vue";
+import TranslateButton from "@/Components/Genie/Translations/TranslateButton.vue";
 import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
@@ -134,6 +135,12 @@ const {
 
 provide('currentFieldTypeCtx', () => {return currentFieldType});
 provide('formCtx', () => {return form});
+
+/**
+ * Nested option and sub-field editors offer translation only once the whole form is saved,
+ * because translating reads the stored record rather than the form.
+ */
+provide('translateCtx', () => ({enabled: isEdit.value, dirty: form.isDirty}));
 
 onBeforeMount( () => {
     formatSubFields();
@@ -412,6 +419,7 @@ const cloneFieldInto = (target) => {
                             <label for="name">{{ $t("general.name") }}
                                 <LabelSuffix :danger="true">*</LabelSuffix>
                             </label>
+                            <TranslateButton v-if="isEdit" type="field" :id="record.id" attribute="name" :label="$t('general.name')" :disabled="form.isDirty"/>
                         </template>
 
                         <Input
@@ -451,6 +459,7 @@ const cloneFieldInto = (target) => {
                     <VerticalGroup class="form-field mt-lg">
                         <template #title>
                             <label for="description">{{ $t("genie.description") }}</label>
+                            <TranslateButton v-if="isEdit" type="field" :id="record.id" attribute="description" :label="$t('genie.description')" :disabled="form.isDirty"/>
                         </template>
 
                         <Textarea
@@ -480,6 +489,7 @@ const cloneFieldInto = (target) => {
                     <VerticalGroup class="form-field mt-lg">
                         <template #title>
                             <label for="sub_description">{{ $t("genie.sub_description") }}</label>
+                            <TranslateButton v-if="isEdit" type="field" :id="record.id" attribute="sub_description" :label="$t('genie.sub_description')" :disabled="form.isDirty"/>
                         </template>
 
                         <Textarea
@@ -875,6 +885,7 @@ const cloneFieldInto = (target) => {
                         <template #title>
                             <label for="display_faq_title">{{ $t("genie.field_display_faq_title") }}
                             </label>
+                            <TranslateButton v-if="isEdit" type="field" :id="record.id" attribute="display_faq_title" :label="$t('genie.field_display_faq_title')" :disabled="form.isDirty"/>
                         </template>
 
                         <Input
@@ -891,6 +902,7 @@ const cloneFieldInto = (target) => {
                     <VerticalGroup class="form-field mt-lg">
                         <template #title>
                             <label for="display_faq_text">{{ $t("genie.field_display_faq_text") }}</label>
+                            <TranslateButton v-if="isEdit" type="field" :id="record.id" attribute="display_faq_text" :label="$t('genie.field_display_faq_text')" :disabled="form.isDirty"/>
                         </template>
 
                         <EditorClassic

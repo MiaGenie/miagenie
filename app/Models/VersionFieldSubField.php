@@ -62,6 +62,19 @@ class VersionFieldSubField extends Model
     public array $translatable = [
         'name',
         'description',
+        'enum_values',
+    ];
+
+    /**
+     * Translatable attributes whose value is a list rather than a text.
+     *
+     * The allowed values feed the schema's enum, so every locale holds a list of the same
+     * length and order as the source; a translation is looked up by position.
+     *
+     * @var array|string[]
+     */
+    public array $translatableLists = [
+        'enum_values',
     ];
 
     /**

@@ -1,6 +1,7 @@
 <script setup>
 import Draggable from 'vuedraggable'
 import {inject, ref} from "vue";
+import TranslateButton from "@/Components/Genie/Translations/TranslateButton.vue";
 import useFieldOptions from "@/Composables/Genie/useFieldOptions.js";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import PureButton from "@/Components/Button/PureButton.vue";
@@ -15,6 +16,8 @@ import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
 import GripVertical from "@/Icons/GripVertical.vue";
 import Plus from "@/Icons/Plus.vue";
 import X from "@/Icons/X.vue";
+
+const translateCtx = inject('translateCtx', () => ({enabled: false, dirty: false}));
 
 const props = defineProps({
     options: {
@@ -86,6 +89,14 @@ const fieldId = (field, index) =>{
                                                 {{ $t("genie.field_option_name") }}
                                                 <LabelSuffix :danger="true">*</LabelSuffix>
                                             </label>
+                                            <TranslateButton
+                                                v-if="translateCtx().enabled"
+                                                type="option"
+                                                :id="element.id"
+                                                attribute="name"
+                                                :label="element.code_name"
+                                                :disabled="translateCtx().dirty"
+                                            />
                                         </template>
 
                                         <Input

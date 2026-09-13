@@ -26,7 +26,7 @@ class VersionFieldSubFieldResource extends JsonResource
             'max_items' => $this->max_items,
             'required' => $this->required,
             'editable' => $this->editable,
-            'enum_values' => $this->enum_values,
+            'enum_values' => array_values((array) ($this->enum_values ?: [])),
             'icon' => $this->icon,
             'class' => $this->class,
             'block' => $this->block,

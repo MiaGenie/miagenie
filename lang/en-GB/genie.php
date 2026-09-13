@@ -46,6 +46,17 @@ return [
 
     'translations' => 'Translations',
     'translation_updated' => 'Translation Updated',
+    'translate' => 'Translate',
+    'translate_to' => 'Translate to :locale',
+    'translate_all' => 'Translate to all',
+    'translated' => 'Translated',
+    'translation_failed' => 'Translation failed, please try again',
+    'translation_source' => 'Source (:locale)',
+    'translation_source_empty' => 'Nothing to translate — the source text is empty',
+    'translation_attribute_invalid' => 'The attribute ":attribute" is not translatable',
+    'translation_locale_invalid' => 'Unknown locale: :locale',
+    'translate_requires_save' => 'Save the form before translating',
+    'translation_ai_hint' => 'AI translations are saved as soon as they are generated; edits you make here are saved with Update.',
     'uses' => 'Uses',
     'media_instructions' => 'Media instructions',
 
