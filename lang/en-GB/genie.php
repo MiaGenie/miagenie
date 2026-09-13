@@ -389,6 +389,9 @@ return [
     'delete_briefing_confirm' => 'Are you sure you want to delete this briefing?',
 
     'ideas' => 'Ideas',
+    'view_cards' => 'Card view',
+    'view_table' => 'Table view',
+    'select_all' => 'Select all',
     'ideas_theme' => 'Theme',
     'ideas_desc' => "Turn your strategy into content ideas. \n Generate ideas by format, content pillar and funnel stage, add your own, and approve the ones you want to turn into posts. Each idea carries its objective, suggested content, multimedia suggestion and production instructions.",
     'create_idea' => 'Create Idea',

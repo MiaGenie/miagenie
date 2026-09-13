@@ -337,6 +337,9 @@ return [
     'delete_briefing_confirm' => 'Tem a certeza que deseja eliminar este briefing?',
 
     'ideas' => 'Ideias',
+    'view_cards' => 'Vista em cartões',
+    'view_table' => 'Vista em tabela',
+    'select_all' => 'Selecionar todos',
     'ideas_theme' => 'Tema',
     'ideas_desc' => 'Transforme a sua estratégia em ideias de conteúdo.',
     'create_idea' => 'Criar Ideia',

@@ -1,12 +1,12 @@
 <script setup>
 import {useI18n} from "vue-i18n";
 import {inject} from "vue";
-import {find} from "lodash";
-import {router, usePage} from "@inertiajs/vue3";
+import {router} from "@inertiajs/vue3";
 import Badge from "@/Components/DataDisplay/Badge.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import Flex from "@/Components/Layout/Flex.vue";
+import useIdeaLabels from "@/Composables/Genie/useIdeaLabels.js";
 
 const {t: $t} = useI18n();
 
@@ -18,38 +18,8 @@ const props = defineProps({
 })
 
 const workspaceCtx = inject('workspaceCtx');
-const ideaStatusTypes = usePage().props.ideaStatusTypes;
-const postFormats = usePage().props.postFormats;
-const funnelStages = usePage().props.funnelStages;
 
-const ideaStatus = () => {
-    return find(ideaStatusTypes, ['value', Number(props.item.status)]);
-}
-
-const formatLabel = () => {
-    const format = find(postFormats, ['value', Number(props.item.post_format)]);
-
-    return format ? $t('genie.post_format_' + format.title) : '';
-}
-
-const stageLabel = () => {
-    const stage = find(funnelStages, ['value', Number(props.item.funnel_stage)]);
-
-    return stage ? $t('genie.funnel_stage_' + stage.title) : '';
-}
-
-const statusBadge = () => {
-    switch (ideaStatus().name) {
-        case 'APPROVED':
-            return 'success';
-        case 'PENDING_REVIEW':
-            return 'warning';
-        case 'TRASH':
-            return 'error';
-        default:
-            return '';
-    }
-}
+const {ideaStatus, formatLabel, stageLabel, statusBadge} = useIdeaLabels(props.item);
 
 const edit = () => {
     router.get(route('genie.ideas.edit', {
