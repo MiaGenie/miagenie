@@ -1,6 +1,6 @@
 <script setup>
 import {Head, router, useForm} from '@inertiajs/vue3';
-import {computed, inject} from "vue";
+import {computed, inject, watch} from "vue";
 import {useI18n} from "vue-i18n";
 import useRouter from "@/Composables/useRouter";
 import {cloneDeep, find} from "lodash";
@@ -25,6 +25,7 @@ import Badge from "@/Components/DataDisplay/Badge.vue";
 import ArrowUturnLeft from "@/Icons/ArrowUturnLeft.vue";
 import PureDangerButton from "@/Components/Button/PureDangerButton.vue";
 import Plus from "@/Icons/Plus.vue";
+import ProviderIcon from "@/Components/Account/ProviderIcon.vue";
 
 const {t: $t} = useI18n()
 
@@ -57,6 +58,10 @@ const props = defineProps({
         type: Array,
         required: true
     },
+    publishTargets: {
+        type: Object,
+        default: () => ({any: [], byFormat: {}, names: {}})
+    },
     record: {
         type: Object
     },
@@ -80,6 +85,7 @@ const nullToBlank = (record) => ({
     content_pillar: record.content_pillar ?? '',
     funnel_stage: record.funnel_stage ?? '',
     images: Array.isArray(record.images) ? [...record.images] : [],
+    publish_to: Array.isArray(record.publish_to) ? [...record.publish_to] : [],
 });
 
 const form = useForm(isEdit.value ? nullToBlank(cloneDeep(props.record)) : {
@@ -89,6 +95,7 @@ const form = useForm(isEdit.value ? nullToBlank(cloneDeep(props.record)) : {
     multimedia_suggestion: '',
     production_instructions: '',
     images: [],
+    publish_to: [],
     post_format: '',
     content_pillar: '',
     funnel_stage: props.funnelStage ?? '',
@@ -144,6 +151,29 @@ const addImage = () => {
 const removeImage = (index) => {
     form.images.splice(index, 1);
 }
+
+/**
+ * The providers the idea can be published to: those with a connected account that accept the
+ * chosen format, or every connected one while no format is picked.
+ */
+const availableTargets = computed(() => form.post_format === ''
+    ? props.publishTargets.any
+    : (props.publishTargets.byFormat[form.post_format] ?? []));
+
+const isTargetSelected = (provider) => form.publish_to.includes(provider);
+
+const toggleTarget = (provider) => {
+    form.publish_to = isTargetSelected(provider)
+        ? form.publish_to.filter(item => item !== provider)
+        : [...form.publish_to, provider];
+}
+
+const targetName = (provider) => props.publishTargets.names[provider] ?? provider;
+
+// A format change may take a provider off the table; a chosen one that is gone is dropped.
+watch(availableTargets, (available) => {
+    form.publish_to = form.publish_to.filter(provider => available.includes(provider));
+});
 
 const restore = () => {
     confirmation()
@@ -423,6 +453,36 @@ const approveIdea = () => {
                         <template #footer>
                             <div class="text-sm text-gray-500">{{ $t('genie.idea_images_desc') }}</div>
                             <Error :message="form.errors.images"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup class="form-field mt-lg mx-auto">
+                        <template #title>
+                            <label>{{ $t('genie.idea_publish_to') }}</label>
+                        </template>
+
+                        <div v-if="availableTargets.length" class="flex flex-wrap items-center gap-sm">
+                            <button
+                                v-for="provider in availableTargets"
+                                :key="provider"
+                                type="button"
+                                @click="toggleTarget(provider)"
+                                :aria-pressed="isTargetSelected(provider)"
+                                class="flex items-center gap-xs rounded-full border-2 px-md py-xs bg-white transition"
+                                :class="isTargetSelected(provider) ? 'border-primary-500' : 'border-gray-200 grayscale opacity-60'"
+                            >
+                                <span class="w-5 h-5 flex items-center justify-center">
+                                    <ProviderIcon :provider="provider"/>
+                                </span>
+                                <span class="text-sm">{{ targetName(provider) }}</span>
+                            </button>
+                        </div>
+                        <div v-else class="text-sm text-gray-500">{{ $t('genie.idea_publish_to_none') }}</div>
+
+                        <template #footer>
+                            <div class="text-sm text-gray-500">{{ $t('genie.idea_publish_to_desc') }}</div>
+                            <Error :message="form.errors.publish_to"/>
+                            <Error v-for="(provider, index) in form.publish_to" :key="provider" :message="form.errors[`publish_to.${index}`]"/>
                         </template>
                     </VerticalGroup>
 

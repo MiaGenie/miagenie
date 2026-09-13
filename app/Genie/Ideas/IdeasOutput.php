@@ -16,6 +16,11 @@ use RuntimeException;
 class IdeasOutput implements StepOutput
 {
     /**
+     * @param  PublishTargets|null  $targets  the workspace's providers; read from its accounts when not given
+     */
+    public function __construct(protected ?PublishTargets $targets = null) {}
+
+    /**
      * @param  array<string, mixed>  $structured
      */
     public function write(AiRunStep $runStep, array $structured): void
@@ -48,6 +53,10 @@ class IdeasOutput implements StepOutput
         $request = IdeasRequest::fromRun($run);
         $format = $runStep->step?->post_format;
 
+        // A generated idea targets every provider on offer for its format; the reviewer prunes.
+        $targets = $this->targets ?? PublishTargets::forWorkspace($run->workspace_id);
+        $publishTo = $targets->available($format) ?: null;
+
         $rows = [];
 
         foreach ($ideas as $idea) {
@@ -65,6 +74,7 @@ class IdeasOutput implements StepOutput
                 'multimedia_suggestion' => $this->string($idea['multimedia_suggestion'] ?? null),
                 'production_instructions' => $this->string($idea['production_instructions'] ?? null),
                 'images' => $format?->imageRange() ? $this->strings($idea['images'] ?? null) : null,
+                'publish_to' => $publishTo,
                 'post_format' => $format,
                 'funnel_stage' => $request->wantsAnyStage()
                     ? FunnelStage::fromTitle((string) ($idea['funnel_stage'] ?? ''))

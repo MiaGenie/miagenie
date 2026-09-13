@@ -37,6 +37,7 @@ class Idea extends Model
         'multimedia_suggestion',
         'production_instructions',
         'images',
+        'publish_to',
         'status',
         'source',
         'funnel_stage',
@@ -69,6 +70,7 @@ class Idea extends Model
         'funnel_stage' => FunnelStage::class,
         'post_format' => PostFormat::class,
         'images' => 'array',
+        'publish_to' => 'array',
     ];
 
     public function strategy(): BelongsTo

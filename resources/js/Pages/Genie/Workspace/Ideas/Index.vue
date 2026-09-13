@@ -535,6 +535,14 @@ const statusValue = (status) => {
                             <TableCell
                                 component="th"
                                 scope="col"
+                                class="hidden md:table-cell"
+                            >
+                                {{ $t('genie.idea_publish_to') }}
+                            </TableCell>
+
+                            <TableCell
+                                component="th"
+                                scope="col"
                                 class="hidden sm:table-cell"
                             >
                                 {{ $t('general.status') }}
