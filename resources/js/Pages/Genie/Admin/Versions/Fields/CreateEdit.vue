@@ -489,7 +489,7 @@ const deleteField = () => {
                     </VerticalGroup>
 
                     <VerticalGroup
-                        v-if="currentGroupType?.name === 'STRATEGIES'"
+                        v-if="currentFieldType?.name === 'JSON_SCHEMA'"
                         :force-full-width="true"
                         class="form-field-xl mt-lg"
                     >

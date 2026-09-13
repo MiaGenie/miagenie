@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Concerns\Controller\GenieFields;
+use App\Enums\PostFormat;
 use App\Enums\RuleStatus;
 use App\Enums\RuleSubType;
 use App\Enums\RuleType;
@@ -111,7 +112,11 @@ class RuleStepsController extends Controller
             'mode' => 'create',
             'rule' => new RuleResource($rule),
             'ruleTypes' => RuleType::withTitle(),
-            'ruleSubTypes' => RuleSubType::withTitle('', $rule->rule_type->value),
+            // IDEAS_MULTIPLE is the legacy per-pillar step; a new ideas step is a format step.
+            'ruleSubTypes' => RuleSubType::withTitle('', $rule->rule_type->value)
+                ->reject(fn ($subType) => $subType['value'] === RuleSubType::IDEAS_MULTIPLE->value)
+                ->values(),
+            'postFormats' => PostFormat::withTitle(),
             'record' => null,
             'version' => new VersionResource($version),
             'modelProfiles' => ModelProfile::orderBy('position')->get(),
@@ -167,6 +172,7 @@ class RuleStepsController extends Controller
             'rule' => new RuleResource($rule),
             'ruleTypes' => RuleType::withTitle(),
             'ruleSubTypes' => RuleSubType::withTitle('', $rule->rule_type->value),
+            'postFormats' => PostFormat::withTitle(),
             'record' => new RuleStepResource($record),
             'version' => new VersionResource($version),
             'modelProfiles' => ModelProfile::orderBy('position')->get(),

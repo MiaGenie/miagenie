@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\PostFormat;
 use App\Enums\RuleSubType;
 use App\Models\Rule;
 use App\Models\RuleStep;
@@ -14,6 +15,11 @@ class StoreRuleStep extends FormRequest
     {
         return [
             'rule_sub_type' => [ValidationRule::enum(RuleSubType::class)],
+            'post_format' => [
+                'nullable',
+                ValidationRule::enum(PostFormat::class),
+                ValidationRule::requiredIf(fn () => $this->subType()?->isGenerator() ?? false),
+            ],
             'name' => ['required', 'string', 'max:255'],
             'instructions' => ['nullable', 'string', 'max:10000'],
             'model_profile_id' => ['required', 'exists:genie_model_profiles,id'],
@@ -29,6 +35,16 @@ class StoreRuleStep extends FormRequest
         ];
     }
 
+    /**
+     * A generator step must name the format it generates for; any other has none.
+     */
+    protected function subType(): ?RuleSubType
+    {
+        $value = $this->input('rule_sub_type');
+
+        return is_numeric($value) ? RuleSubType::tryFrom((int) $value) : null;
+    }
+
     public function handle(): RuleStep
     {
         $rule = Rule::firstOrFailByUuid($this->route('rule'));
@@ -38,6 +54,7 @@ class StoreRuleStep extends FormRequest
         return RuleStep::create([
             'rule_id' => $rule->id,
             'rule_sub_type' => $this->input('rule_sub_type'),
+            'post_format' => $this->input('post_format'),
             'name' => $this->input('name'),
             'description' => $this->input('description'),
             'instructions' => $this->input('instructions'),

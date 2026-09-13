@@ -3,8 +3,7 @@
 namespace App\Jobs;
 
 use App\Enums\RunStatus;
-use App\Genie\Strategy\StrategyRunner;
-use App\Genie\Strategy\StrategyRunState;
+use App\Genie\Runs\Runners;
 use App\Models\AiRun;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -16,13 +15,14 @@ use Inovector\Mixpost\Facades\WorkspaceManager;
 use Throwable;
 
 /**
- * Drives a strategy run one step at a time.
+ * Drives a run one step at a time, whatever its rule type.
  *
  * One job per step rather than one per run: a step is a single model call, which is the unit that
  * can time out, be retried, or stop for review. The job re-dispatches itself while the runner says
- * the run can continue.
+ * the run can continue. The runner is chosen by the run's rule type, so a strategy run and an
+ * ideas run — and later a posts run — share this loop.
  */
-class StrategyRunJob implements ShouldQueue
+class AiRunJob implements ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -51,9 +51,11 @@ class StrategyRunJob implements ShouldQueue
         $this->onQueue(self::QUEUE);
     }
 
-    public function handle(StrategyRunner $runner): void
+    public function handle(): void
     {
         WorkspaceManager::setCurrent($this->run->workspace);
+
+        $runner = Runners::for($this->run->rule->rule_type);
 
         // A released job comes back here; pick the failed step up again rather than stepping over it.
         if ($this->attempts() > 1) {
@@ -91,15 +93,17 @@ class StrategyRunJob implements ShouldQueue
 
     public function failed(?Throwable $exception): void
     {
-        Log::error('Genie strategy run failed', [
+        Log::error('Genie run failed', [
             'run_id' => $this->run->id,
+            'rule_type' => $this->run->rule?->rule_type?->name,
             'exception' => $exception?->getMessage(),
         ]);
 
         $step = $this->run->currentStep();
+        $type = $this->run->rule?->rule_type;
 
-        $step
-            ? app(StrategyRunState::class)->failed($step, $exception?->getMessage())
+        $step && $type && Runners::supports($type)
+            ? Runners::stateFor($type)->failed($step, $exception?->getMessage())
             : $this->run->update(['status' => RunStatus::ERROR]);
     }
 }

@@ -9,6 +9,8 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
+use Inovector\Mixpost\Configs\GeneralConfig;
+use Inovector\Mixpost\Configs\MediaConfig;
 use Inovector\Mixpost\Facades\AIManager;
 use Inovector\Mixpost\Facades\ServiceManager;
 use Inovector\Mixpost\Facades\WorkspaceManager;
@@ -42,9 +44,10 @@ class PostsController extends Controller
             'has_activities_ns' => $post->hasNotificationSubscriptionForActivities(user: Auth::id()),
             'is_configured_service' => ServiceManager::isActive(),
             'service_configs' => ServiceManager::exposedConfiguration(),
+            'general_configs' => (new GeneralConfig)->all(), // TODO: Use specific config. Not all configs are needed here.
             'ai_is_ready_to_use' => AIManager::isReadyToUse(),
+            'stock_photo_provider' => app(MediaConfig::class)->get('stock_photo_provider'),
             'draft' => $draft ? new DraftResource($draft) : null,
         ]);
     }
-
 }

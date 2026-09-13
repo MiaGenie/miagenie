@@ -61,9 +61,9 @@ const getRoute = (name) => {
                 strategy: props.itemId
             });
         case 'generate':
-            return route('genie.ideas.generate', {
-                workspace: workspaceCtx.id,
-                strategy: props.itemId
+            // Ideas are generated from the ideas page, which asks for format, pillar and stage.
+            return route('genie.ideas.index', {
+                workspace: workspaceCtx.id
             });
         default:
             return '';
@@ -105,15 +105,7 @@ const deleteStrategyAfterConfirmed = (dialog) => {
 }
 
 const confirmGenerate = () => {
-    confirmation()
-        .title($t('genie.generate_ideas'))
-        .description($t('genie.generate_ideas_confirm'))
-        .warning()
-        .onConfirm((dialog) => {
-            router.put(getRoute('generate'));
-            dialog.reset();
-        })
-        .show();
+    router.get(getRoute('generate'));
 }
 
 </script>

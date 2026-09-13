@@ -91,6 +91,15 @@ class StrategyContext
     }
 
     /**
+     * One field's value — or a slice of one, such as a single content pillar — rendered with the
+     * labels its sub-field tree defines, for a run type that needs part of the strategy on its own.
+     */
+    public function renderField(string $codeName, mixed $value): string
+    {
+        return $this->render($codeName, $value);
+    }
+
+    /**
      * One field's value as the model should read it.
      */
     protected function render(string $codeName, mixed $value): string

@@ -1,6 +1,6 @@
 <script setup>
 import { Head, router, useForm } from "@inertiajs/vue3";
-import { inject, onMounted, ref, watch } from "vue";
+import { computed, inject, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import useRouter from "@/Composables/useRouter";
 import { cloneDeep, find, toArray } from "lodash";
@@ -47,6 +47,10 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    postFormats: {
+        type: Object,
+        required: true,
+    },
     version: {
         type: Object,
         required: true,
@@ -85,6 +89,7 @@ const form = useForm(
         ? cloneDeep(props.record)
         : {
               rule_sub_type: isEdit.value ? props.record.rule_sub_type : "",
+              post_format: isEdit.value ? props.record.post_format : "",
               name: isEdit.value ? props.record.name : "",
               description: isEdit.value ? props.record.description : "",
               instructions: isEdit.value ? props.record.instructions : "",
@@ -123,6 +128,14 @@ const profileModel = (profile) =>
     profile.model_tier === "other" ? profile.model : profile.model_tier;
 
 const ruleSubType = ref({});
+
+/**
+ * A format step generates for one post format; its output is defined in code, so it always
+ * returns structured output and has no output field to pick.
+ */
+const isFormatStep = computed(() =>
+    (ruleSubType.value?.name ?? "").endsWith("_FORMAT"),
+);
 const ruleType =
     find(props.ruleTypes, ["value", parseInt(props.rule.rule_type)]) ?? {};
 
@@ -139,7 +152,7 @@ watch(
             {};
         isMultiple.value = ruleSubType.value?.name === "BRIEFINGS_MULTIPLE";
 
-        if (isMultiple.value) {
+        if (isMultiple.value || isFormatStep.value) {
             form.response_format = "json_schema";
         }
     },
@@ -319,11 +332,39 @@ const deleteStep = () => {
                     </VerticalGroup>
 
                     <VerticalGroup
-                        v-if="
-                            ruleSubType['name'] === 'CHANNELS' ||
-                            (ruleSubType['name'] === 'IDEAS_MULTIPLE' &&
-                                form.link_upstream)
-                        "
+                        v-if="isFormatStep"
+                        class="form-field mt-lg"
+                    >
+                        <template #title>
+                            <label for="post_format">{{
+                                $t("genie.step_post_format")
+                            }}</label>
+                            <LabelSuffix :danger="true">*</LabelSuffix>
+                        </template>
+
+                        <Select
+                            v-model="form.post_format"
+                            :error="form.errors.post_format !== undefined"
+                            id="post_format"
+                            required
+                        >
+                            <option value="" disabled>
+                                {{ $t("genie.post_format") }}
+                            </option>
+                            <template v-for="format in postFormats">
+                                <option :value="format.value">
+                                    {{ $t("genie.post_format_" + format.title) }}
+                                </option>
+                            </template>
+                        </Select>
+
+                        <template #footer>
+                            <Error :message="form.errors.post_format" />
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup
+                        v-if="ruleSubType['name'] === 'CHANNELS'"
                         class="form-field mt-lg"
                     >
                         <template #title>
@@ -541,11 +582,9 @@ const deleteStep = () => {
 
                     <VerticalGroup
                         v-if="
-                            (ruleType['name'] === 'IDEAS' ||
-                                ruleType['name'] === 'DRAFTS' ||
+                            (ruleType['name'] === 'DRAFTS' ||
                                 ruleType['name'] === 'PRE_POSTS' ||
                                 ruleSubType['name'] === 'BRIEFINGS_MULTIPLE') &&
-                            ruleSubType['name'] !== 'IDEAS_INITIAL' &&
                             ruleSubType['name'] !== 'DRAFTS_INITIAL' &&
                             ruleSubType['name'] !== 'PRE_POSTS_INITIAL'
                         "
@@ -634,7 +673,7 @@ const deleteStep = () => {
                             v-model="form.response_format"
                             :error="form.errors.response_format !== undefined"
                             id="response_format"
-                            :disabled="isMultiple.valueOf()"
+                            :disabled="isMultiple || isFormatStep"
                             required
                         >
                             <option value="text">text</option>

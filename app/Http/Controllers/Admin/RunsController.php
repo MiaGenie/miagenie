@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Builders\AiRunQuery;
 use App\Enums\RuleType;
 use App\Enums\RunStatus;
-use App\Genie\Strategy\StrategyRunner;
+use App\Genie\Runs\Runners;
 use App\Http\Resources\Admin\AiRunResource;
-use App\Jobs\StrategyRunJob;
+use App\Jobs\AiRunJob;
 use App\Models\AiRun;
 use App\Models\Rule;
 use App\Models\Version;
@@ -53,13 +53,15 @@ class RunsController extends Controller
         // Without the workspace scope: an admin resumes any workspace's run, not just their own.
         $run = AiRun::withoutWorkspace()->where('uuid', $request->route('run'))->firstOrFail();
 
-        if ($run->rule?->rule_type !== RuleType::STRATEGY) {
+        $type = $run->rule?->rule_type;
+
+        if (! $type || ! Runners::supports($type)) {
             return redirect()->back()->with('error', __('genie.run_not_resumable'));
         }
 
-        app(StrategyRunner::class)->retryFailed($run);
+        Runners::for($type)->retryFailed($run);
 
-        StrategyRunJob::dispatch($run->fresh());
+        AiRunJob::dispatch($run->fresh());
 
         return redirect()->back()->with('success', __('genie.run_resumed'));
     }

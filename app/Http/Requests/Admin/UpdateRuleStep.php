@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Enums\PostFormat;
 use App\Enums\RuleSubType;
 use App\Models\RuleStep;
 use Illuminate\Foundation\Http\FormRequest;
@@ -13,6 +14,11 @@ class UpdateRuleStep extends FormRequest
     {
         return [
             'rule_sub_type' => [ValidationRule::enum(RuleSubType::class)],
+            'post_format' => [
+                'nullable',
+                ValidationRule::enum(PostFormat::class),
+                ValidationRule::requiredIf(fn () => $this->step()->rule_sub_type?->isGenerator() ?? false),
+            ],
             'name' => ['required', 'string', 'max:255'],
             'instructions' => ['nullable', 'string', 'max:10000'],
             'model_profile_id' => ['required', 'exists:genie_model_profiles,id'],
@@ -28,11 +34,21 @@ class UpdateRuleStep extends FormRequest
         ];
     }
 
+    /**
+     * The sub type is fixed once a step exists — the form does not send it — so the stored one
+     * decides whether a post format is required.
+     */
+    protected function step(): RuleStep
+    {
+        return RuleStep::firstOrFailByUuid($this->route('step'));
+    }
+
     public function handle(): int
     {
-        $record = RuleStep::firstOrFailByUuid($this->route('step'));
+        $record = $this->step();
 
         return $record->update([
+            'post_format' => $this->input('post_format'),
             'name' => $this->input('name'),
             'description' => $this->input('description'),
             'instructions' => $this->input('instructions'),

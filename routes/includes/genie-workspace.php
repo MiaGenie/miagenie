@@ -7,7 +7,6 @@ use App\Http\Controllers\Workspace\ConfigController;
 use App\Http\Controllers\Workspace\DeleteDraftsController;
 use App\Http\Controllers\Workspace\DeleteIdeasController;
 use App\Http\Controllers\Workspace\DraftsController;
-use App\Http\Controllers\Workspace\IdeaDraftsController;
 use App\Http\Controllers\Workspace\IdeasController;
 use App\Http\Controllers\Workspace\PrePostsController;
 use App\Http\Controllers\Workspace\RestoreDraftsController;
@@ -84,15 +83,12 @@ Route::middleware(array_merge([
         Route::prefix('ideas')->name('ideas.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
             Route::get('/', [IdeasController::class, 'index'])->name('index')->withoutMiddleware($editorMiddleware);
             Route::get('create', [IdeasController::class, 'create'])->name('create');
-            Route::put('generate/{strategy}', [IdeasController::class, 'generate'])->name('generate');
-            Route::put('updateGenerate/{idea}', [IdeasController::class, 'updateGenerate'])->name('updateGenerate');
+            Route::post('generate', [IdeasController::class, 'generate'])->name('generate');
             Route::post('store', [IdeasController::class, 'store'])->name('store');
             Route::get('{idea}', [IdeasController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
-            Route::get('generating/{idea}', [IdeasController::class, 'generating'])->name('generating')->withoutMiddleware($editorMiddleware);
             Route::put('{idea}', [IdeasController::class, 'update'])->name('update');
             Route::delete('{idea}', [IdeasController::class, 'destroy'])->name('delete');
             Route::delete('/', DeleteIdeasController::class)->name('deleteMultiple');
-            Route::get('{idea}/ideaDrafts', IdeaDraftsController::class)->name('ideaDrafts');
             Route::post('/', RestoreIdeasController::class)->name('restoreMultiple');
         });
 

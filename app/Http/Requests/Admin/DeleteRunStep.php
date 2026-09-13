@@ -12,7 +12,7 @@ class DeleteRunStep extends FormRequest
     /**
      * Drop a turn so the run can take it again.
      *
-     * The run is reopened along with it: StrategyRunner::nextStep() settles a step by the row it
+     * The run is reopened along with it: Runner::nextStep() settles a step by the row it
      * left behind, so without the row the step is next in line again, and a run left in ERROR or
      * PENDING_REVIEW would refuse to advance to it.
      */

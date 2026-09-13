@@ -1,9 +1,9 @@
 <script setup>
 import {Head, router, useForm} from '@inertiajs/vue3';
-import {computed, inject, onBeforeUnmount, onMounted, onUpdated, ref, watch} from "vue";
+import {inject} from "vue";
 import {useI18n} from "vue-i18n";
 import useRouter from "@/Composables/useRouter";
-import {cloneDeep, find, result} from "lodash";
+import {cloneDeep, find} from "lodash";
 import usePageMode from "@/Composables/usePageMode";
 import DangerButton from "@/Components/Button/DangerButton.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
@@ -19,17 +19,10 @@ import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import Trash from "@/Icons/Trash.vue";
 import X from "@/Icons/X.vue";
-import Flex from "@/Components/Layout/Flex.vue";
-import DraftIcon from "mixpost-pro-team/resources/js/Icons/Genie/Draft.vue";
-import WarningButton from "@/Components/Button/WarningButton.vue";
-import NProgress from "nprogress";
-import useNotifications from "@/Composables/useNotifications";
-import IdeaDrafts from "@/Components/Genie/Drafts/IdeaDrafts.vue";
 import SuccessButton from "@/Components/Button/SuccessButton.vue";
 import Check from "@/Icons/Check.vue";
 import Badge from "@/Components/DataDisplay/Badge.vue";
 import ArrowUturnLeft from "@/Icons/ArrowUturnLeft.vue";
-
 
 const {t: $t} = useI18n()
 
@@ -46,25 +39,21 @@ const props = defineProps({
     funnelStage: {
         type: String
     },
+    postFormats: {
+        type: Object,
+        required: true
+    },
     ideaStatusTypes: {
         type: Object,
         required: true
     },
-    draftStatusTypes: {
-        type: Object,
-        required: true
-    },
     contentPillars: {
-        type: Object,
+        type: Array,
         required: true
     },
     record: {
         type: Object
     },
-    generating: {
-        type: Boolean,
-        default: false
-    }
 })
 
 const workspaceCtx = inject('workspaceCtx');
@@ -72,21 +61,35 @@ const workspaceCtx = inject('workspaceCtx');
 const {isCreate, isEdit} = usePageMode();
 const {onError} = useRouter();
 const confirmation = inject('confirmation');
-const {notify} = useNotifications();
-const isLoading = ref(false);
-const data = ref({});
 
+/**
+ * The texts every idea carries, in the order they are shown; each has a label and a helper text.
+ */
+const ideaTexts = ['objective', 'suggested_content', 'multimedia_suggestion', 'production_instructions'];
 
-const form = useForm(isEdit.value ? cloneDeep(props.record) : {
-    funnel_stage: props.funnelStage ?? '',
+// A null select value would match no option, so a stored null reads as the blank choice.
+const nullToBlank = (record) => ({
+    ...record,
+    post_format: record.post_format ?? '',
+    content_pillar: record.content_pillar ?? '',
+    funnel_stage: record.funnel_stage ?? '',
+});
+
+const form = useForm(isEdit.value ? nullToBlank(cloneDeep(props.record)) : {
     theme: '',
-    description: '',
+    objective: '',
+    suggested_content: '',
+    multimedia_suggestion: '',
+    production_instructions: '',
+    post_format: '',
+    content_pillar: '',
+    funnel_stage: props.funnelStage ?? '',
     status: '1',
     source: '2'
 });
 
 const store = () => {
-    form.post(route('genie.ideas.store',
+    form.transform(blankToNull).post(route('genie.ideas.store',
         {
             workspace: workspaceCtx.id
         }), {
@@ -95,6 +98,26 @@ const store = () => {
         },
     });
 }
+
+const update = () => {
+    form.transform(blankToNull).put(route('genie.ideas.update', {
+        idea: props.record.id,
+        workspace: workspaceCtx.id
+    }), {
+        preserveScroll: true,
+        onError: (errors) => {
+            onError(errors, update);
+        },
+    });
+}
+
+// An unpicked select is an empty string on the form and a null in the database.
+const blankToNull = (data) => ({
+    ...data,
+    post_format: data.post_format === '' ? null : data.post_format,
+    content_pillar: data.content_pillar === '' ? null : data.content_pillar,
+    funnel_stage: data.funnel_stage === '' ? null : data.funnel_stage,
+});
 
 const restore = () => {
     confirmation()
@@ -108,18 +131,6 @@ const restore = () => {
             dialog.close();
         })
         .show();
-}
-
-const update = () => {
-    form.put(route('genie.ideas.update', {
-        idea: props.record.id,
-        workspace: workspaceCtx.id
-    }), {
-        preserveScroll: true,
-        onError: (errors) => {
-            onError(errors, update);
-        },
-    });
 }
 
 const submit = () => {
@@ -179,19 +190,11 @@ const deleteIdea = () => {
 }
 
 const statusValue = (status) => {
-    return find(props.draftStatusTypes, ['name', status]);
+    return find(props.ideaStatusTypes, ['name', status]);
 }
 
 const formStatus = () => {
     return find(props.ideaStatusTypes, ['value', Number(form.status)]);
-}
-
-const approvedStatus = () => {
-    return find(props.ideaStatusTypes, ['name', 'APPROVED']).value;
-}
-
-const formStatusApproved = () => {
-    return formStatus()?.name === 'APPROVED';
 }
 
 const statusBadge = () => {
@@ -200,9 +203,7 @@ const statusBadge = () => {
             return 'success';
         case 'PENDING_REVIEW':
             return 'warning';
-        case 'PUBLISHED':
-            return 'info';
-        case 'DISMISSED':
+        case 'TRASH':
             return 'error';
         default:
             return '';
@@ -217,101 +218,14 @@ const approveIdea = () => {
         .onConfirm((dialog) => {
             dialog.isLoading(true);
 
-            form.status = approvedStatus();
+            form.status = statusValue('APPROVED').value;
 
-            form.put(route('genie.ideas.update', {
-                idea: props.record.id,
-                workspace: workspaceCtx.id
-            }), {
-                preserveScroll: true,
-                onError: (errors) => {
-                    onError(errors, update);
-                }
-            });
+            update();
 
             dialog.reset();
         })
         .show();
 }
-
-const generateDraft = () => {
-    confirmation()
-        .title($t('genie.generate_draft'))
-        .description($t('genie.generate_draft_confirm'))
-        .warning()
-        .onConfirm((dialog) => {
-            dialog.isLoading(true);
-
-            router.put(route('genie.drafts.generate',{
-                workspace: workspaceCtx.id,
-                idea: props.record.id
-            }));
-
-            generatingDraft.value = true;
-            dialog.reset();
-        })
-        .show();
-}
-
-const fetch = () => {
-    isLoading.value = true;
-
-    axios.get(route('genie.ideas.ideaDrafts', {workspace: workspaceCtx.id, idea: props.record.id})
-    ).then(function (response) {
-        data.value = response.data;
-    }).catch(() => {
-        notify('error', $t('genie.error_retrieving_drafts'));
-    }).finally(() => {
-        isLoading.value = false;
-    });
-}
-
-
-let refreshStatus;
-
-const startRefresh = () => {
-    refreshStatus = setInterval(() => {
-        router.get(
-            route('genie.ideas.edit',
-                {
-                    workspace: workspaceCtx.id,
-                    idea: props.record.id
-                }
-            ), result(), {
-                preserveState: true,
-                preserveScroll: true,
-                only: ['generating']
-            });
-    }, 2500)
-}
-
-const generatingDraft = computed(() => {
-    return props.generating
-});
-
-watch(generatingDraft, (newValue, oldValue) => {
-    if (newValue && !oldValue) {
-        startRefresh();
-    } else if (!newValue && oldValue) {
-        clearInterval(refreshStatus);
-        fetch();
-    }
-});
-
-onMounted(() => {
-    if (formStatusApproved()) {
-        fetch();
-    }
-
-    if (generatingDraft.value) {
-        startRefresh()
-    }
-})
-
-onBeforeUnmount(() => {
-    clearInterval(refreshStatus);
-})
-
 </script>
 <template>
     <Head :title="mode === 'create' ? $t('genie.create_idea') : $t('genie.edit_idea')"/>
@@ -327,7 +241,7 @@ onBeforeUnmount(() => {
 
                     <VerticalGroup class="form-field mt-lg  mx-auto">
                         <template #title>
-                            <label for="theme">{{ $t("genie.ideas_theme") }}
+                            <label for="theme">{{ $t("genie.idea_title") }}
                                 <LabelSuffix :danger="true">*</LabelSuffix>
                             </label>
                         </template>
@@ -345,40 +259,39 @@ onBeforeUnmount(() => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup class="form-field mt-lg  mx-auto">
-                        <template #title>
-                            <label for="description">{{ $t("genie.description") }}</label>
-                            <LabelSuffix :danger="true">*</LabelSuffix>
-                        </template>
+                    <div class="form-field flex mt-lg justify-between mx-auto flex-col sm:flex-row gap-md">
 
-                        <Textarea v-model="form.description"
-                                  :error="form.errors.description !== undefined"
-                                  id="description"
-                                  class="w-full"
-                                  rows="6"
-                                  required
-                        />
+                        <VerticalGroup class="form-field mt-lg">
+                            <template #title>
+                                <label for="post_format">{{ $t("genie.post_format") }}</label>
+                            </template>
 
-                        <template #footer>
-                            <Error :message="form.errors.description"/>
-                        </template>
-                    </VerticalGroup>
+                            <Select
+                                v-model="form.post_format"
+                                id="post_format"
+                            >
+                                <option value="">{{ $t('genie.post_format_any') }}</option>
+                                <option v-for="postFormat in postFormats" :key="postFormat.value" :value="postFormat.value">
+                                    {{ $t(`genie.post_format_${postFormat.title}`) }}
+                                </option>
+                            </Select>
 
-                    <div  class="form-field flex mt-lg justify-between mx-auto flex-col sm:flex-row">
+                            <template #footer>
+                                <Error :message="form.errors.post_format"/>
+                            </template>
+                        </VerticalGroup>
 
                         <VerticalGroup class="form-field mt-lg">
                             <template #title>
                                 <label for="funnel_stage">{{ $t("genie.funnel_stage") }}</label>
-                                <LabelSuffix :danger="true">*</LabelSuffix>
                             </template>
 
                             <Select
                                 v-model="form.funnel_stage"
-                                :disabled="isEdit"
                                 id="funnel_stage"
-                                required
                             >
-                                <option v-for="funnelStage in funnelStages" :value="funnelStage.value">
+                                <option value="">{{ $t('general.all') }}</option>
+                                <option v-for="funnelStage in funnelStages" :key="funnelStage.value" :value="funnelStage.value">
                                     {{ $t(`genie.funnel_stage_${funnelStage.title}`) }}
                                 </option>
                             </Select>
@@ -395,10 +308,10 @@ onBeforeUnmount(() => {
 
                             <Select
                                 v-model="form.content_pillar"
-                                :disabled="isEdit"
                                 id="content_pillar"
                             >
-                                <option v-for="contentPillar in contentPillars" :value="contentPillar">
+                                <option value="">{{ $t('general.all') }}</option>
+                                <option v-for="contentPillar in contentPillars" :key="contentPillar" :value="contentPillar">
                                     {{ contentPillar }}
                                 </option>
                             </Select>
@@ -409,6 +322,29 @@ onBeforeUnmount(() => {
                         </VerticalGroup>
 
                     </div>
+
+                    <VerticalGroup
+                        v-for="text in ideaTexts"
+                        :key="text"
+                        class="form-field mt-lg mx-auto"
+                    >
+                        <template #title>
+                            <label :for="text">{{ $t(`genie.idea_${text}`) }}</label>
+                        </template>
+
+                        <Textarea v-model="form[text]"
+                                  :error="form.errors[text] !== undefined"
+                                  :id="text"
+                                  class="w-full"
+                                  rows="4"
+                                  :placeholder="$t(`genie.idea_${text}_desc`)"
+                        />
+
+                        <template #footer>
+                            <div class="text-sm text-gray-500">{{ $t(`genie.idea_${text}_desc`) }}</div>
+                            <Error :message="form.errors[text]"/>
+                        </template>
+                    </VerticalGroup>
 
                     <VerticalGroup class="form-field mt-lg mx-auto">
 
@@ -430,47 +366,8 @@ onBeforeUnmount(() => {
 
                 </Panel>
 
-                <Panel v-if="formStatusApproved()" class="mt-xl">
-
-                    <template #title>{{ $t('genie.drafts') }}</template>
-
-                    <IdeaDrafts :is-loading="isLoading" :data="data" />
-
-                    <Flex
-                        v-if="generating"
-                        :col="true"
-                        class="items-center mt-xl"
-                    >
-                        <div class="text-lg">
-                            {{ $t('genie.generating_draft') }}
-                        </div>
-
-                        <div class="fulfilling-bouncing-circle-spinner">
-                            <div class="circle"></div>
-                            <div class="orbit"></div>
-                        </div>
-
-                    </Flex>
-
-                </Panel>
-
                 <div class="flex flex-row items-center justify-between mt-lg">
                     <div class="flex gap-6">
-                        <WarningButton
-                            v-if="formStatusApproved() && !generating"
-                            @click="generateDraft"
-                            :hiddenTextOnSmallScreen="true"
-                            :disabled="form.processing"
-                            :isLoading="form.processing"
-                            size="sm"
-                        >
-
-                            <template #icon>
-                                <DraftIcon/>
-                            </template>
-                            {{ $t('genie.generate_draft') }}
-                        </WarningButton>
-
                         <SuccessButton
                             v-if="isEdit && formStatus().name === 'PENDING_REVIEW'"
                             @click="approveIdea"
@@ -484,7 +381,7 @@ onBeforeUnmount(() => {
                         </SuccessButton>
 
                         <PrimaryButton
-                            v-if="formStatus().name === 'PENDING_REVIEW'"
+                            v-if="formStatus().name !== 'TRASH'"
                             type="submit"
                             :isLoading="form.processing"
                             :disabled="form.processing"
