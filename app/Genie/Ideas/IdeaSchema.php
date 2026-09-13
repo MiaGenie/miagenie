@@ -73,7 +73,11 @@ class IdeaSchema implements SchemaDefinition
 
         return [
             self::ROOT => $schema->array()
-                ->items($schema->object($this->idea($schema)))
+                ->items(
+                    $schema->object($this->idea($schema))
+                        ->title($this->text('idea_item'))
+                        ->description($this->text('idea_item_desc'))
+                )
                 ->min($count)
                 ->max($count)
                 ->title($this->text('ideas'))
@@ -118,7 +122,11 @@ class IdeaSchema implements SchemaDefinition
             [$min, $max] = $range;
 
             $properties['images'] = $schema->array()
-                ->items($schema->string())
+                ->items(
+                    $schema->string()
+                        ->title($this->text('idea_image_brief'))
+                        ->description($this->text('idea_image_brief_desc'))
+                )
                 ->min($min)
                 ->max($max)
                 ->title($this->text('idea_images'))

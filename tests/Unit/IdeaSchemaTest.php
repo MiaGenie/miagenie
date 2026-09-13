@@ -49,6 +49,16 @@ class IdeaSchemaTest extends TestCase
         $this->assertFalse($item['additionalProperties']);
     }
 
+    public function test_the_idea_object_itself_is_titled_and_described(): void
+    {
+        $schema = $this->compile(new IdeaSchema(FunnelStage::GLOBAL, ['A'], 1, 'en-GB'));
+
+        $item = $schema['properties']['ideas']['items'];
+
+        $this->assertSame(__('genie.idea_item'), $item['title']);
+        $this->assertSame(__('genie.idea_item_desc'), $item['description']);
+    }
+
     public function test_any_stage_offers_every_concrete_stage(): void
     {
         $schema = $this->compile(new IdeaSchema(FunnelStage::GLOBAL, ['A'], 1, 'en-GB'));
@@ -149,6 +159,8 @@ class IdeaSchemaTest extends TestCase
         $this->assertSame(3, $images['minItems']);
         $this->assertSame(10, $images['maxItems']);
         $this->assertSame(__('genie.idea_images_desc'), $images['description']);
+        $this->assertSame(__('genie.idea_image_brief'), $images['items']['title']);
+        $this->assertSame(__('genie.idea_image_brief_desc'), $images['items']['description']);
         $this->assertContains('images', $item['required']);
     }
 
