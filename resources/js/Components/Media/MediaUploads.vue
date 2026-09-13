@@ -28,6 +28,8 @@ const props = defineProps({
   }
 })
 
+defineEmits(['close', 'insert'])
+
 const {
   items,
   endlessPagination,
