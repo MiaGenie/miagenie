@@ -14,7 +14,7 @@ final class ContentPillars
 {
     public const FIELD = 'content_pillars';
 
-    public const TITLE = '0_title';
+    public const TITLE = 'title';
 
     /**
      * Every pillar, as stored.
