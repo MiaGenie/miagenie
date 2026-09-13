@@ -43,6 +43,7 @@ class IdeasOutputTest extends TestCase
             'production_instructions' => 'Three shots, natural light',
             'funnel_stage' => 'consideration',
             'content_pillar' => 'Craft',
+            'images' => ['Slide one: the workbench', 'Slide two: the tools', 'Slide three: the result'],
         ], $overrides);
     }
 
@@ -115,5 +116,46 @@ class IdeasOutputTest extends TestCase
         $rows = new IdeasOutput()->resolve($runStep, ['ideas' => ['stray string', $this->idea()]]);
 
         $this->assertCount(1, $rows);
+    }
+
+    public function test_a_carousel_keeps_one_brief_per_slide_in_order(): void
+    {
+        $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5), PostFormat::CAROUSEL);
+
+        $row = new IdeasOutput()->resolve($runStep, ['ideas' => [$this->idea()]])[0];
+
+        $this->assertSame(
+            ['Slide one: the workbench', 'Slide two: the tools', 'Slide three: the result'],
+            $row['images'],
+        );
+    }
+
+    public function test_blank_and_non_text_briefs_are_dropped_and_the_list_reindexed(): void
+    {
+        $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5), PostFormat::CAROUSEL);
+
+        $row = new IdeasOutput()->resolve($runStep, ['ideas' => [
+            $this->idea(['images' => ['First', '', null, ['nested'], 'Last']]),
+        ]])[0];
+
+        $this->assertSame(['First', 'Last'], $row['images']);
+    }
+
+    public function test_a_simple_post_keeps_its_one_brief(): void
+    {
+        $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5), PostFormat::SIMPLE_POST);
+
+        $row = new IdeasOutput()->resolve($runStep, ['ideas' => [$this->idea(['images' => ['The hero shot']])]])[0];
+
+        $this->assertSame(['The hero shot'], $row['images']);
+    }
+
+    public function test_a_video_stores_no_briefs_even_if_the_model_sent_some(): void
+    {
+        $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5), PostFormat::LONG_VIDEO);
+
+        $row = new IdeasOutput()->resolve($runStep, ['ideas' => [$this->idea()]])[0];
+
+        $this->assertNull($row['images']);
     }
 }

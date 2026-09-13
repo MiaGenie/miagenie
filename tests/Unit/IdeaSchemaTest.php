@@ -7,6 +7,7 @@ use App\Enums\PostFormat;
 use App\Genie\Ideas\IdeaSchema;
 use App\Genie\Ideas\IdeasRequest;
 use App\Models\AiRun;
+use App\Models\RuleStep;
 use App\Models\Strategy;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Laravel\Ai\ObjectSchema;
@@ -103,8 +104,8 @@ class IdeaSchemaTest extends TestCase
         $run = new AiRun;
         $run->setRelation('strategy', new Strategy(['content' => [
             'content_pillars' => [
-                ['0_title' => 'First', '1_importance' => 'High'],
-                ['0_title' => 'Second', '1_importance' => 'Low'],
+                ['title' => 'First', 'importance' => 'High'],
+                ['title' => 'Second', 'importance' => 'Low'],
             ],
         ]]));
 
@@ -134,5 +135,65 @@ class IdeaSchemaTest extends TestCase
 
         $this->assertSame(1, $schema['properties']['ideas']['minItems']);
         $this->assertArrayNotHasKey('enum', $schema['properties']['ideas']['items']['properties']['content_pillar']);
+    }
+
+    public function test_a_carousel_asks_for_one_brief_per_slide(): void
+    {
+        $schema = $this->compile(new IdeaSchema(FunnelStage::GLOBAL, [], 1, 'en-GB', PostFormat::CAROUSEL));
+
+        $item = $schema['properties']['ideas']['items'];
+        $images = $item['properties']['images'];
+
+        $this->assertSame('array', $images['type']);
+        $this->assertSame('string', $images['items']['type']);
+        $this->assertSame(3, $images['minItems']);
+        $this->assertSame(10, $images['maxItems']);
+        $this->assertSame(__('genie.idea_images_desc'), $images['description']);
+        $this->assertContains('images', $item['required']);
+    }
+
+    public function test_a_simple_post_asks_for_exactly_one_brief(): void
+    {
+        $schema = $this->compile(new IdeaSchema(FunnelStage::GLOBAL, [], 1, 'en-GB', PostFormat::SIMPLE_POST));
+
+        $images = $schema['properties']['ideas']['items']['properties']['images'];
+
+        $this->assertSame(1, $images['minItems']);
+        $this->assertSame(1, $images['maxItems']);
+    }
+
+    public function test_a_video_asks_for_no_briefs(): void
+    {
+        $schema = $this->compile(new IdeaSchema(FunnelStage::GLOBAL, [], 1, 'en-GB', PostFormat::SHORT_VIDEO));
+
+        $item = $schema['properties']['ideas']['items'];
+
+        $this->assertArrayNotHasKey('images', $item['properties']);
+        $this->assertNotContains('images', $item['required']);
+    }
+
+    public function test_a_preview_asks_for_no_briefs(): void
+    {
+        $schema = $this->compile(IdeaSchema::preview('en-GB'));
+
+        $this->assertArrayNotHasKey('images', $schema['properties']['ideas']['items']['properties']);
+    }
+
+    public function test_for_a_run_the_format_is_the_steps(): void
+    {
+        $run = new AiRun;
+        $run->setRelation('strategy', new Strategy(['content' => []]));
+
+        $step = new RuleStep(['post_format' => PostFormat::CAROUSEL]);
+
+        $schema = $this->compile(IdeaSchema::forRun(
+            $run,
+            new IdeasRequest(null, null, FunnelStage::GLOBAL, 10),
+            2,
+            'en-GB',
+            $step->post_format,
+        ));
+
+        $this->assertSame(3, $schema['properties']['ideas']['items']['properties']['images']['minItems']);
     }
 }

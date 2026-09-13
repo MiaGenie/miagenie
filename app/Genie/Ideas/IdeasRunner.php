@@ -54,6 +54,7 @@ class IdeasRunner extends Runner
             IdeasRequest::fromRun($runStep->run),
             $this->share($runStep),
             $locale,
+            $runStep->step->post_format,
         );
     }
 

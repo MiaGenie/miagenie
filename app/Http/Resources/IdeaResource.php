@@ -21,6 +21,7 @@ class IdeaResource extends JsonResource
             'suggested_content' => $this->suggested_content,
             'multimedia_suggestion' => $this->multimedia_suggestion,
             'production_instructions' => $this->production_instructions,
+            'images' => $this->images ?? [],
             'status' => $this->status,
             'source' => $this->source,
             'funnel_stage' => $this->funnel_stage,
