@@ -3,16 +3,11 @@
 namespace App\Http\Requests\Admin;
 
 use App\Enums\VersionStatus;
-use Illuminate\Foundation\Http\FormRequest;
-
 use App\Models\Version;
+use Illuminate\Foundation\Http\FormRequest;
 
 class CloneVersion extends FormRequest
 {
-
-    /**
-     * @return Version
-     */
     public function handle(): Version
     {
         $version = Version::firstOrFailByUuid($this->route('version'));
@@ -32,6 +27,11 @@ class CloneVersion extends FormRequest
                 $newOption = $option->replicate(['uuid']);
                 $newOption->field_id = $newField->id;
                 $newOption->save();
+            }
+            foreach ($field->subFields as $subField) {
+                $newSubField = $subField->replicate(['uuid']);
+                $newSubField->field_id = $newField->id;
+                $newSubField->save();
             }
         }
 
