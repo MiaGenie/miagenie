@@ -24,6 +24,11 @@ import Switch from "@/Components/Form/Switch.vue";
 import Flex from "@/Components/Layout/Flex.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import Checkbox from "@/Components/Form/Checkbox.vue";
+import Clipboard from "@/Icons/Clipboard.vue";
+import ChevronDown from "@/Icons/ChevronDown.vue";
+import ExpandingWarningButton from "@/Components/Button/Genie/ExpandingWarningButton.vue";
+import Dropdown from "mixpost-enterprise/resources/js/Components/Dropdown/Dropdown.vue";
+import DropdownItem from "mixpost-enterprise/resources/js/Components/Dropdown/DropdownItem.vue";
 
 defineOptions({ layout: AdminLayout });
 
@@ -76,6 +81,9 @@ const props = defineProps({
         required: true,
     },
     record: {
+        type: Object,
+    },
+    targetRules: {
         type: Object,
     },
 });
@@ -252,6 +260,42 @@ const deleteStep = () => {
                     rule: props.rule.id,
                     step: props.record.id,
                 }),
+            );
+        })
+        .show();
+};
+
+const cloneStepInto = (target) => {
+    confirmation()
+        .title($t("genie.clone_step_into"))
+        .description(
+            $t("genie.clone_step_into_confirm") +
+                " -> " +
+                target.version.name +
+                " / " +
+                target.name,
+        )
+        .warning()
+        .onConfirm((dialog) => {
+            dialog.isLoading(true);
+
+            router.put(
+                route("genie.admin.versions.rules.steps.clone_into", {
+                    version: props.version.id,
+                    rule: props.rule.id,
+                    step: props.record.id,
+                    target: target.id,
+                }),
+                {},
+                {
+                    preserveScroll: true,
+                    onError: (errors) => {
+                        onError(errors, update);
+                    },
+                    onFinish() {
+                        dialog.reset();
+                    },
+                },
             );
         })
         .show();
@@ -801,7 +845,36 @@ const deleteStep = () => {
                             </template>
                         </SecondaryButton>
                     </div>
-                    <div v-if="isEdit">
+                    <div v-if="isEdit" class="flex gap-6">
+                        <Dropdown
+                            v-if="targetRules?.data?.length"
+                            placement="bottom-end"
+                        >
+                            <template #trigger>
+                                <ExpandingWarningButton
+                                    :disabled="form.processing"
+                                    :hidden-text-on-small-screen="true"
+                                >
+                                    {{ $t("genie.clone_into") }}
+                                    <template #icon>
+                                        <Clipboard />
+                                        <ChevronDown />
+                                    </template>
+                                </ExpandingWarningButton>
+                            </template>
+
+                            <template #content>
+                                <template v-for="item in targetRules.data">
+                                    <DropdownItem
+                                        @click="cloneStepInto(item)"
+                                        as="button"
+                                    >
+                                        {{ item.version.name }} / {{ item.name }}
+                                    </DropdownItem>
+                                </template>
+                            </template>
+                        </Dropdown>
+
                         <DangerButton
                             @click="deleteStep"
                             :disabled="form.processing"

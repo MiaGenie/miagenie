@@ -11,10 +11,6 @@ class RuleResource extends JsonResource
      */
     public static $wrap = null;
 
-    /**
-     * @param $request
-     * @return array
-     */
     public function toArray($request): array
     {
 
@@ -25,6 +21,7 @@ class RuleResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'status' => $this->status,
+            'version' => new VersionResource($this->whenLoaded('version')),
         ];
 
     }

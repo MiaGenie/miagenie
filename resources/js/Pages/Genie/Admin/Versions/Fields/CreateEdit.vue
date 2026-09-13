@@ -28,6 +28,11 @@ import X from "@/Icons/X.vue";
 import Switch from "@/Components/Form/Switch.vue";
 import Flex from "@/Components/Layout/Flex.vue";
 import EditorClassic from "@/Components/Package/EditorClassic.vue";
+import Clipboard from "@/Icons/Clipboard.vue";
+import ChevronDown from "@/Icons/ChevronDown.vue";
+import ExpandingWarningButton from "@/Components/Button/Genie/ExpandingWarningButton.vue";
+import Dropdown from "mixpost-enterprise/resources/js/Components/Dropdown/Dropdown.vue";
+import DropdownItem from "mixpost-enterprise/resources/js/Components/Dropdown/DropdownItem.vue";
 
 
 defineOptions({layout: AdminLayout});
@@ -43,6 +48,9 @@ const props = defineProps({
     version: {
         type: Object,
         required: true
+    },
+    versions: {
+        type: Object
     },
     record: {
         type: Object
@@ -241,6 +249,32 @@ const deleteField = () => {
                     preserveScroll: true,
                     onSuccess() {
                         notify('success', $t('genie.field_deleted'))
+                    },
+                    onFinish() {
+                        dialog.reset();
+                    }
+                }
+            );
+        })
+        .show();
+}
+
+const cloneFieldInto = (target) => {
+    confirmation()
+        .title($t('genie.clone_field_into'))
+        .description($t('genie.clone_field_into_confirm') + " -> " + target.name)
+        .warning()
+        .onConfirm((dialog) => {
+            dialog.isLoading(true);
+
+            router.put(
+                route(
+                    'genie.admin.versions.fields.clone_into',
+                    {version: props.version.id, field: props.record.id, target: target.id}
+                ), {}, {
+                    preserveScroll: true,
+                    onError: (errors) => {
+                        onError(errors, update);
                     },
                     onFinish() {
                         dialog.reset();
@@ -946,7 +980,40 @@ const deleteField = () => {
                         </SecondaryButton>
 
                     </Flex>
-                    <Flex v-if="isEdit">
+                    <Flex
+                        v-if="isEdit"
+                        class="gap-6"
+                        :responsive="false"
+                    >
+
+                        <Dropdown
+                            v-if="versions?.data?.length"
+                            placement="bottom-end"
+                        >
+                            <template #trigger>
+                                <ExpandingWarningButton
+                                    :disabled="form.processing"
+                                    :hidden-text-on-small-screen=true
+                                >
+                                    {{ $t("genie.clone_into") }}
+                                    <template #icon>
+                                        <Clipboard/>
+                                        <ChevronDown/>
+                                    </template>
+                                </ExpandingWarningButton>
+                            </template>
+
+                            <template #content>
+                                <template v-for="item in versions.data">
+                                    <DropdownItem
+                                        @click="cloneFieldInto(item)"
+                                        as="button"
+                                    >
+                                        {{ item.name }}
+                                    </DropdownItem>
+                                </template>
+                            </template>
+                        </Dropdown>
 
                         <DangerButton
                             @click="deleteField"

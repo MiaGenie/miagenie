@@ -9,6 +9,7 @@ use App\Enums\RuleSubType;
 use App\Enums\RuleType;
 use App\Enums\VersionGroupType;
 use App\Enums\VersionStatus;
+use App\Http\Requests\Admin\CloneStepInto;
 use App\Http\Requests\Admin\StoreRuleStep;
 use App\Http\Requests\Admin\UpdateRuleStep;
 use App\Http\Requests\Admin\UpdateRuleStepPositions;
@@ -167,9 +168,19 @@ class RuleStepsController extends Controller
             ]
         )->with('subFields')->get();
 
+        // Every other rule of this type on a live version is a place the step can be cloned to.
+        $targetRules = Rule::with('version')
+            ->where('rule_type', $rule->rule_type)
+            ->whereNot('id', $rule->id)
+            ->whereHas('version', fn ($query) => $query->whereNot('status', VersionStatus::ARCHIVED))
+            ->get()
+            ->sortBy([['version.name', 'asc'], ['name', 'asc']])
+            ->values();
+
         return Inertia::render('Genie/Admin/Versions/Rules/Steps/CreateEdit', [
             'mode' => 'edit',
             'rule' => new RuleResource($rule),
+            'targetRules' => RuleResource::collection($targetRules),
             'ruleTypes' => RuleType::withTitle(),
             'ruleSubTypes' => RuleSubType::withTitle('', $rule->rule_type->value),
             'postFormats' => PostFormat::withTitle(),
@@ -230,6 +241,25 @@ class RuleStepsController extends Controller
         $updateRuleStepTranslations->handle();
 
         return redirect()->back()->with('success', __('genie.step_updated'));
+    }
+
+    /**
+     * @return RedirectResponse
+     *
+     * @throws \Throwable
+     */
+    public function cloneInto(CloneStepInto $cloneStepInto)
+    {
+        $cloneStepInto->handle();
+
+        $target = Rule::with('version')->where('uuid', $cloneStepInto->route('target'))->firstOrFail();
+
+        return redirect()
+            ->route('genie.admin.versions.rules.steps.index', [
+                'version' => $target->version->uuid,
+                'rule' => $target->uuid,
+            ])
+            ->with('success', __('genie.step_cloned'));
     }
 
     /**
