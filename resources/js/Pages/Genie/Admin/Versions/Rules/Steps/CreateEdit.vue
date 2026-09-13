@@ -1,6 +1,6 @@
 <script setup>
 import { Head, router, useForm } from "@inertiajs/vue3";
-import { inject, onMounted, ref, watch } from "vue";
+import { computed, inject, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import useRouter from "@/Composables/useRouter";
 import { cloneDeep, find, toArray } from "lodash";
@@ -24,6 +24,11 @@ import Switch from "@/Components/Form/Switch.vue";
 import Flex from "@/Components/Layout/Flex.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import Checkbox from "@/Components/Form/Checkbox.vue";
+import Clipboard from "@/Icons/Clipboard.vue";
+import ChevronDown from "@/Icons/ChevronDown.vue";
+import ExpandingWarningButton from "@/Components/Button/Genie/ExpandingWarningButton.vue";
+import Dropdown from "mixpost-enterprise/resources/js/Components/Dropdown/Dropdown.vue";
+import DropdownItem from "mixpost-enterprise/resources/js/Components/Dropdown/DropdownItem.vue";
 
 defineOptions({ layout: AdminLayout });
 
@@ -44,6 +49,10 @@ const props = defineProps({
         required: true,
     },
     ruleSubTypes: {
+        type: Object,
+        required: true,
+    },
+    postFormats: {
         type: Object,
         required: true,
     },
@@ -74,6 +83,9 @@ const props = defineProps({
     record: {
         type: Object,
     },
+    targetRules: {
+        type: Object,
+    },
 });
 
 const { isCreate, isEdit } = usePageMode();
@@ -85,6 +97,7 @@ const form = useForm(
         ? cloneDeep(props.record)
         : {
               rule_sub_type: isEdit.value ? props.record.rule_sub_type : "",
+              post_format: isEdit.value ? props.record.post_format : "",
               name: isEdit.value ? props.record.name : "",
               description: isEdit.value ? props.record.description : "",
               instructions: isEdit.value ? props.record.instructions : "",
@@ -123,6 +136,14 @@ const profileModel = (profile) =>
     profile.model_tier === "other" ? profile.model : profile.model_tier;
 
 const ruleSubType = ref({});
+
+/**
+ * A format step generates for one post format; its output is defined in code, so it always
+ * returns structured output and has no output field to pick.
+ */
+const isFormatStep = computed(() =>
+    (ruleSubType.value?.name ?? "").endsWith("_FORMAT"),
+);
 const ruleType =
     find(props.ruleTypes, ["value", parseInt(props.rule.rule_type)]) ?? {};
 
@@ -139,7 +160,7 @@ watch(
             {};
         isMultiple.value = ruleSubType.value?.name === "BRIEFINGS_MULTIPLE";
 
-        if (isMultiple.value) {
+        if (isMultiple.value || isFormatStep.value) {
             form.response_format = "json_schema";
         }
     },
@@ -243,6 +264,42 @@ const deleteStep = () => {
         })
         .show();
 };
+
+const cloneStepInto = (target) => {
+    confirmation()
+        .title($t("genie.clone_step_into"))
+        .description(
+            $t("genie.clone_step_into_confirm") +
+                " -> " +
+                target.version.name +
+                " / " +
+                target.name,
+        )
+        .warning()
+        .onConfirm((dialog) => {
+            dialog.isLoading(true);
+
+            router.put(
+                route("genie.admin.versions.rules.steps.clone_into", {
+                    version: props.version.id,
+                    rule: props.rule.id,
+                    step: props.record.id,
+                    target: target.id,
+                }),
+                {},
+                {
+                    preserveScroll: true,
+                    onError: (errors) => {
+                        onError(errors, update);
+                    },
+                    onFinish() {
+                        dialog.reset();
+                    },
+                },
+            );
+        })
+        .show();
+};
 </script>
 <template>
     <Head
@@ -319,11 +376,39 @@ const deleteStep = () => {
                     </VerticalGroup>
 
                     <VerticalGroup
-                        v-if="
-                            ruleSubType['name'] === 'CHANNELS' ||
-                            (ruleSubType['name'] === 'IDEAS_MULTIPLE' &&
-                                form.link_upstream)
-                        "
+                        v-if="isFormatStep"
+                        class="form-field mt-lg"
+                    >
+                        <template #title>
+                            <label for="post_format">{{
+                                $t("genie.step_post_format")
+                            }}</label>
+                            <LabelSuffix :danger="true">*</LabelSuffix>
+                        </template>
+
+                        <Select
+                            v-model="form.post_format"
+                            :error="form.errors.post_format !== undefined"
+                            id="post_format"
+                            required
+                        >
+                            <option value="" disabled>
+                                {{ $t("genie.post_format") }}
+                            </option>
+                            <template v-for="format in postFormats">
+                                <option :value="format.value">
+                                    {{ $t("genie.post_format_" + format.title) }}
+                                </option>
+                            </template>
+                        </Select>
+
+                        <template #footer>
+                            <Error :message="form.errors.post_format" />
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup
+                        v-if="ruleSubType['name'] === 'CHANNELS'"
                         class="form-field mt-lg"
                     >
                         <template #title>
@@ -541,11 +626,9 @@ const deleteStep = () => {
 
                     <VerticalGroup
                         v-if="
-                            (ruleType['name'] === 'IDEAS' ||
-                                ruleType['name'] === 'DRAFTS' ||
+                            (ruleType['name'] === 'DRAFTS' ||
                                 ruleType['name'] === 'PRE_POSTS' ||
                                 ruleSubType['name'] === 'BRIEFINGS_MULTIPLE') &&
-                            ruleSubType['name'] !== 'IDEAS_INITIAL' &&
                             ruleSubType['name'] !== 'DRAFTS_INITIAL' &&
                             ruleSubType['name'] !== 'PRE_POSTS_INITIAL'
                         "
@@ -634,7 +717,7 @@ const deleteStep = () => {
                             v-model="form.response_format"
                             :error="form.errors.response_format !== undefined"
                             id="response_format"
-                            :disabled="isMultiple.valueOf()"
+                            :disabled="isMultiple || isFormatStep"
                             required
                         >
                             <option value="text">text</option>
@@ -762,7 +845,36 @@ const deleteStep = () => {
                             </template>
                         </SecondaryButton>
                     </div>
-                    <div v-if="isEdit">
+                    <div v-if="isEdit" class="flex gap-6">
+                        <Dropdown
+                            v-if="targetRules?.data?.length"
+                            placement="bottom-end"
+                        >
+                            <template #trigger>
+                                <ExpandingWarningButton
+                                    :disabled="form.processing"
+                                    :hidden-text-on-small-screen="true"
+                                >
+                                    {{ $t("genie.clone_into") }}
+                                    <template #icon>
+                                        <Clipboard />
+                                        <ChevronDown />
+                                    </template>
+                                </ExpandingWarningButton>
+                            </template>
+
+                            <template #content>
+                                <template v-for="item in targetRules.data">
+                                    <DropdownItem
+                                        @click="cloneStepInto(item)"
+                                        as="button"
+                                    >
+                                        {{ item.version.name }} / {{ item.name }}
+                                    </DropdownItem>
+                                </template>
+                            </template>
+                        </Dropdown>
+
                         <DangerButton
                             @click="deleteStep"
                             :disabled="form.processing"

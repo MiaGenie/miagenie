@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\Models\HasTranslations;
+use App\Enums\PostFormat;
 use App\Enums\RuleSubType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +20,7 @@ class RuleStep extends Model
         'uuid',
         'rule_id',
         'rule_sub_type',
+        'post_format',
         'link_upstream',
         'name',
         'description',
@@ -40,6 +42,7 @@ class RuleStep extends Model
 
     protected $casts = [
         'rule_sub_type' => RuleSubType::class,
+        'post_format' => PostFormat::class,
         'output' => 'array',
     ];
 

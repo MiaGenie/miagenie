@@ -3,6 +3,7 @@
 namespace App\Genie\Strategy;
 
 use App\Enums\RuleSubType;
+use App\Genie\Runs\StepGate;
 use App\Models\AiRun;
 use App\Models\RuleStep;
 use Illuminate\Support\Facades\Log;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Log;
  * (`depends_on_field`) and the boolean sub-field standing for its own channel
  * (`depends_on_option`), so the answer is read straight out of the strategy.
  */
-class StrategyChannelGate
+class StrategyChannelGate implements StepGate
 {
     /**
      * The strategy is read rather than the step that produced it: a reviewer can change the

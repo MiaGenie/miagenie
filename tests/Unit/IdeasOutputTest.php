@@ -1,0 +1,119 @@
+<?php
+
+namespace Tests\Unit;
+
+use App\Enums\FunnelStage;
+use App\Enums\IdeaSource;
+use App\Enums\IdeaStatus;
+use App\Enums\PostFormat;
+use App\Genie\Ideas\IdeasOutput;
+use App\Genie\Ideas\IdeasRequest;
+use App\Models\AiRun;
+use App\Models\AiRunStep;
+use App\Models\RuleStep;
+use RuntimeException;
+use Tests\TestCase;
+
+class IdeasOutputTest extends TestCase
+{
+    protected function runStep(IdeasRequest $request, PostFormat $format = PostFormat::CAROUSEL): AiRunStep
+    {
+        $run = new AiRun(['workspace_id' => 7, 'strategy_id' => 3, 'parameters' => $request->toArray()]);
+
+        $step = new RuleStep(['post_format' => $format]);
+
+        $runStep = new AiRunStep(['step_id' => 42]);
+        $runStep->id = 99;
+        $runStep->setRelation('run', $run);
+        $runStep->setRelation('step', $step);
+
+        return $runStep;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function idea(array $overrides = []): array
+    {
+        return array_merge([
+            'title' => 'Behind the build',
+            'objective' => 'Show the craft',
+            'suggested_content' => 'A day in the studio',
+            'multimedia_suggestion' => 'Short video, handheld',
+            'production_instructions' => 'Three shots, natural light',
+            'funnel_stage' => 'consideration',
+            'content_pillar' => 'Craft',
+        ], $overrides);
+    }
+
+    public function test_each_idea_becomes_a_row_linked_to_the_run_step_and_strategy(): void
+    {
+        $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5));
+
+        $rows = new IdeasOutput()->resolve($runStep, ['ideas' => [$this->idea(), $this->idea(['title' => 'Second'])]]);
+
+        $this->assertCount(2, $rows);
+
+        $row = $rows[0];
+
+        $this->assertSame(7, $row['workspace_id']);
+        $this->assertSame(3, $row['strategy_id']);
+        $this->assertSame(99, $row['run_step_id']);
+        $this->assertSame('Behind the build', $row['theme']);
+        $this->assertSame('Show the craft', $row['objective']);
+        $this->assertSame('A day in the studio', $row['suggested_content']);
+        $this->assertSame('Short video, handheld', $row['multimedia_suggestion']);
+        $this->assertSame('Three shots, natural light', $row['production_instructions']);
+        $this->assertSame(PostFormat::CAROUSEL, $row['post_format']);
+        $this->assertSame(IdeaStatus::PENDING_REVIEW, $row['status']);
+        $this->assertSame(IdeaSource::GENIE, $row['source']);
+        $this->assertSame('Second', $rows[1]['theme']);
+    }
+
+    public function test_an_open_request_takes_the_stage_and_pillar_the_model_chose(): void
+    {
+        $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5));
+
+        $row = new IdeasOutput()->resolve($runStep, ['ideas' => [$this->idea()]])[0];
+
+        $this->assertSame(FunnelStage::CONSIDERATION, $row['funnel_stage']);
+        $this->assertSame('Craft', $row['content_pillar']);
+    }
+
+    public function test_a_fixed_request_overrides_whatever_the_model_answered(): void
+    {
+        $runStep = $this->runStep(new IdeasRequest(null, 'Client Stories', FunnelStage::AWARENESS, 5));
+
+        $row = new IdeasOutput()->resolve($runStep, ['ideas' => [$this->idea()]])[0];
+
+        $this->assertSame(FunnelStage::AWARENESS, $row['funnel_stage']);
+        $this->assertSame('Client Stories', $row['content_pillar']);
+    }
+
+    public function test_a_stage_the_enum_does_not_know_is_left_empty(): void
+    {
+        $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5));
+
+        $row = new IdeasOutput()->resolve($runStep, ['ideas' => [$this->idea(['funnel_stage' => 'decision'])]])[0];
+
+        $this->assertNull($row['funnel_stage']);
+    }
+
+    public function test_a_response_without_a_list_of_ideas_is_refused(): void
+    {
+        $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5));
+
+        $this->expectException(RuntimeException::class);
+
+        new IdeasOutput()->resolve($runStep, ['text' => 'nothing structured']);
+    }
+
+    public function test_an_item_that_is_not_an_object_is_skipped(): void
+    {
+        $runStep = $this->runStep(new IdeasRequest(null, null, FunnelStage::GLOBAL, 5));
+
+        $rows = new IdeasOutput()->resolve($runStep, ['ideas' => ['stray string', $this->idea()]]);
+
+        $this->assertCount(1, $rows);
+    }
+}

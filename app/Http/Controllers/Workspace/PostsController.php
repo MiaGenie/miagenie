@@ -7,8 +7,11 @@ use App\Models\PrePost;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use Inovector\Mixpost\Configs\GeneralConfig;
+use Inovector\Mixpost\Configs\MediaConfig;
 use Inovector\Mixpost\Facades\AIManager;
 use Inovector\Mixpost\Facades\ServiceManager;
 use Inovector\Mixpost\Facades\WorkspaceManager;
@@ -23,6 +26,33 @@ use Inovector\Mixpost\Support\EagerLoadPostVersionsMedia;
 
 class PostsController extends Controller
 {
+
+    public function create(Request $request): Response
+    {
+        return Inertia::render('Mixpost/Workspace/Posts/CreateEdit', [
+            //            'default_accounts' => Settings::get('default_accounts'),
+            'user_can_approve' => Auth::user()->canApprove(WorkspaceManager::current()),
+            'accounts' => AccountResource::collection(Account::oldest()->get())->resolve(),
+            'tags' => TagResource::collection(Tag::latest()->get())->resolve(),
+            'has_available_times' => PostingSchedule::hasAvailableTimes(),
+            'post' => null,
+            'scheduleAt' => [
+                'date' => Str::before($request->route('schedule_at'), ' '),
+                'time' => Str::after($request->route('schedule_at'), ' '),
+            ],
+            'prefill' => [
+                'body' => $request->query('body', ''),
+                'title' => $request->query('title', ''),
+                'link' => $request->query('link', ''),
+            ],
+            'is_configured_service' => ServiceManager::isActive(),
+            'service_configs' => ServiceManager::exposedConfiguration(),
+            'general_configs' => (new GeneralConfig)->all(),
+            'ai_is_ready_to_use' => AIManager::isReadyToUse(),
+            'stock_photo_provider' => app(MediaConfig::class)->get('stock_photo_provider'),
+        ]);
+    }
+
     public function edit(Request $request): Response
     {
         $post = Post::firstOrFailTrashedByUuid($request->route('post'));
@@ -33,7 +63,7 @@ class PostsController extends Controller
 
         $draft = PrePost::where(['post_id' => $post->id])->first()?->draft;
 
-        return Inertia::render('Genie/Workspace/Posts/CreateEdit', [
+        return Inertia::render('Mixpost/Workspace/Posts/CreateEdit', [
             'user_can_approve' => Auth::user()->canApprove(WorkspaceManager::current()),
             'accounts' => AccountResource::collection(Account::oldest()->get())->resolve(),
             'tags' => TagResource::collection(Tag::latest()->get())->resolve(),
@@ -42,9 +72,10 @@ class PostsController extends Controller
             'has_activities_ns' => $post->hasNotificationSubscriptionForActivities(user: Auth::id()),
             'is_configured_service' => ServiceManager::isActive(),
             'service_configs' => ServiceManager::exposedConfiguration(),
+            'general_configs' => (new GeneralConfig)->all(), // TODO: Use specific config. Not all configs are needed here.
             'ai_is_ready_to_use' => AIManager::isReadyToUse(),
+            'stock_photo_provider' => app(MediaConfig::class)->get('stock_photo_provider'),
             'draft' => $draft ? new DraftResource($draft) : null,
         ]);
     }
-
 }

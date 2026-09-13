@@ -12,7 +12,7 @@ use App\Enums\VersionGroupType;
 use App\Genie\Strategy\StrategyRunState;
 use App\Http\Requests\Workspace\Strategy\UpdateStrategy;
 use App\Http\Resources\StrategyResource;
-use App\Jobs\StrategyRunJob;
+use App\Jobs\AiRunJob;
 use App\Models\AiRun;
 use App\Models\AiRunStep;
 use App\Models\AiRunStepReview;
@@ -199,7 +199,7 @@ class StrategyPresentationController extends Controller
             'status' => RunStatus::OPEN,
         ]);
 
-        StrategyRunJob::dispatch($run);
+        AiRunJob::dispatch($run);
 
         return redirect()->route('genie.strategies.overview', ['workspace' => $workspace->uuid])
             ->with('success', __('genie.generating_strategy'));
@@ -277,7 +277,7 @@ class StrategyPresentationController extends Controller
 
         app(StrategyRunState::class)->resumed($runStep);
 
-        StrategyRunJob::dispatch($run->fresh());
+        AiRunJob::dispatch($run->fresh());
 
         return redirect()->route('genie.strategies.overview', [
             'workspace' => WorkspaceManager::current()->uuid,

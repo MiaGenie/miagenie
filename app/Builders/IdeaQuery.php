@@ -4,6 +4,7 @@ namespace App\Builders;
 
 use App\Builders\Filters\IdeaContentPillarFilter;
 use App\Builders\Filters\IdeaFunnelStageFilter;
+use App\Builders\Filters\IdeaPostFormatFilter;
 use App\Builders\Filters\IdeaStatusFilter;
 use App\Contracts\Query;
 use App\Models\Idea;
@@ -21,6 +22,9 @@ class IdeaQuery implements Query
         }
         if ($request->has('content_pillar') && $request->get('content_pillar') !== null) {
             $query = IdeaContentPillarFilter::apply($query, $request->get('content_pillar'));
+        }
+        if ($request->has('post_format') && $request->get('post_format') !== null) {
+            $query = IdeaPostFormatFilter::apply($query, $request->get('post_format'));
         }
 
         $query = IdeaStatusFilter::apply($query, $request->get('status'));

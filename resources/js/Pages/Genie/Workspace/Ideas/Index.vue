@@ -8,16 +8,20 @@ import Table from "@/Components/DataDisplay/Table.vue";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import IdeaItem from "@/Components/Genie/Ideas/IdeaItem.vue";
+import IdeaCard from "@/Components/Genie/Ideas/IdeaCard.vue";
 import Pagination from "@/Components/Navigation/Pagination.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import NoResult from "@/Components/Util/NoResult.vue";
 import Plus from "@/Icons/Plus.vue";
+import Grid from "@/Icons/Grid.vue";
+import QueueList from "@/Icons/QueueList.vue";
 import {cloneDeep, find, pickBy, result, filter, size, throttle} from "lodash";
 import useSelectable from "@/Composables/useSelectable";
 import Tabs from "@/Components/Navigation/Tabs.vue";
 import Tab from "@/Components/Navigation/Tab.vue";
 import SelectableBar from "@/Components/DataDisplay/SelectableBar.vue";
 import PureDangerButton from "@/Components/Button/PureDangerButton.vue";
+import PureButton from "@/Components/Button/PureButton.vue";
 import TrashIcon from "@/Icons/Trash.vue";
 import Checkbox from "@/Components/Form/Checkbox.vue";
 import ConfirmationModal from "@/Components/Modal/ConfirmationModal.vue";
@@ -30,9 +34,11 @@ import WarningButton from "@/Components/Button/WarningButton.vue";
 import Lamp from "@/Icons/Genie/Lamp.vue";
 import Flex from "@/Components/Layout/Flex.vue";
 import emitter from "@/Services/emitter.js";
+import ls from "@/Services/ls.js";
 import PureSuccessButton from "@/Components/Button/Genie/PureSuccessButton.vue";
 import ArrowUturnLeft from "@/Icons/ArrowUturnLeft.vue";
 import SuccessButton from "@/Components/Button/SuccessButton.vue";
+import GenerateIdeasModal from "@/Components/Genie/Ideas/GenerateIdeasModal.vue";
 
 const {t: $t} = useI18n()
 
@@ -43,11 +49,11 @@ const props = defineProps({
     strategy: {
         type: Object,
     },
-    ideaStatusTypes: {
-        type: Object,
-        required: true
+    canGenerate: {
+        type: Boolean,
+        default: false
     },
-    draftStatusTypes: {
+    ideaStatusTypes: {
         type: Object,
         required: true
     },
@@ -55,9 +61,21 @@ const props = defineProps({
         type: Object,
         required: true
     },
+    postFormats: {
+        type: Object,
+        required: true
+    },
     contentPillars: {
         type: Object,
         required: true
+    },
+    strategyPillars: {
+        type: Array,
+        default: () => []
+    },
+    counts: {
+        type: Array,
+        default: () => [5, 10, 20]
     },
     filter: {
         type: Object,
@@ -90,6 +108,12 @@ const isFiltered = ref(false);
 const isLoading = ref(false);
 const confirmationDeletion = ref(false);
 const confirmationRestore = ref(false);
+const showGenerate = ref(false);
+const view = ref(ls.get('genie.ideas.view') || 'cards');
+
+watch(view, (value) => {
+    ls.set('genie.ideas.view', value);
+});
 
 const itemsId = () => {
     return props.records.data.map(item => item.id);
@@ -146,17 +170,11 @@ watch(() => props.records.data, () => {
     putPageRecords(itemsId());
 })
 
-watch(() => cloneDeep(currentFilter.value.type), throttle(() => {
-    router.get(route('genie.ideas.index'), pickBy(currentFilter.value.type), {
-        preserveState: true,
-        only: ['records', 'filter']
-    });
-}, 300))
-
 watch(() => [
         currentFilter.value.status,
         currentFilter.value.funnel_stage,
-        currentFilter.value.content_pillar
+        currentFilter.value.content_pillar,
+        currentFilter.value.post_format
     ],
     throttle(() => {
         isLoading.value = true;
@@ -172,13 +190,17 @@ watch(() => [
                 'status': currentFilter.value.status,
                 'funnel_stage': currentFilter.value.funnel_stage,
                 'content_pillar': currentFilter.value.content_pillar,
+                'post_format': currentFilter.value.post_format,
             }
         ), {
             preserveState: true,
             only: ['records', 'filter']
         });
 
-        isFiltered.value = Number(currentFilter.value.funnel_stage) > 0 || Number(currentFilter.value.status) > 0;
+        isFiltered.value = Number(currentFilter.value.funnel_stage) > 0
+            || Number(currentFilter.value.post_format) > 0
+            || Number(currentFilter.value.status) > 0
+            || !!currentFilter.value.content_pillar;
         isLoading.value = false;
 
     }, 300)
@@ -196,18 +218,11 @@ const createIdea = () => {
 }
 
 const generateIdeas = () => {
-    confirmation()
-        .title($t('genie.generate_ideas'))
-        .description($t('genie.generate_ideas_confirm'))
-        .warning()
-        .onConfirm((dialog) => {
-            router.put(route('genie.ideas.generate', {
-                workspace: workspaceCtx.id,
-                strategy: props.strategy.id
-            }));
-            generatingIdeas.value = true;
-            dialog.reset();
-        }).show();
+    showGenerate.value = true;
+}
+
+const ideasStarted = () => {
+    generatingIdeas.value = true;
 }
 
 const deleteIdeas = () => {
@@ -271,7 +286,7 @@ const statusValue = (status) => {
 
             <WarningButton
                 @click="generateIdeas"
-                :disabled="isLoading || !strategy || hasPending || generating"
+                :disabled="isLoading || !canGenerate || hasPending || generating"
                 :isLoading="isLoading"
                 size="sm"
             >
@@ -296,13 +311,54 @@ const statusValue = (status) => {
             </PrimaryButton>
             </div>
 
+            <div class="flex items-center gap-sm">
+                <PureButton
+                    @click="view = 'cards'"
+                    :class="{'!text-primary-500': view === 'cards'}"
+                    v-tooltip="$t('genie.view_cards')"
+                >
+                    <template #icon>
+                        <Grid/>
+                    </template>
+                </PureButton>
+
+                <PureButton
+                    @click="view = 'table'"
+                    :class="{'!text-primary-500': view === 'table'}"
+                    v-tooltip="$t('genie.view_table')"
+                >
+                    <template #icon>
+                        <QueueList/>
+                    </template>
+                </PureButton>
+            </div>
+
         </div>
 
         <div class="w-full row-px">
 
             <Panel>
 
-                <div class="flex flex-row justify-around items-center">
+                <div class="flex flex-row justify-around items-center gap-md">
+
+                    <VerticalGroup class="w-1/3">
+                        <template #title>
+                            {{ $t('genie.post_format')}}
+                        </template>
+
+                        <template #default>
+                            <Select v-model="currentFilter.post_format">
+                                <option value=''>{{ $t(`general.all`)}}</option>
+                                <option
+                                    v-for="postFormat in postFormats"
+                                    :key="postFormat.value"
+                                    :value="postFormat.value"
+                                >
+                                    {{ $t(`genie.post_format_${postFormat.title}`) }}
+                                </option>
+                            </Select>
+                        </template>
+                    </VerticalGroup>
 
                     <VerticalGroup class="w-1/3">
                         <template #title>
@@ -333,8 +389,8 @@ const statusValue = (status) => {
                                 <option value=''>{{ $t(`general.all`)}}</option>
                                 <option
                                     v-for="contentPillar in contentPillars"
-                                    :key="contentPillar.value"
-                                    :value="contentPillar.value"
+                                    :key="contentPillar"
+                                    :value="contentPillar"
                                 >
                                     {{ contentPillar }}
                                 </option>
@@ -393,7 +449,44 @@ const statusValue = (status) => {
                 </PureDangerButton>
             </SelectableBar>
 
+            <div
+                v-if="view === 'cards'"
+                class="mt-lg"
+            >
+                <div
+                    v-if="records.meta.total"
+                    class="flex items-center gap-sm mb-sm"
+                >
+                    <Checkbox
+                        v-model:checked="toggleSelectRecordsOnPage"
+                        :disabled="statusValue(currentFilter.status)?.name !== 'TRASH' && statusValue(currentFilter.status)?.name !== 'PENDING_REVIEW'"
+                    />
+                    <span class="text-sm text-gray-500">{{ $t('genie.select_all') }}</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+                    <IdeaCard
+                        v-for="item in records.data"
+                        :key="item.id"
+                        :item="item"
+                    >
+                        <template #checkbox>
+                            <Checkbox
+                                v-model:checked="selectedRecords"
+                                :disabled="itemStatus(item).name !== 'PENDING_REVIEW' && itemStatus(item).name !== 'TRASH'"
+                                :value="item.id"
+                            />
+                        </template>
+                    </IdeaCard>
+                </div>
+
+                <Panel v-if="!records.meta.total">
+                    <NoResult class="py-md px-md"/>
+                </Panel>
+            </div>
+
             <Panel
+                v-else
                 :with-padding="false"
                 class="mt-lg"
             >
@@ -420,7 +513,23 @@ const statusValue = (status) => {
                                 scope="col"
                                 class="hidden sm:table-cell"
                             >
-                                {{ $t('general.status') }}
+                                {{ $t('genie.post_format') }}
+                            </TableCell>
+
+                            <TableCell
+                                component="th"
+                                scope="col"
+                                class="hidden md:table-cell"
+                            >
+                                {{ $t('genie.funnel_stage') }}
+                            </TableCell>
+
+                            <TableCell
+                                component="th"
+                                scope="col"
+                                class="hidden md:table-cell"
+                            >
+                                {{ $t('genie.content_pillar') }}
                             </TableCell>
 
                             <TableCell
@@ -428,7 +537,7 @@ const statusValue = (status) => {
                                 scope="col"
                                 class="hidden sm:table-cell"
                             >
-                                {{ $t('genie.drafts') }}
+                                {{ $t('general.status') }}
                             </TableCell>
 
                         </TableRow>
@@ -502,4 +611,13 @@ const statusValue = (status) => {
             <SuccessButton @click="restoreIdeas">{{ $t("general.restore") }}</SuccessButton>
         </template>
     </ConfirmationModal>
+    <GenerateIdeasModal
+        :show="showGenerate"
+        :post-formats="postFormats"
+        :funnel-stages="funnelStages"
+        :strategy-pillars="strategyPillars"
+        :counts="counts"
+        @close="showGenerate = false"
+        @started="ideasStarted"
+    />
 </template>

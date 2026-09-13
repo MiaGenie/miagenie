@@ -42,7 +42,7 @@ const { user } = useAuth()
                 <StrategyIcon/>
             </template>
             {{ $t('genie.strategies') }}
-        </MenuItem>
+        </MenuItem>-->
         <MenuItem :url="route('genie.ideas.index', {workspace: workspaceCtx.id})"
                   :active="$page.component === 'Genie/Workspace/Ideas/Index'">
             <template #icon>
@@ -50,7 +50,7 @@ const { user } = useAuth()
             </template>
             {{ $t('genie.ideas') }}
         </MenuItem>
-        <MenuItem :url="route('genie.drafts.index', {workspace: workspaceCtx.id})"
+<!--        <MenuItem :url="route('genie.drafts.index', {workspace: workspaceCtx.id})"
                   :active="$page.component === 'Genie/Workspace/Drafts/Index'">
             <template #icon>
                 <DraftIcon/>

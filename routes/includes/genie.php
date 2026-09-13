@@ -40,6 +40,7 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
             Route::put('update-translation-options/{field}/{locale}', [VersionFieldOptionsController::class, 'updateTranslations'])->name('update-translation-options');
             Route::post('positions', [VersionFieldsController::class, 'updatePositions'])->name('positions');
             Route::delete('{field}', [VersionFieldsController::class, 'destroy'])->name('delete');
+            Route::put('clone_into/{field}/{target}', [VersionFieldsController::class, 'cloneInto'])->name('clone_into');
         });
 
         Route::prefix('{version}/rules')->name('rules.')->group(function () {
@@ -63,6 +64,7 @@ Route::name('admin.')->prefix('admin')->middleware([Admin::class])->group(functi
                 Route::put('update-translation/{step}/{locale}', [RuleStepsController::class, 'updateTranslations'])->name('update-translation');
                 Route::post('positions', [RuleStepsController::class, 'updatePositions'])->name('positions');
                 Route::delete('{step}', [RuleStepsController::class, 'destroy'])->name('delete');
+                Route::put('clone_into/{step}/{target}', [RuleStepsController::class, 'cloneInto'])->name('clone_into');
             });
         });
     });

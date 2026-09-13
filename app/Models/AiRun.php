@@ -29,6 +29,7 @@ class AiRun extends Model
         'rule_id',
         'briefing_id',
         'strategy_id',
+        'parameters',
         'conversation_id',
         'status',
         'started_at',
@@ -37,6 +38,7 @@ class AiRun extends Model
 
     protected $casts = [
         'status' => RunStatus::class,
+        'parameters' => 'array',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
     ];

@@ -8,6 +8,7 @@ use App\Enums\RunStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 
@@ -54,6 +55,14 @@ class AiRunStep extends Model
     public function step(): BelongsTo
     {
         return $this->belongsTo(RuleStep::class, 'step_id');
+    }
+
+    /**
+     * The ideas this turn produced, when it belongs to an ideas run.
+     */
+    public function ideas(): HasMany
+    {
+        return $this->hasMany(Idea::class, 'run_step_id');
     }
 
     public function review(): HasOne

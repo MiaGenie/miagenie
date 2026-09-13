@@ -1,28 +1,37 @@
-import {ref} from 'vue';
+import { inject, ref } from 'vue'
 
-const usePreloader = (delay = 250) => {
-    const isLoadingPreloader = ref(false);
-    let timeoutId = null;
+const usePreloader = ({ delay = 250, useGlobal = false }) => {
+  const appContext = inject('appCtx')
+  const isLoadingPreloader = ref(false)
+  let timeoutId = null
 
-    const startPreloader = () => {
-        timeoutId = setTimeout(() => {
-            isLoadingPreloader.value = true;
-        }, delay);
-    };
+  const startPreloader = () => {
+    timeoutId = setTimeout(() => {
+      isLoadingPreloader.value = true
 
-    const stopPreloader = () => {
-        if (timeoutId) {
-            clearTimeout(timeoutId);
-        }
+      if (useGlobal) {
+        appContext.preloader = true
+      }
+    }, delay)
+  }
 
-        isLoadingPreloader.value = false;
-    };
+  const stopPreloader = () => {
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+    }
 
-    return {
-        isLoadingPreloader,
-        startPreloader,
-        stopPreloader
-    };
+    isLoadingPreloader.value = false
+
+    if (useGlobal) {
+      appContext.preloader = false
+    }
+  }
+
+  return {
+    isLoadingPreloader,
+    startPreloader,
+    stopPreloader
+  }
 }
 
-export default usePreloader;
+export default usePreloader

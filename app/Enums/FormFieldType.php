@@ -17,11 +17,10 @@ enum FormFieldType: int
     case RADIO = 5;
     case RADIO_GROUP = 6;
     case FILE = 7;
-    case OUTPUT = 8;
+    case JSON_SCHEMA = 8;
+    case TEXT = 9;
+    case VISUAL = 10;
 
-    /**
-     * @return string
-     */
     public function title(): string
     {
         return match ($this) {
@@ -32,13 +31,12 @@ enum FormFieldType: int
             self::RADIO => 'radio',
             self::RADIO_GROUP => 'radio_group',
             self::FILE => 'file',
-            self::OUTPUT => 'output'
+            self::JSON_SCHEMA => 'json_schema',
+            self::TEXT => 'text',
+            self::VISUAL => 'visual',
         };
     }
 
-    /**
-     * @return bool
-     */
     public function hasGroups(): bool
     {
         return match ($this) {
@@ -49,13 +47,12 @@ enum FormFieldType: int
             self::RADIO => false,
             self::RADIO_GROUP => true,
             self::FILE => false,
-            self::OUTPUT => false
+            self::JSON_SCHEMA => false,
+            self::TEXT => false,
+            self::VISUAL => false
         };
     }
 
-    /**
-     * @return bool
-     */
     public function hasLength(): bool
     {
         return match ($this) {
@@ -66,13 +63,12 @@ enum FormFieldType: int
             self::RADIO => false,
             self::RADIO_GROUP => false,
             self::FILE => false,
-            self::OUTPUT => false
+            self::JSON_SCHEMA => false,
+            self::TEXT => false,
+            self::VISUAL => false
         };
     }
 
-    /**
-     * @return bool
-     */
     public function hasMulti(): bool
     {
         return match ($this) {
@@ -83,13 +79,12 @@ enum FormFieldType: int
             self::RADIO => false,
             self::RADIO_GROUP => false,
             self::FILE => false,
-            self::OUTPUT => false
+            self::JSON_SCHEMA => false,
+            self::TEXT => false,
+            self::VISUAL => false
         };
     }
 
-    /**
-     * @return bool
-     */
     public function hasOptions(): bool
     {
         return match ($this) {
@@ -100,13 +95,12 @@ enum FormFieldType: int
             self::RADIO => true,
             self::RADIO_GROUP => true,
             self::FILE => false,
-            self::OUTPUT => false
+            self::JSON_SCHEMA => false,
+            self::TEXT => false,
+            self::VISUAL => false
         };
     }
 
-    /**
-     * @return bool
-     */
     public function hasRows(): bool
     {
         return match ($this) {
@@ -117,13 +111,12 @@ enum FormFieldType: int
             self::RADIO => false,
             self::RADIO_GROUP => false,
             self::FILE => false,
-            self::OUTPUT => false
+            self::JSON_SCHEMA => false,
+            self::TEXT => false,
+            self::VISUAL => false
         };
     }
 
-    /**
-     * @return bool
-     */
     public function isInput(): bool
     {
         return match ($this) {
@@ -134,13 +127,12 @@ enum FormFieldType: int
             self::RADIO => false,
             self::RADIO_GROUP => false,
             self::FILE => false,
-            self::OUTPUT => false
+            self::JSON_SCHEMA => false,
+            self::TEXT => false,
+            self::VISUAL => false
         };
     }
 
-    /**
-     * @return bool
-     */
     public function isOutput(): bool
     {
         return match ($this) {
@@ -151,13 +143,12 @@ enum FormFieldType: int
             self::RADIO => false,
             self::RADIO_GROUP => false,
             self::FILE => false,
-            self::OUTPUT => true
+            self::JSON_SCHEMA => true,
+            self::TEXT => true,
+            self::VISUAL => true
         };
     }
 
-    /**
-     * @return bool
-     */
     public function isFile(): bool
     {
         return match ($this) {
@@ -168,13 +159,12 @@ enum FormFieldType: int
             self::RADIO => false,
             self::RADIO_GROUP => false,
             self::FILE => true,
-            self::OUTPUT => false
+            self::JSON_SCHEMA => false,
+            self::TEXT => false,
+            self::VISUAL => false
         };
     }
 
-    /**
-     * @return bool
-     */
     public function isRadio(): bool
     {
         return match ($this) {
@@ -185,7 +175,9 @@ enum FormFieldType: int
             self::RADIO => true,
             self::RADIO_GROUP => true,
             self::FILE => false,
-            self::OUTPUT => false
+            self::JSON_SCHEMA => false,
+            self::TEXT => false,
+            self::VISUAL => false
         };
     }
 }

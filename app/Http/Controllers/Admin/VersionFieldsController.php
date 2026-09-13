@@ -9,6 +9,7 @@ use App\Enums\FormInputType;
 use App\Enums\SubFieldType;
 use App\Enums\VersionGroupType;
 use App\Enums\VersionStatus;
+use App\Http\Requests\Admin\CloneFieldInto;
 use App\Http\Requests\Admin\StoreVersionField;
 use App\Http\Requests\Admin\UpdateVersionField;
 use App\Http\Requests\Admin\UpdateVersionFieldPositions;
@@ -136,9 +137,13 @@ class VersionFieldsController extends Controller
             ->where('uuid', $request->route('field'))
             ->firstOrFail();
 
+        $versions = Version::whereNotIn('status', [VersionStatus::ARCHIVED])
+            ->whereNot('id', $version->id)->get();
+
         return Inertia::render('Genie/Admin/Versions/Fields/CreateEdit', [
             'mode' => 'edit',
             'version' => new VersionResource($version),
+            'versions' => VersionResource::collection($versions),
             'record' => new VersionFieldResource($record),
             'groupTypes' => VersionGroupType::withGroupOptions(),
             'fieldTypes' => FormFieldType::withFieldOptions(),
@@ -195,6 +200,25 @@ class VersionFieldsController extends Controller
         $updateVersionField->handle();
 
         return redirect()->back()->with('success', __('genie.field_updated'));
+    }
+
+    /**
+     * @return RedirectResponse
+     *
+     * @throws \Throwable
+     */
+    public function cloneInto(CloneFieldInto $cloneFieldInto)
+    {
+        $record = $cloneFieldInto->handle();
+
+        $target = Version::firstOrFailByUuid($cloneFieldInto->route('target'));
+
+        return redirect()
+            ->route('genie.admin.versions.fields.index', [
+                'version' => $target->uuid,
+                'group_type' => $record->group_type->value,
+            ])
+            ->with('success', __('genie.field_cloned'));
     }
 
     /**

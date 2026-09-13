@@ -3,37 +3,36 @@
 namespace App\Http\Controllers\Workspace;
 
 use App\Builders\IdeaQuery;
-use App\Concerns\Controller\DraftGeneration;
-use App\Concerns\Controller\HasFieldOptions;
-use App\Enums\DraftStatus;
 use App\Enums\FunnelStage;
-use App\Enums\GenieSyncAction;
 use App\Enums\IdeaStatus;
+use App\Enums\PostFormat;
 use App\Enums\RuleType;
 use App\Enums\RunStatus;
+use App\Enums\StrategyStatus;
+use App\Genie\Ideas\ContentPillars;
+use App\Genie\Ideas\IdeasRequest;
+use App\Genie\Runs\PostFormatGate;
+use App\Http\Requests\Workspace\Idea\GenerateIdeas;
 use App\Http\Requests\Workspace\Idea\StoreIdea;
 use App\Http\Requests\Workspace\Idea\UpdateIdea;
 use App\Http\Resources\IdeaResource;
 use App\Http\Resources\StrategyResource;
-use App\Jobs\RunIdeaJob;
+use App\Jobs\AiRunJob;
+use App\Models\AiRun;
 use App\Models\Idea;
 use App\Models\Rule;
-use App\Models\Run;
-use App\Models\RunIdea;
 use App\Models\Strategy;
 use App\Models\WorkspaceVersion;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 use Inovector\Mixpost\Facades\WorkspaceManager;
 
 class IdeasController
 {
-    use DraftGeneration;
-    use HasFieldOptions;
-
-    public function index(Request $request)
+    public function index(Request $request): Response
     {
-
         $records = IdeaQuery::apply($request)
             ->latest()
             ->paginate(100)
@@ -41,11 +40,6 @@ class IdeasController
             ->withQueryString();
 
         $strategy = Strategy::latest()->first();
-
-        //$generating = Run::with('runIdeas')->has('runIdeas')->whereNotIn('status', [RunStatus::COMPLETE, RunStatus::ERROR])->count() > 0;
-        $generating = Run::withWhereRelation('rule', 'rule_type', RuleType::IDEAS)
-                ->whereIn('status', [RunStatus::OPEN, RunStatus::RUNNING])
-                ->count() > 0;
 
         $hasPending = $records->where('status', IdeaStatus::PENDING_REVIEW)->count() > 0;
 
@@ -55,39 +49,37 @@ class IdeasController
             'filter' => [
                 'funnel_stage' => $request->query('funnel_stage', ''),
                 'content_pillar' => $request->query('content_pillar', ''),
+                'post_format' => $request->query('post_format', ''),
                 'status' => $request->query('status', ''),
             ],
             'records' => IdeaResource::collection($records),
             'strategy' => $strategy ? new StrategyResource($strategy) : null,
+            'canGenerate' => $strategy?->status === StrategyStatus::APPROVED,
             'ideaStatusTypes' => IdeaStatus::withTitle(),
-            'draftStatusTypes' => DraftStatus::withTitle(),
             'funnelStages' => FunnelStage::withTitle(),
+            'postFormats' => PostFormat::withTitle(),
             'contentPillars' => $contentPillars,
-            'generating' => $generating,
+            'strategyPillars' => ContentPillars::titles($strategy),
+            'counts' => IdeasRequest::COUNTS,
+            'generating' => $this->generating(),
             'hasPending' => $hasPending,
         ]);
     }
 
-    public function create(Request $request)
+    public function create(Request $request): Response
     {
-        $strategy = Strategy::latest()->first();
-
-        if ($strategy && isset($strategy->content['content_pillars']) && ! empty($strategy->content['content_pillars'])) {
-            $contentPillars = collect($strategy->content['content_pillars'])->pluck('0_title');
-        }
-
         return Inertia::render('Genie/Workspace/Ideas/CreateEdit', [
             'mode' => 'create',
             'ideaStatusTypes' => IdeaStatus::withTitle(),
-            'draftStatusTypes' => DraftStatus::withTitle(),
             'funnelStages' => FunnelStage::withTitle(),
+            'postFormats' => PostFormat::withTitle(),
             'funnelStage' => $request->input('funnel_stage'),
-            'contentPillars' => $contentPillars ?? [],
+            'contentPillars' => ContentPillars::titles(Strategy::latest()->first()),
             'record' => null,
         ]);
     }
 
-    public function store(StoreIdea $storeIdea)
+    public function store(StoreIdea $storeIdea): RedirectResponse
     {
         $record = $storeIdea->handle();
 
@@ -100,87 +92,75 @@ class IdeasController
         )->with('success', __('genie.idea_created'));
     }
 
-    public function updateGenerate(UpdateIdea $updateIdea)
-    {
-        $updateIdea->handle();
-
-        $record = Idea::firstOrFailByUuid($updateIdea->route('idea'));
-        $this->draftGeneration(Idea::where('id', $record->id)->get());
-
-        return redirect()
-            ->route('genie.ideas.index', ['workspace' => $updateIdea->route('workspace')])
-            ->with('success', __('genie.generating_drafts'));
-    }
-
-    public function edit(Request $request)
+    public function edit(Request $request): Response
     {
         $record = Idea::firstOrFailByUuid($request->route('idea'));
-
-        $strategy = Strategy::latest()->first();
-
-        if ($strategy && isset($strategy->content['content_pillars']) && ! empty($strategy->content['content_pillars'])) {
-            $contentPillars = collect($strategy->content['content_pillars'])->pluck('0_title');
-        }
-
-        $generating = (bool) RunIdea::where('idea_id', $record->id)
-            ->whereHas('run', function ($query) {
-                $query->whereNotIn('status', [RunStatus::COMPLETE, RunStatus::ERROR]);
-            })->first();
 
         return Inertia::render('Genie/Workspace/Ideas/CreateEdit', [
             'mode' => 'edit',
             'ideaStatusTypes' => IdeaStatus::withTitle(),
-            'draftStatusTypes' => DraftStatus::withTitle(),
             'funnelStages' => FunnelStage::withTitle(),
+            'postFormats' => PostFormat::withTitle(),
             'funnelStage' => $request->input('funnel_stage'),
-            'contentPillars' => $contentPillars ?? [],
-            'record' => IdeaResource::make($record),
-            'generating' => $generating,
-        ]);
-    }
-
-    public function generating(Request $request)
-    {
-        $record = Idea::firstOrFailByUuid($request->route('idea'));
-
-        return Inertia::render('Genie/Workspace/Ideas/Generating', [
-            'ideaStatusTypes' => IdeaStatus::withTitle(),
+            'contentPillars' => ContentPillars::titles(Strategy::latest()->first()),
             'record' => IdeaResource::make($record),
         ]);
     }
 
-    public function generate(Request $request)
+    /**
+     * Start an ideas run for what the page asked: one run, gated to the requested format, whose
+     * generator steps share the requested total between them.
+     */
+    public function generate(GenerateIdeas $request): RedirectResponse
     {
+        $strategy = $request->strategy();
+
+        if (! $strategy) {
+            return redirect()->back()->with('error', __('genie.ideas_strategy_not_approved'));
+        }
+
+        if ($this->generating()) {
+            return redirect()->back()->with('error', __('genie.ideas_already_generating'));
+        }
+
         $workspace = WorkspaceManager::current();
-        $workspaceVersion = WorkspaceVersion::where('workspace_id', $workspace->id)->first();
+        $version = WorkspaceVersion::where('workspace_id', $workspace->id)->firstOrFail();
 
-        $strategy = Strategy::findByUuid(request()->route('strategy'));
+        $rule = Rule::where('version_id', $version->version_id)
+            ->where('rule_type', RuleType::IDEAS)
+            ->firstOrFail();
 
-        $rule = Rule::where('version_id', $workspaceVersion->version_id)->where('rule_type', RuleType::IDEAS)->first();
-
-        $run = Run::create([
+        $run = new AiRun([
             'workspace_id' => $workspace->id,
             'rule_id' => $rule->id,
+            'strategy_id' => $strategy->id,
+            'parameters' => $request->toRequest()->toArray(),
             'status' => RunStatus::OPEN,
         ]);
 
-        $run->runStrategy()->create([
-            'strategy_id' => $strategy->id,
-        ]);
+        $run->setRelation('rule', $rule);
 
-        RunIdeaJob::dispatch($run, GenieSyncAction::CREATE);
+        // A format no step generates for would run to completion with nothing to show; better
+        // to say so before the run exists.
+        if (new PostFormatGate()->generators($run)->isEmpty()) {
+            return redirect()->back()->with('error', __('genie.ideas_no_generator_for_format'));
+        }
+
+        $run->save();
+
+        AiRunJob::dispatch($run);
 
         return redirect()->back()->with('success', __('genie.generating_ideas_started'));
     }
 
-    public function update(UpdateIdea $updateIdea)
+    public function update(UpdateIdea $updateIdea): RedirectResponse
     {
         $updateIdea->handle();
 
         return redirect()->back()->with('success', __('genie.idea_updated'));
     }
 
-    public function destroy(Request $request)
+    public function destroy(Request $request): RedirectResponse
     {
         $record = Idea::firstOrFailByUuid($request->route('idea'));
 
@@ -202,5 +182,16 @@ class IdeasController
         }
 
         return $redirect->with('error', __('genie.idea_not_found'));
+    }
+
+    /**
+     * Whether an ideas run is still going in this workspace.
+     */
+    protected function generating(): bool
+    {
+        return AiRun::query()
+            ->whereIn('status', [RunStatus::OPEN, RunStatus::RUNNING])
+            ->whereHas('rule', fn ($query) => $query->where('rule_type', RuleType::IDEAS))
+            ->exists();
     }
 }

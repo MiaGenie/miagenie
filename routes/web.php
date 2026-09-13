@@ -56,6 +56,9 @@ Route::prefix(Util::corePath())
 
                     // posts
                     Route::prefix('posts')->name('posts.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
+                        Route::get('create/{schedule_at?}', [PostsController::class, 'create'])
+                            ->name('create')
+                            ->where('schedule_at', '^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01]) (0\d|1\d|2[0-3]):([0-5]\d)$');
                         Route::get('{post}', [PostsController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
                     });
                 });

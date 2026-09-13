@@ -91,6 +91,6 @@ trait StrategySchemas
 
     protected function ruleFor(Strategy $strategy): ?Rule
     {
-        return $strategy->aiRun?->rule ?? $strategy->run?->rule;
+        return $strategy->aiRun?->rule;
     }
 }

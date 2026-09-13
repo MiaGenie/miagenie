@@ -18,6 +18,7 @@ class RuleStepResource extends JsonResource
             'id' => $this->uuid,
             'rule_id' => $this->rule_id,
             'rule_sub_type' => $this->rule_sub_type,
+            'post_format' => $this->post_format,
             'name' => $this->name,
             'description' => $this->description,
             'instructions' => $this->instructions,

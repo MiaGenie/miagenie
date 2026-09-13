@@ -71,61 +71,74 @@ const variantColorClasses = computed(() => {
 
 // Flash Messages
 const flash = computed(() => {
-    return usePage().props.flash;
-});
+  return usePage().props.flash
+})
 
-watch(() => flash.value, () => {
+watch(
+  () => flash.value,
+  () => {
     if (flash.value.success) {
-        open('success', flash.value.success);
+      open('success', flash.value.success)
     }
 
     if (flash.value.warning) {
-        open('warning', flash.value.warning);
+      open('warning', flash.value.warning)
     }
 
     if (flash.value.error) {
-        open('error', flash.value.error);
+      open('error', flash.value.error)
     }
 
     if (flash.value.info) {
-        open('info', flash.value.info);
+      open('info', flash.value.info)
     }
-}, {
+  },
+  {
     immediate: true,
     deep: true
-})
+  }
+)
 </script>
 <template>
-    <teleport to="body">
-        <transition enter-active-class="transition ease-out duration-200"
-                    enter-from-class="transform opacity-0 scale-95"
-                    enter-to-class="transform opacity-100 scale-100"
-                    leave-active-class="transition ease-in duration-75"
-                    leave-from-class="transform opacity-100 scale-100"
-                    leave-to-class="transform opacity-0 scale-95">
-            <div v-show="show"
-                 class="absolute bottom-0 right-0 ml-sm md:ml-0 mr-sm md:mr-xl mb-2xl flex px-lg py-md rounded-md bg-alert shadow-mix z-50"
-                 aria-live="polite">
-                <div class="flex items-center">
-                    <div>
-                        <div :class="variantColorClasses"
-                             class="w-8 h-8 rounded-full flex items-center justify-center mr-sm rtl:mr-0 rtl:ml-sm">
-                            <component :is="variantIcon"/>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="text-alert-context" v-html="message"/>
-                        <div v-if="button" class="mt-xs">
-                            <Link :href="button.href">
-                                <SecondaryButton @click="close">{{ button.name }}</SecondaryButton>
-                            </Link>
-                        </div>
-                    </div>
-                    <button @click="close" class="ml-2xl rtl:ml-0 rtl:mr-2xl hover:rotate-90 transition-transform ease-in-out duration-300">
-                        <XIcon class="text-alert-context"/>
-                    </button>
-                </div>
+  <teleport to="body">
+    <transition
+      enter-active-class="transition ease-out duration-200"
+      enter-from-class="transform opacity-0 scale-95"
+      enter-to-class="transform opacity-100 scale-100"
+      leave-active-class="transition ease-in duration-75"
+      leave-from-class="transform opacity-100 scale-100"
+      leave-to-class="transform opacity-0 scale-95"
+    >
+      <div
+        v-show="show"
+        class="absolute bottom-0 right-0 ml-sm md:ml-0 mr-sm md:mr-xl mb-2xl flex px-lg py-md rounded-md bg-alert shadow-mix z-50"
+        aria-live="polite"
+      >
+        <div class="flex items-center">
+          <div>
+            <div
+              :class="variantColorClasses"
+              class="w-8 h-8 rounded-full flex items-center justify-center mr-sm rtl:mr-0 rtl:ml-sm"
+            >
+              <component :is="variantIcon" />
             </div>
-        </transition>
-    </teleport>
+          </div>
+          <div>
+            <div class="text-alert-context" v-html="message" />
+            <div v-if="button" class="mt-xs">
+              <Link :href="button.href">
+                <SecondaryButton @click="close">{{ button.name }}</SecondaryButton>
+              </Link>
+            </div>
+          </div>
+          <button
+            class="ml-2xl rtl:ml-0 rtl:mr-2xl hover:rotate-90 transition-transform ease-in-out duration-300"
+            @click="close"
+          >
+            <XIcon class="text-alert-context" />
+          </button>
+        </div>
+      </div>
+    </transition>
+  </teleport>
 </template>

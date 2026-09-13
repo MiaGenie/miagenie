@@ -2,8 +2,10 @@
 
 namespace App\Genie\Schema;
 
+use App\Enums\RuleType;
 use App\Enums\SubFieldType;
 use App\Enums\VersionGroupType;
+use App\Genie\Ideas\IdeaSchema;
 use App\Models\RuleStep;
 use App\Models\VersionField;
 use App\Models\VersionFieldSubField;
@@ -108,6 +110,19 @@ class StepSchemaBuilder
     public function propertiesForStep(RuleStep $step, ?string $locale = null): array
     {
         $locale ??= app()->getLocale();
+
+        // A run type whose contract is fixed by the model that stores the result states it in
+        // code; only a strategy step's is drawn by the admin as a sub-field tree. The run hands
+        // the agent the request-specific definition itself — this is the shape an admin preview
+        // and hasSchema() see.
+        $defined = match ($step->rule?->rule_type) {
+            RuleType::IDEAS => IdeaSchema::preview($locale),
+            default => null,
+        };
+
+        if ($defined) {
+            return $defined->properties($this->factory);
+        }
 
         $fields = $this->resolveFields($step);
 

@@ -11,23 +11,22 @@ class IdeaResource extends JsonResource
      */
     public static $wrap = null;
 
-    /**
-     * @param $request
-     * @return array
-     */
     public function toArray($request): array
     {
 
         return [
             'id' => $this->uuid,
             'theme' => $this->theme,
-            'description' => $this->description,
+            'objective' => $this->objective,
+            'suggested_content' => $this->suggested_content,
+            'multimedia_suggestion' => $this->multimedia_suggestion,
+            'production_instructions' => $this->production_instructions,
             'status' => $this->status,
             'source' => $this->source,
-            'run_response_id' => $this->run_response_id,
             'funnel_stage' => $this->funnel_stage,
+            'post_format' => $this->post_format,
             'content_pillar' => $this->content_pillar,
-            'drafts' => $this->drafts
+            'created_at' => $this->created_at,
         ];
 
     }

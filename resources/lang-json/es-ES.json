@@ -280,7 +280,6 @@
         "enabled": "Activado",
         "filters": "Filtros",
         "clear_filter": "Limpiar filtro",
-        "finish": "Finalizar",
         "go_home": "Volver a casa",
         "go_back": "Volver atrás",
         "hi": "¡Hola!",
@@ -892,6 +891,10 @@
         "upload_favicon": "Subir favicon",
         "theme_color": "Color del tema",
         "rebrand_company": "Cambie la marca de su empresa"
+    },
+    "url_shortener": {
+        "on": "Acortamiento de URL: En",
+        "off": "Acortamiento de URL: Off"
     },
     "user": {
         "create_user": "Crear usuario",

@@ -2,10 +2,12 @@
 
 namespace App\Ai;
 
+use App\Ai\Agents\DefinedSchemaStepAgent;
 use App\Ai\Agents\StepAgent;
 use App\Ai\Agents\StructuredStepAgent;
 use App\Concerns\ConfiguresAiProvider;
 use App\Configs\OpenAIConfig;
+use App\Genie\Runs\SchemaDefinition;
 use App\Genie\Schema\StepSchemaBuilder;
 use App\Models\RuleStep;
 use Laravel\Ai\Enums\Lab;
@@ -32,6 +34,34 @@ class StepAgentFactory
         return $this->hasSchema($step)
             ? new StructuredStepAgent($step, $locale)
             : new StepAgent($step, $locale);
+    }
+
+    /**
+     * Build a plain-text agent for a step, whatever its response_format says, and make sure its
+     * provider is credentialed.
+     *
+     * For a context step: it primes the conversation and produces nothing to store, so asking it
+     * for structured output would only force a shape onto prose.
+     */
+    public function makeText(RuleStep $step, string $locale): StepAgent
+    {
+        $this->configureAiProvider($this->provider($step));
+
+        return new StepAgent($step, $locale);
+    }
+
+    /**
+     * Build the agent for a step whose schema the run type states in code, and make sure its
+     * provider is credentialed.
+     *
+     * The step's own response_format is not consulted: a run type that hands over a definition
+     * has decided the step returns structured output.
+     */
+    public function makeDefined(RuleStep $step, string $locale, SchemaDefinition $definition): StepAgent
+    {
+        $this->configureAiProvider($this->provider($step));
+
+        return new DefinedSchemaStepAgent($step, $locale, $definition);
     }
 
     /**

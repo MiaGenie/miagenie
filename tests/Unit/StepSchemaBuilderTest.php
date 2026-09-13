@@ -2,8 +2,11 @@
 
 namespace Tests\Unit;
 
+use App\Enums\RuleType;
 use App\Enums\SubFieldType;
 use App\Genie\Schema\StepSchemaBuilder;
+use App\Models\Rule;
+use App\Models\RuleStep;
 use App\Models\VersionField;
 use App\Models\VersionFieldSubField;
 use Illuminate\Support\Collection;
@@ -208,5 +211,15 @@ class StepSchemaBuilderTest extends TestCase
 
         $this->assertSame(['about', 'brand_values'], array_keys($schema['properties']));
         $this->assertSame(['about', 'brand_values'], $schema['required']);
+    }
+
+    public function test_an_ideas_step_states_its_schema_in_code_rather_than_from_sub_fields(): void
+    {
+        $step = new RuleStep(['name' => 'Carousel ideas', 'response_format' => 'json_schema']);
+        $step->setRelation('rule', new Rule(['rule_type' => RuleType::IDEAS]));
+
+        $properties = (new StepSchemaBuilder)->propertiesForStep($step, 'en-GB');
+
+        $this->assertSame(['ideas'], array_keys($properties));
     }
 }

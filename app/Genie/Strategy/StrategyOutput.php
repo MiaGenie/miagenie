@@ -3,13 +3,14 @@
 namespace App\Genie\Strategy;
 
 use App\Enums\RuleSubType;
+use App\Genie\Runs\StepOutput;
 use App\Models\AiRunStep;
 use RuntimeException;
 
 /**
  * Maps a step's structured response onto the strategy fields it declares in `output`.
  */
-class StrategyOutput
+class StrategyOutput implements StepOutput
 {
     /**
      * @param  array<string, mixed>  $structured
