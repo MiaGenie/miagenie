@@ -514,6 +514,8 @@ return [
     'post_image_removed' => 'Removed from post',
     'post_image_deleted' => 'Deleted from library',
     'post_image_reattach' => 'Re-add to post',
+    'post_image_restore' => 'Use this version',
+    'post_image_restored' => 'The previous image is back in the post.',
     'post_image_reattached' => 'The image is back in the post.',
     'post_image_missing' => 'That image is not one Genie generated for this post.',
     'post_regeneration_started' => 'Genie is working on it; the post refreshes when it is done.',

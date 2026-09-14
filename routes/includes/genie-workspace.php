@@ -101,6 +101,7 @@ Route::middleware(array_merge([
             Route::post('{post}/regenerate', [GeniePostsController::class, 'regenerateText'])->name('regenerateText');
             Route::post('{post}/images/{file}', [GeniePostsController::class, 'regenerateImage'])->name('regenerateImage');
             Route::post('{post}/images/{file}/reattach', [GeniePostsController::class, 'reattachImage'])->name('reattachImage');
+            Route::post('{post}/images/{file}/restore', [GeniePostsController::class, 'restoreImage'])->name('restoreImage');
             Route::post('{post}/retry', [GeniePostsController::class, 'retry'])->name('retry');
         });
 

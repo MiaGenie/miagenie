@@ -135,6 +135,9 @@ const regenerateImage = ({ mode, feedback, brief }) => {
 const reattach = (image) =>
     act(postRoute("reattachImage", { file: image.file.id }));
 
+const restore = (version) =>
+    act(postRoute("restoreImage", { file: version.file.id }));
+
 const retry = () => act(postRoute("retry"));
 </script>
 
@@ -198,6 +201,7 @@ const retry = () => act(postRoute("retry"));
                     @fix="imageAction = { image, mode: 'fix' }"
                     @rethink="imageAction = { image, mode: 'rethink' }"
                     @reattach="reattach(image)"
+                    @restore="restore"
                 />
             </div>
         </div>

@@ -35,7 +35,7 @@ const props = defineProps({
     },
 });
 
-defineEmits(["fix", "rethink", "reattach"]);
+defineEmits(["fix", "rethink", "reattach", "restore"]);
 
 /**
  * Mixpost's version is the truth: in post, removed by the user, or deleted from the media library.
@@ -126,6 +126,15 @@ const disabled = computed(() => props.locked || props.image.revising || !props.i
                         </div>
                         <div v-if="version.feedback" class="whitespace-pre-wrap break-words">{{ version.feedback }}</div>
                         <div v-if="version.revision_error" class="text-red-600 break-words">{{ version.revision_error }}</div>
+                        <SecondaryButton
+                            v-if="version.file"
+                            size="sm"
+                            class="mt-xs"
+                            :disabled="locked"
+                            @click="$emit('restore', version)"
+                        >
+                            {{ $t("genie.post_image_restore") }}
+                        </SecondaryButton>
                     </div>
                 </div>
             </div>

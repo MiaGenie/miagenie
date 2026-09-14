@@ -11,6 +11,7 @@ use App\Genie\Posts\CreateDraftPost;
 use App\Genie\Posts\PostMediaSync;
 use App\Genie\Posts\PostsException;
 use App\Genie\Posts\PostsRequest;
+use App\Genie\Posts\RestorePostImage;
 use App\Genie\Runs\Runners;
 use App\Http\Requests\Workspace\Post\RegeneratePostImage;
 use App\Http\Requests\Workspace\Post\RegeneratePostText;
@@ -118,6 +119,28 @@ class GeniePostsController extends Controller
     }
 
     /**
+     * Put a previous version of a slot back into the post.
+     */
+    public function restoreImage(Request $request, RestorePostImage $restore): RedirectResponse
+    {
+        $post = $this->post($request);
+
+        $version = $this->version($post, $request->route('file'));
+
+        if (! $version) {
+            return redirect()->back()->with('error', __('genie.post_image_missing'));
+        }
+
+        try {
+            $restore->restore($post, $version);
+        } catch (PostsException $exception) {
+            return redirect()->back()->with('error', $exception->getMessage());
+        }
+
+        return redirect()->back()->with('success', __('genie.post_image_restored'));
+    }
+
+    /**
      * Pick a failed run back up where it stopped.
      */
     public function retry(Request $request): RedirectResponse
@@ -147,6 +170,33 @@ class GeniePostsController extends Controller
     /**
      * The slot row of one of the post's generated files, by the file's uuid.
      */
+    /**
+     * A superseded version of one of the post's slots, by its file's uuid: the row must sit on the
+     * same run step and position as the slot the lineage names.
+     */
+    protected function version(GeniePost $post, string $fileUuid): ?AiRunStepFile
+    {
+        $file = WorkspaceFile::where('uuid', $fileUuid)->first();
+
+        $version = $file
+            ? AiRunStepFile::with('file')->where('workspace_file_id', $file->id)->whereNotNull('superseded_at')->latest('id')->first()
+            : null;
+
+        if (! $version) {
+            return null;
+        }
+
+        foreach ($post->images ?? [] as $slot) {
+            $slotRow = isset($slot['file_id']) ? WorkspaceFile::with('runStepFile')->find($slot['file_id'])?->runStepFile : null;
+
+            if ($slotRow && $slotRow->run_step_id === $version->run_step_id && (int) $slotRow->position === (int) $version->position) {
+                return $version;
+            }
+        }
+
+        return null;
+    }
+
     protected function image(GeniePost $post, string $fileUuid): ?AiRunStepFile
     {
         $file = WorkspaceFile::where('uuid', $fileUuid)->first();

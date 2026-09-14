@@ -462,6 +462,8 @@ return [
     'post_image_removed' => 'Removida da publicação',
     'post_image_deleted' => 'Eliminada da biblioteca',
     'post_image_reattach' => 'Voltar a adicionar',
+    'post_image_restore' => 'Usar esta versão',
+    'post_image_restored' => 'A imagem anterior voltou à publicação.',
     'post_image_reattached' => 'A imagem voltou à publicação.',
     'post_image_missing' => 'Essa imagem não foi gerada pelo Genie para esta publicação.',
     'post_regeneration_started' => 'O Genie está a trabalhar nisso; a publicação atualiza quando terminar.',
