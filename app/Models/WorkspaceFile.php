@@ -11,11 +11,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 use League\Flysystem\FilesystemAdapter;
-use League\Flysystem\Local\LocalFilesystemAdapter;
 
 class WorkspaceFile extends Model
 {
-
     use HasUuid;
     use SoftDeletes;
 
@@ -41,20 +39,22 @@ class WorkspaceFile extends Model
 
     protected $casts = [
         'type' => WorkspaceFileType::class,
-        'source' => WorkspaceFileSource::class
+        'source' => WorkspaceFileSource::class,
     ];
 
     /**
-     * @return HasOne
+     * The run step slot this file fills, when a step generated it.
      */
+    public function runStepFile(): HasOne
+    {
+        return $this->hasOne(AiRunStepFile::class, 'workspace_file_id');
+    }
+
     public function runResponseWorkspaceFile(): HasOne
     {
         return $this->HasOne(RunResponseWorkspaceFile::class, 'run_response_id');
     }
 
-    /**
-     * @return string
-     */
     public function getFullPath(): string
     {
         if ($this->disk === 'external_media') {
@@ -64,9 +64,6 @@ class WorkspaceFile extends Model
         return $this->filesystem()->path($this->path);
     }
 
-    /**
-     * @return string
-     */
     public function getUrl(): string
     {
         if ($this->disk === 'external_media') {
@@ -81,38 +78,26 @@ class WorkspaceFile extends Model
      */
     public static function mimeTypes()
     {
-        return  [
+        return [
             'image/jpg',
             'image/jpeg',
             'image/gif',
-            'image/png'
+            'image/png',
         ];
     }
 
-    /**
-     * @return int
-     */
     public static function maxFileSize(): int
     {
         return 2048; // 2MB
     }
 
-    /**
-     * @return FilesystemAdapter
-     */
     public function getAdapter(): FilesystemAdapter
     {
         return $this->filesystem($this->disk)->getAdapter();
     }
 
-
-    /**
-     * @param string $disk
-     * @return Filesystem
-     */
     public function filesystem(string $disk = ''): Filesystem
     {
         return Storage::disk($disk ?: $this->disk);
     }
-
 }

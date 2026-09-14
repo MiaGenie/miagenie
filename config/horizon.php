@@ -205,7 +205,7 @@ return [
             'maxJobs' => 0,
             'memory' => 256,
             'tries' => 3,
-            // Must exceed RunResponseJob::$timeout, or the supervisor kills the job first.
+            // Must exceed AiRunJob::$timeout, or the supervisor kills the job first.
             'timeout' => 660,
             'nice' => 0,
         ],

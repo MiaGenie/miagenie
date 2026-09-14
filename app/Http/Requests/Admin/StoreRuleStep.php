@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Concerns\Requests\ValidatesStepModality;
 use App\Enums\PostFormat;
 use App\Enums\RuleSubType;
 use App\Models\Rule;
@@ -11,6 +12,8 @@ use Illuminate\Validation\Rule as ValidationRule;
 
 class StoreRuleStep extends FormRequest
 {
+    use ValidatesStepModality;
+
     public function rules(): array
     {
         return [
@@ -20,10 +23,10 @@ class StoreRuleStep extends FormRequest
                 ValidationRule::enum(PostFormat::class),
                 ValidationRule::requiredIf(fn () => $this->subType()?->isGenerator() ?? false),
             ],
+            ...$this->modalityRules(),
             'name' => ['required', 'string', 'max:255'],
             'instructions' => ['nullable', 'string', 'max:10000'],
-            'model_profile_id' => ['required', 'exists:genie_model_profiles,id'],
-            'response_format' => ['required'],
+            'model_profile_id' => ['required', 'exists:genie_model_profiles,id', $this->imageProviderRule()],
             'link_upstream' => ['nullable', 'boolean'],
             'message' => ['required', 'string', 'max:5000'],
             'output' => ['nullable'],
@@ -59,10 +62,8 @@ class StoreRuleStep extends FormRequest
             'description' => $this->input('description'),
             'instructions' => $this->input('instructions'),
             'model_profile_id' => $this->input('model_profile_id'),
-            'response_format' => $this->input('response_format'),
             'link_upstream' => $this->input('link_upstream'),
             'message' => $this->input('message'),
-            'output' => $this->input('output'),
             'requires_review' => $this->input('requires_review'),
             'review_message_user' => $this->input('review_message_user'),
             'review_message_system' => $this->input('review_message_system'),
@@ -70,6 +71,7 @@ class StoreRuleStep extends FormRequest
             'depends_on_field' => $this->input('depends_on_field'),
             'depends_on_option' => $this->input('depends_on_option'),
             'position' => $position,
+            ...$this->modalityAttributes(),
         ]);
     }
 }

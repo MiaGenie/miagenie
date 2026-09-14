@@ -12,6 +12,7 @@ import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
 import DangerButton from "@/Components/Button/DangerButton.vue";
 import X from "@/Icons/X.vue";
 import Trash from "@/Icons/Trash.vue";
+import RunStepImages from "@/Components/Genie/Runs/RunStepImages.vue";
 
 defineOptions({layout: AdminLayout});
 
@@ -53,6 +54,10 @@ const props = defineProps({
     conversation: {
         type: Object,
         default: () => ({})
+    },
+    images: {
+        type: Array,
+        default: () => [],
     },
     isLast: {
         type: Boolean,
@@ -209,6 +214,16 @@ const deleteStep = () => {
                 <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
                     <pre class="wrap-anywhere text-wrap">{{ JSON.stringify(runStep.output, null, 4) }}</pre>
                 </div>
+
+                <template v-if="Number(runStep.modality) === 2">
+                    <div class="pb-2 pl-2 pt-5">
+                        {{ $t('genie.run_step_images') }}
+                    </div>
+                    <RunStepImages v-if="images.length" :images="images"/>
+                    <div v-else class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
+                        {{ blank }}
+                    </div>
+                </template>
 
                 <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.run_prompt') }}

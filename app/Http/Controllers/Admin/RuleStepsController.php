@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Ai\StepAgentFactory;
 use App\Concerns\Controller\GenieFields;
+use App\Enums\Modality;
 use App\Enums\PostFormat;
 use App\Enums\RuleStatus;
 use App\Enums\RuleSubType;
@@ -118,6 +120,8 @@ class RuleStepsController extends Controller
                 ->reject(fn ($subType) => $subType['value'] === RuleSubType::IDEAS_MULTIPLE->value)
                 ->values(),
             'postFormats' => PostFormat::withTitle(),
+            'modalities' => Modality::configurable(),
+            'imageProviders' => StepAgentFactory::IMAGE_PROVIDERS,
             'record' => null,
             'version' => new VersionResource($version),
             'modelProfiles' => ModelProfile::orderBy('position')->get(),
@@ -184,6 +188,8 @@ class RuleStepsController extends Controller
             'ruleTypes' => RuleType::withTitle(),
             'ruleSubTypes' => RuleSubType::withTitle('', $rule->rule_type->value),
             'postFormats' => PostFormat::withTitle(),
+            'modalities' => Modality::configurable(),
+            'imageProviders' => StepAgentFactory::IMAGE_PROVIDERS,
             'record' => new RuleStepResource($record),
             'version' => new VersionResource($version),
             'modelProfiles' => ModelProfile::orderBy('position')->get(),

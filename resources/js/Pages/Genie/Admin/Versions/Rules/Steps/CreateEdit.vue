@@ -57,6 +57,14 @@ const props = defineProps({
         type: Object,
         required: true,
     },
+    modalities: {
+        type: Object,
+        required: true,
+    },
+    imageProviders: {
+        type: Array,
+        required: true,
+    },
     version: {
         type: Object,
         required: true,
@@ -99,6 +107,7 @@ const form = useForm(
         : {
               rule_sub_type: isEdit.value ? props.record.rule_sub_type : "",
               post_format: isEdit.value ? props.record.post_format : "",
+              modality: isEdit.value ? props.record.modality : 1,
               name: isEdit.value ? props.record.name : "",
               description: isEdit.value ? props.record.description : "",
               instructions: isEdit.value ? props.record.instructions : "",
@@ -145,6 +154,26 @@ const ruleSubType = ref({});
 const isFormatStep = computed(() =>
     (ruleSubType.value?.name ?? "").endsWith("_FORMAT"),
 );
+
+/**
+ * An image step's message is the image prompt and its files are the result: it has no response
+ * format and no output field, whatever its sub type would otherwise force.
+ */
+const isImage = computed(() => parseInt(form.modality) === 2);
+
+/**
+ * Whether a provider can generate images; a profile on any other provider cannot be picked for
+ * an image step.
+ */
+const profileSupportsImages = (profile) =>
+    props.imageProviders.includes(profile.provider);
+
+// Kept out of the template: a literal "}}}" inside a mustache would end it early.
+const imagePlaceholders = {
+    brief: "{{{brief}}}",
+    feedback: "{{{feedback}}}",
+    position: "{{{position}}}",
+};
 const ruleType =
     find(props.ruleTypes, ["value", parseInt(props.rule.rule_type)]) ?? {};
 
@@ -161,11 +190,23 @@ watch(
             {};
         isMultiple.value = ruleSubType.value?.name === "BRIEFINGS_MULTIPLE";
 
-        if (isMultiple.value || isFormatStep.value) {
+        if (isImage.value) {
+            form.response_format = "text";
+        } else if (isMultiple.value || isFormatStep.value) {
             form.response_format = "json_schema";
         }
     },
 );
+
+// After the sub-type watcher on purpose: an image step wins over the _FORMAT forcing above.
+watch(isImage, (image) => {
+    if (image) {
+        form.response_format = "text";
+        form.output = [];
+    } else if (isMultiple.value || isFormatStep.value) {
+        form.response_format = "json_schema";
+    }
+});
 
 const dependsOnOptions = () => {
     return (
@@ -408,6 +449,32 @@ const cloneStepInto = (target) => {
                         </template>
                     </VerticalGroup>
 
+                    <VerticalGroup class="form-field mt-lg">
+                        <template #title>
+                            <label for="modality">{{
+                                $t("genie.step_modality")
+                            }}</label>
+                            <LabelSuffix :danger="true">*</LabelSuffix>
+                        </template>
+
+                        <Select
+                            v-model="form.modality"
+                            :error="form.errors.modality !== undefined"
+                            id="modality"
+                            required
+                        >
+                            <template v-for="modality in modalities">
+                                <option :value="modality.value">
+                                    {{ modality.title }}
+                                </option>
+                            </template>
+                        </Select>
+
+                        <template #footer>
+                            <Error :message="form.errors.modality" />
+                        </template>
+                    </VerticalGroup>
+
                     <VerticalGroup
                         v-if="ruleSubType['name'] === 'CHANNELS'"
                         class="form-field mt-lg"
@@ -559,6 +626,9 @@ const cloneStepInto = (target) => {
                                 v-for="option in modelProfiles"
                                 :key="option.id"
                                 :value="option.id"
+                                :disabled="
+                                    isImage && !profileSupportsImages(option)
+                                "
                             >
                                 {{ option.name }} ({{ option.provider }} /
                                 {{ profileModel(option) }})
@@ -589,12 +659,21 @@ const cloneStepInto = (target) => {
                         />
 
                         <template #footer>
+                            <div v-if="isImage" class="text-sm text-gray-500">
+                                {{
+                                    $t(
+                                        "genie.step_modality_image_help",
+                                        imagePlaceholders,
+                                    )
+                                }}
+                            </div>
                             <Error :message="form.errors.message" />
                         </template>
                     </VerticalGroup>
 
                     <VerticalGroup
                         v-if="
+                            !isImage &&
                             ruleType['name'] === 'STRATEGY' &&
                             ruleSubType['name'] !== 'BRIEFINGS_MULTIPLE' &&
                             ruleSubType['name'] !== 'IDEAS_INITIAL' &&
@@ -629,6 +708,7 @@ const cloneStepInto = (target) => {
 
                     <VerticalGroup
                         v-if="
+                            !isImage &&
                             (ruleType['name'] === 'DRAFTS' ||
                                 ruleType['name'] === 'PRE_POSTS' ||
                                 ruleSubType['name'] === 'BRIEFINGS_MULTIPLE') &&
@@ -708,7 +788,7 @@ const cloneStepInto = (target) => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup class="form-field mt-lg">
+                    <VerticalGroup v-if="!isImage" class="form-field mt-lg">
                         <template #title>
                             <label for="response_format">{{
                                 $t("genie.step_response_format")

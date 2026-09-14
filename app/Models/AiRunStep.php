@@ -70,6 +70,19 @@ class AiRunStep extends Model
         return $this->hasOne(AiRunStepReview::class, 'run_step_id')->latestOfMany();
     }
 
+    /**
+     * The files this turn produced, one row per slot and version.
+     *
+     * An image step fills one slot per brief; a regenerated slot keeps its superseded rows. Use
+     * `images()->current()` for what fills each slot now.
+     */
+    public function images(): HasMany
+    {
+        return $this->hasMany(AiRunStepFile::class, 'run_step_id')
+            ->oldest('position')
+            ->oldest('id');
+    }
+
     public function files(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -77,7 +90,17 @@ class AiRunStep extends Model
             'genie_ai_run_step_files',
             'run_step_id',
             'workspace_file_id',
-        )->withTimestamps();
+        )->withPivot([
+            'position',
+            'brief',
+            'prompt',
+            'feedback',
+            'mode',
+            'parent_file_id',
+            'superseded_at',
+            'revising_at',
+            'revision_error',
+        ])->withTimestamps();
     }
 
     /**

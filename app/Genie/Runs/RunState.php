@@ -61,7 +61,7 @@ class RunState
             ['step_id' => $step->id],
             [
                 'position' => $step->position,
-                'modality' => Modality::TEXT,
+                'modality' => $step->modality ?? Modality::TEXT,
                 'status' => RunStatus::SKIPPED,
             ]
         );
