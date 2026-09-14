@@ -3,8 +3,8 @@
 namespace Tests\Unit;
 
 use App\Enums\PostFormat;
-use App\Genie\Ideas\PublishTargets;
 use App\Support\PostFormats;
+use App\Support\PublishTargets;
 use Tests\TestCase;
 
 class PublishTargetsTest extends TestCase

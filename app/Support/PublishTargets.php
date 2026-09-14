@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Genie\Ideas;
+namespace App\Support;
 
 use App\Enums\PostFormat;
-use App\Support\PostFormats;
 use Inovector\Mixpost\Models\Account;
 
 /**
@@ -11,6 +10,7 @@ use Inovector\Mixpost\Models\Account;
  *
  * A provider is on offer when it accepts the idea's format (`PostFormats`) and the workspace has an
  * account for it. Built once over the workspace's configured provider keys so the rest is pure.
+ * Shared by the ideas and posts run types and by their workspace pages.
  */
 final class PublishTargets
 {

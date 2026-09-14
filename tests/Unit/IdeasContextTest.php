@@ -14,6 +14,7 @@ use App\Models\Strategy;
 use App\Models\Version;
 use App\Models\VersionField;
 use App\Models\VersionFieldSubField;
+use App\Support\PublishTargets;
 use Illuminate\Support\Collection;
 use Tests\TestCase;
 
@@ -100,9 +101,11 @@ class IdeasContextTest extends TestCase
         return array_merge([$subField], $descendants);
     }
 
-    protected function context(AiRun $run, IdeasRequest $request, ?PostFormat $format = PostFormat::CAROUSEL, int $share = 3): IdeasContext
+    protected function context(AiRun $run, IdeasRequest $request, ?PostFormat $format = PostFormat::CAROUSEL, int $share = 3, ?PublishTargets $targets = null): IdeasContext
     {
-        return new IdeasContext($run, new RuleStep(['post_format' => $format]), $request, $share, 'en-GB');
+        $targets ??= new PublishTargets(['instagram', 'youtube', 'gbp']);
+
+        return new IdeasContext($run, new RuleStep(['post_format' => $format]), $request, $share, 'en-GB', $targets);
     }
 
     public function test_a_requested_pillar_is_rendered_with_everything_the_strategy_says_about_it(): void
@@ -179,5 +182,38 @@ class IdeasContextTest extends TestCase
         $context = $this->context($run, new IdeasRequest(null, null, FunnelStage::GLOBAL, 5), PostFormat::SHORT_VIDEO);
 
         $this->assertSame('Instagram, Facebook Page', $context->channels());
+    }
+
+    public function test_connected_channels_are_every_provider_with_an_account(): void
+    {
+        $run = $this->runWithPillars();
+        $request = new IdeasRequest(null, null, FunnelStage::GLOBAL, 5);
+
+        $this->assertSame('Instagram, Youtube, Gbp', $this->context($run, $request, PostFormat::CAROUSEL)->connectedChannels());
+        $this->assertSame('Instagram, Youtube, Gbp', $this->context($run, $request, null)->connectedChannels());
+    }
+
+    public function test_available_channels_are_the_connected_ones_that_carry_the_format(): void
+    {
+        $run = $this->runWithPillars();
+        $request = new IdeasRequest(null, null, FunnelStage::GLOBAL, 5);
+
+        $this->assertSame('Instagram, Youtube', $this->context($run, $request, PostFormat::SHORT_VIDEO)->availableChannels());
+        $this->assertSame('Instagram, Gbp', $this->context($run, $request, PostFormat::SIMPLE_POST)->availableChannels());
+        $this->assertSame('Instagram, Youtube, Gbp', $this->context($run, $request, null)->availableChannels());
+    }
+
+    public function test_channel_placeholders_fall_back_to_a_text_when_empty(): void
+    {
+        $run = $this->runWithPillars();
+        $request = new IdeasRequest(null, null, FunnelStage::GLOBAL, 5);
+
+        $none = $this->context($run, $request, PostFormat::CAROUSEL, 3, new PublishTargets([]));
+        $videoOnly = $this->context($run, $request, PostFormat::CAROUSEL, 3, new PublishTargets(['youtube']));
+
+        $this->assertSame(__('genie.ideas_no_connected_channels'), $none->connectedChannels());
+        $this->assertSame(__('genie.idea_publish_to_none'), $none->availableChannels());
+        $this->assertSame('Youtube', $videoOnly->connectedChannels());
+        $this->assertSame(__('genie.idea_publish_to_none'), $videoOnly->availableChannels());
     }
 }

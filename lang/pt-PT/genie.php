@@ -437,6 +437,7 @@ return [
     'idea_publish_to' => 'Publicar em',
     'idea_publish_to_desc' => 'As redes sociais para as quais será gerada uma publicação. Só são oferecidas as redes com uma conta ligada que aceitem o formato escolhido.',
     'idea_publish_to_none' => 'Nenhuma conta ligada aceita este formato.',
+    'ideas_no_connected_channels' => 'Nenhuma conta social está ligada.',
     'idea_funnel_stage_desc' => 'A fase do funil a que esta ideia se dirige.',
     'idea_content_pillar_desc' => 'O pilar de conteúdo a que esta ideia pertence.',
 

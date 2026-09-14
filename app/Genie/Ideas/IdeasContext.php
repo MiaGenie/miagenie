@@ -11,6 +11,7 @@ use App\Models\AiRun;
 use App\Models\Idea;
 use App\Models\RuleStep;
 use App\Support\PostFormats;
+use App\Support\PublishTargets;
 use Illuminate\Support\Str;
 
 /**
@@ -18,6 +19,8 @@ use Illuminate\Support\Str;
  *
  * `{{{pillar}}}` and `{{{funnel}}}` are what the request was about; `{{{format}}}`,
  * `{{{channels}}}`, `{{{count}}}` and `{{{existing}}}` describe the step's own slice of it.
+ * `{{{connected_channels}}}` and `{{{available_channels}}}` are the workspace's accounts: all of
+ * them, and those that accept the step's format.
  */
 class IdeasContext implements PromptContext
 {
@@ -37,6 +40,7 @@ class IdeasContext implements PromptContext
         protected IdeasRequest $request,
         protected int $share,
         protected string $locale,
+        protected ?PublishTargets $targets = null,
     ) {}
 
     /**
@@ -49,6 +53,8 @@ class IdeasContext implements PromptContext
             'funnel' => $this->funnel(),
             'format' => $this->format(),
             'channels' => $this->channels(),
+            'connected_channels' => $this->connectedChannels(),
+            'available_channels' => $this->availableChannels(),
             'count' => (string) $this->share,
             'existing' => $this->existing(),
         ];
@@ -100,7 +106,28 @@ class IdeasContext implements PromptContext
             $this->step->post_format,
         );
 
-        return implode(', ', array_map(fn (string $key) => Str::headline($key), $channels));
+        return $this->headlines($channels);
+    }
+
+    /**
+     * Every provider the workspace has an account for, whatever the format.
+     */
+    public function connectedChannels(): string
+    {
+        $channels = $this->targets()->configured();
+
+        return $channels === [] ? $this->text('ideas_no_connected_channels') : $this->headlines($channels);
+    }
+
+    /**
+     * The providers with an account that accept this step's format — what a generated idea will be
+     * offered to publish to; every connected one on the context step.
+     */
+    public function availableChannels(): string
+    {
+        $channels = $this->targets()->available($this->step->post_format);
+
+        return $channels === [] ? $this->text('idea_publish_to_none') : $this->headlines($channels);
     }
 
     /**
@@ -154,6 +181,19 @@ class IdeasContext implements PromptContext
         }
 
         return $titles->map(fn (string $title) => '- '.$title)->implode("\n");
+    }
+
+    /**
+     * @param  list<string>  $keys
+     */
+    protected function headlines(array $keys): string
+    {
+        return implode(', ', array_map(fn (string $key) => Str::headline($key), $keys));
+    }
+
+    protected function targets(): PublishTargets
+    {
+        return $this->targets ??= PublishTargets::forWorkspace($this->run->workspace_id);
     }
 
     protected function text(string $key): string

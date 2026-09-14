@@ -489,6 +489,7 @@ return [
     'idea_publish_to' => 'Publish to',
     'idea_publish_to_desc' => 'The social channels a post will be generated for. Only channels with a connected account that accept the chosen format are offered.',
     'idea_publish_to_none' => 'No connected account accepts this format.',
+    'ideas_no_connected_channels' => 'No social account is connected.',
     'idea_funnel_stage_desc' => 'The stage of the funnel this idea speaks to.',
     'idea_content_pillar_desc' => 'The content pillar this idea belongs to.',
 
