@@ -36,6 +36,7 @@ class IdeasController
     public function index(Request $request): Response
     {
         $records = IdeaQuery::apply($request)
+            ->with('post.mixpostPost')
             ->latest()
             ->paginate(100)
             ->onEachSide(1)

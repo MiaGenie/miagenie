@@ -37,6 +37,7 @@ import emitter from "@/Services/emitter.js";
 import ls from "@/Services/ls.js";
 import PureSuccessButton from "@/Components/Button/Genie/PureSuccessButton.vue";
 import ArrowUturnLeft from "@/Icons/ArrowUturnLeft.vue";
+import Sparkles from "@/Icons/Sparkles.vue";
 import SuccessButton from "@/Components/Button/SuccessButton.vue";
 import GenerateIdeasModal from "@/Components/Genie/Ideas/GenerateIdeasModal.vue";
 
@@ -108,6 +109,7 @@ const isFiltered = ref(false);
 const isLoading = ref(false);
 const confirmationDeletion = ref(false);
 const confirmationRestore = ref(false);
+const confirmationPosts = ref(false);
 const showGenerate = ref(false);
 const view = ref(ls.get('genie.ideas.view') || 'cards');
 
@@ -257,6 +259,34 @@ const restoreIdeas = () => {
         },
     });
 
+}
+
+/**
+ * One Mixpost draft per selected approved idea; the runs fill them in the background.
+ */
+const createPosts = () => {
+    router.post(route('genie.posts.generateMultiple', {workspace: workspaceCtx.id}), {
+        ideas: selectedRecords.value,
+        filter: currentFilter.value
+    }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            deselectAllRecords();
+        },
+        onFinish: () => {
+            confirmationPosts.value = false;
+        },
+    });
+}
+
+/**
+ * Which rows can be selected on the current tab: pending and trashed for the bulk trash/restore,
+ * approved without a post for the bulk "Create posts".
+ */
+const selectable = (item) => {
+    const name = itemStatus(item)?.name;
+
+    return name === 'PENDING_REVIEW' || name === 'TRASH' || (name === 'APPROVED' && !item.post);
 }
 
 const itemStatus = (item) => {
@@ -441,10 +471,13 @@ const statusValue = (status) => {
         <div class="w-full row-px">
 
             <SelectableBar :count="selectedRecords.length" @close="deselectAllRecords">
+                <PureButton v-if="statusValue(currentFilter.status)?.name === 'APPROVED'" @click="confirmationPosts = true" v-tooltip="$t('genie.create_posts')" class="mx-md text-primary-500">
+                    <Sparkles/>
+                </PureButton>
                 <PureSuccessButton v-if="statusValue(currentFilter.status)?.name === 'TRASH'" @click="confirmationRestore = true" v-tooltip="$t('general.restore')" class="mx-md">
                     <ArrowUturnLeft/>
                 </PureSuccessButton>
-                <PureDangerButton @click="confirmationDeletion = true" v-tooltip="$t('general.delete')" class="mx-md">
+                <PureDangerButton v-if="statusValue(currentFilter.status)?.name !== 'APPROVED'" @click="confirmationDeletion = true" v-tooltip="$t('general.delete')" class="mx-md">
                     <TrashIcon/>
                 </PureDangerButton>
             </SelectableBar>
@@ -459,7 +492,7 @@ const statusValue = (status) => {
                 >
                     <Checkbox
                         v-model:checked="toggleSelectRecordsOnPage"
-                        :disabled="statusValue(currentFilter.status)?.name !== 'TRASH' && statusValue(currentFilter.status)?.name !== 'PENDING_REVIEW'"
+                        :disabled="!['TRASH', 'PENDING_REVIEW', 'APPROVED'].includes(statusValue(currentFilter.status)?.name)"
                     />
                     <span class="text-sm text-gray-500">{{ $t('genie.select_all') }}</span>
                 </div>
@@ -473,7 +506,7 @@ const statusValue = (status) => {
                         <template #checkbox>
                             <Checkbox
                                 v-model:checked="selectedRecords"
-                                :disabled="itemStatus(item).name !== 'PENDING_REVIEW' && itemStatus(item).name !== 'TRASH'"
+                                :disabled="!selectable(item)"
                                 :value="item.id"
                             />
                         </template>
@@ -548,6 +581,8 @@ const statusValue = (status) => {
                                 {{ $t('general.status') }}
                             </TableCell>
 
+                            <TableCell component="th" scope="col" class="w-10"/>
+
                         </TableRow>
 
                     </template>
@@ -561,7 +596,7 @@ const statusValue = (status) => {
                                 <template #checkbox>
                                     <Checkbox
                                         v-model:checked="selectedRecords"
-                                        :disabled="itemStatus(item).name !== 'PENDING_REVIEW' && itemStatus(item).name !== 'TRASH'"
+                                        :disabled="!selectable(item)"
                                         :value="item.id"
                                     />
                                 </template>
@@ -617,6 +652,21 @@ const statusValue = (status) => {
                 }}
             </SecondaryButton>
             <SuccessButton @click="restoreIdeas">{{ $t("general.restore") }}</SuccessButton>
+        </template>
+    </ConfirmationModal>
+    <ConfirmationModal :show="confirmationPosts" @close="confirmationPosts = false">
+        <template #header>
+            {{ $t("genie.create_posts") }}
+        </template>
+        <template #body>
+            {{ $t("genie.create_posts_confirm") }}
+        </template>
+        <template #footer>
+            <SecondaryButton @click="confirmationPosts = false" class="mr-xs rtl:mr-0 rtl:ml-xs">{{
+                    $t("general.cancel")
+                }}
+            </SecondaryButton>
+            <WarningButton @click="createPosts">{{ $t("genie.create_posts") }}</WarningButton>
         </template>
     </ConfirmationModal>
     <GenerateIdeasModal

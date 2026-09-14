@@ -7,6 +7,7 @@ use App\Enums\RuleType;
 use App\Enums\SubFieldType;
 use App\Enums\VersionGroupType;
 use App\Genie\Ideas\IdeaSchema;
+use App\Genie\Posts\PostSchema;
 use App\Models\RuleStep;
 use App\Models\VersionField;
 use App\Models\VersionFieldSubField;
@@ -127,6 +128,7 @@ class StepSchemaBuilder
         // and hasSchema() see.
         $defined = match ($step->rule?->rule_type) {
             RuleType::IDEAS => IdeaSchema::preview($locale),
+            RuleType::POSTS => PostSchema::preview($locale),
             default => null,
         };
 

@@ -7,8 +7,8 @@ use App\Concerns\Enum\WithTitle;
 
 enum RuleType: int
 {
-    use WithTitle;
     use FromName;
+    use WithTitle;
 
     case STRATEGY = 1;
     case IDEAS = 2;
@@ -16,8 +16,10 @@ enum RuleType: int
     case PRE_POSTS = 4;
 
     /**
-     * @return string
+     * Turns an approved idea into a Mixpost draft: caption plus one generated image per brief.
      */
+    case POSTS = 5;
+
     public function title(): string
     {
         return match ($this) {
@@ -25,6 +27,7 @@ enum RuleType: int
             self::IDEAS => 'ideas',
             self::DRAFTS => 'drafts',
             self::PRE_POSTS => 'pre_posts',
+            self::POSTS => 'posts',
         };
     }
 }

@@ -8,6 +8,8 @@ import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import Flex from "@/Components/Layout/Flex.vue";
 import useIdeaLabels from "@/Composables/Genie/useIdeaLabels.js";
 import ProviderIcon from "@/Components/Account/ProviderIcon.vue";
+import Sparkles from "@/Icons/Sparkles.vue";
+import PureButton from "@/Components/Button/PureButton.vue";
 
 const {t: $t} = useI18n();
 
@@ -26,6 +28,18 @@ const edit = () => {
     router.get(route('genie.ideas.edit', {
         workspace: workspaceCtx.id,
         idea: props.item.id,
+    }));
+}
+
+/**
+ * The Mixpost draft Genie produced from this idea, when there is one.
+ */
+const openPost = () => {
+    if (!props.item.post?.mixpost_post) return;
+
+    router.get(route('mixpost.posts.edit', {
+        workspace: workspaceCtx.id,
+        post: props.item.post.mixpost_post,
     }));
 }
 </script>
@@ -76,6 +90,17 @@ const edit = () => {
             <Badge :variant="statusBadge()">
                 {{ $t('genie.' + ideaStatus().title) }}
             </Badge>
+        </TableCell>
+
+        <TableCell class="w-10">
+            <PureButton
+                v-if="item.post?.mixpost_post"
+                v-tooltip="$t('genie.view_post')"
+                class="text-primary-500"
+                @click="openPost"
+            >
+                <Sparkles class="w-5 h-5"/>
+            </PureButton>
         </TableCell>
     </TableRow>
 </template>

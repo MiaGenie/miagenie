@@ -4,6 +4,8 @@ import {inject} from "vue";
 import {router} from "@inertiajs/vue3";
 import Badge from "@/Components/DataDisplay/Badge.vue";
 import useIdeaLabels from "@/Composables/Genie/useIdeaLabels.js";
+import Sparkles from "@/Icons/Sparkles.vue";
+import PureButton from "@/Components/Button/PureButton.vue";
 
 const {t: $t} = useI18n();
 
@@ -24,6 +26,18 @@ const edit = () => {
         idea: props.item.id,
     }));
 }
+
+/**
+ * The Mixpost draft Genie produced from this idea, when there is one.
+ */
+const openPost = () => {
+    if (!props.item.post?.mixpost_post) return;
+
+    router.get(route('mixpost.posts.edit', {
+        workspace: workspaceCtx.id,
+        post: props.item.post.mixpost_post,
+    }));
+}
 </script>
 <template>
     <div class="relative flex flex-col h-full bg-white border border-gray-100 rounded-lg p-md hover:border-primary-100 transition-colors ease-in-out duration-200">
@@ -32,7 +46,17 @@ const edit = () => {
                 {{ item.theme }}
             </div>
 
-            <slot name="checkbox"/>
+            <div class="flex items-center gap-xs shrink-0">
+                <PureButton
+                    v-if="item.post?.mixpost_post"
+                    v-tooltip="$t('genie.view_post')"
+                    class="text-primary-500"
+                    @click="openPost"
+                >
+                    <Sparkles class="w-5 h-5"/>
+                </PureButton>
+                <slot name="checkbox"/>
+            </div>
         </div>
 
         <div class="mt-sm flex flex-wrap gap-xs text-xs cursor-pointer" @click="edit">

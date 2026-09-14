@@ -57,10 +57,6 @@ const props = defineProps({
         type: Object,
         required: true,
     },
-    modalities: {
-        type: Object,
-        required: true,
-    },
     imageProviders: {
         type: Array,
         required: true,
@@ -107,7 +103,6 @@ const form = useForm(
         : {
               rule_sub_type: isEdit.value ? props.record.rule_sub_type : "",
               post_format: isEdit.value ? props.record.post_format : "",
-              modality: isEdit.value ? props.record.modality : 1,
               name: isEdit.value ? props.record.name : "",
               description: isEdit.value ? props.record.description : "",
               instructions: isEdit.value ? props.record.instructions : "",
@@ -137,6 +132,11 @@ const form = useForm(
           },
 );
 
+// A step that applies to every format stores null; the select shows it as the "any format" option.
+if (form.post_format === null) {
+    form.post_format = "";
+}
+
 const isMultiple = ref(false);
 
 /**
@@ -148,18 +148,21 @@ const profileModel = (profile) =>
 const ruleSubType = ref({});
 
 /**
- * A format step generates for one post format; its output is defined in code, so it always
- * returns structured output and has no output field to pick.
+ * A generator step's output is defined in code, so it always returns structured output and has
+ * no output field to pick. Whether it must name a post format is the sub type's call: an ideas
+ * step does, a posts step applies to every format unless it names one.
  */
-const isFormatStep = computed(() =>
-    (ruleSubType.value?.name ?? "").endsWith("_FORMAT"),
-);
+const isGeneratorStep = computed(() => Boolean(ruleSubType.value?.generator));
+const formatRequired = computed(() => Boolean(ruleSubType.value?.format_required));
+
+
 
 /**
  * An image step's message is the image prompt and its files are the result: it has no response
- * format and no output field, whatever its sub type would otherwise force.
+ * format and no output field. The sub type decides (posts image steps draw, everything else
+ * writes); the server writes the modality on save.
  */
-const isImage = computed(() => parseInt(form.modality) === 2);
+const isImage = computed(() => Boolean(ruleSubType.value?.image));
 
 /**
  * Whether a provider can generate images; a profile on any other provider cannot be picked for
@@ -173,6 +176,8 @@ const imagePlaceholders = {
     brief: "{{{brief}}}",
     feedback: "{{{feedback}}}",
     position: "{{{position}}}",
+    number: "{{{idea.IMAGE#}}}",
+    total: "{{{idea.IMAGES#}}}",
 };
 const ruleType =
     find(props.ruleTypes, ["value", parseInt(props.rule.rule_type)]) ?? {};
@@ -192,7 +197,7 @@ watch(
 
         if (isImage.value) {
             form.response_format = "text";
-        } else if (isMultiple.value || isFormatStep.value) {
+        } else if (isMultiple.value || isGeneratorStep.value) {
             form.response_format = "json_schema";
         }
     },
@@ -203,7 +208,7 @@ watch(isImage, (image) => {
     if (image) {
         form.response_format = "text";
         form.output = [];
-    } else if (isMultiple.value || isFormatStep.value) {
+    } else if (isMultiple.value || isGeneratorStep.value) {
         form.response_format = "json_schema";
     }
 });
@@ -418,24 +423,24 @@ const cloneStepInto = (target) => {
                     </VerticalGroup>
 
                     <VerticalGroup
-                        v-if="isFormatStep"
+                        v-if="isGeneratorStep"
                         class="form-field mt-lg"
                     >
                         <template #title>
                             <label for="post_format">{{
                                 $t("genie.step_post_format")
                             }}</label>
-                            <LabelSuffix :danger="true">*</LabelSuffix>
+                            <LabelSuffix v-if="formatRequired" :danger="true">*</LabelSuffix>
                         </template>
 
                         <Select
                             v-model="form.post_format"
                             :error="form.errors.post_format !== undefined"
                             id="post_format"
-                            required
+                            :required="formatRequired"
                         >
-                            <option value="" disabled>
-                                {{ $t("genie.post_format") }}
+                            <option value="" :disabled="formatRequired">
+                                {{ formatRequired ? $t("genie.post_format") : $t("genie.post_format_any") }}
                             </option>
                             <template v-for="format in postFormats">
                                 <option :value="format.value">
@@ -446,32 +451,6 @@ const cloneStepInto = (target) => {
 
                         <template #footer>
                             <Error :message="form.errors.post_format" />
-                        </template>
-                    </VerticalGroup>
-
-                    <VerticalGroup class="form-field mt-lg">
-                        <template #title>
-                            <label for="modality">{{
-                                $t("genie.step_modality")
-                            }}</label>
-                            <LabelSuffix :danger="true">*</LabelSuffix>
-                        </template>
-
-                        <Select
-                            v-model="form.modality"
-                            :error="form.errors.modality !== undefined"
-                            id="modality"
-                            required
-                        >
-                            <template v-for="modality in modalities">
-                                <option :value="modality.value">
-                                    {{ modality.title }}
-                                </option>
-                            </template>
-                        </Select>
-
-                        <template #footer>
-                            <Error :message="form.errors.modality" />
                         </template>
                     </VerticalGroup>
 
@@ -587,7 +566,8 @@ const cloneStepInto = (target) => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup class="form-field mt-lg">
+                    <!-- An image call has one channel, the message; instructions are never sent for an image step. -->
+                    <VerticalGroup v-if="!isImage" class="form-field mt-lg">
                         <template #title>
                             <label for="instructions">{{
                                 $t("genie.step_instructions")
@@ -800,7 +780,7 @@ const cloneStepInto = (target) => {
                             v-model="form.response_format"
                             :error="form.errors.response_format !== undefined"
                             id="response_format"
-                            :disabled="isMultiple || isFormatStep"
+                            :disabled="isMultiple || isGeneratorStep"
                             required
                         >
                             <option value="text">text</option>

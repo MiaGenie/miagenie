@@ -4,6 +4,8 @@ namespace Tests\Unit;
 
 use App\Enums\RuleType;
 use App\Genie\Ideas\IdeasRunner;
+use App\Genie\Posts\PostsRunner;
+use App\Genie\Posts\PostsRunState;
 use App\Genie\Runs\Runners;
 use App\Genie\Runs\RunState;
 use App\Genie\Strategy\StrategyRunner;
@@ -24,6 +26,13 @@ class RunnersTest extends TestCase
         $this->assertInstanceOf(IdeasRunner::class, Runners::for(RuleType::IDEAS));
         $this->assertInstanceOf(RunState::class, Runners::stateFor(RuleType::IDEAS));
         $this->assertNotInstanceOf(StrategyRunState::class, Runners::stateFor(RuleType::IDEAS));
+    }
+
+    public function test_a_posts_run_is_driven_by_the_posts_runner(): void
+    {
+        $this->assertTrue(Runners::supports(RuleType::POSTS));
+        $this->assertInstanceOf(PostsRunner::class, Runners::for(RuleType::POSTS));
+        $this->assertInstanceOf(PostsRunState::class, Runners::stateFor(RuleType::POSTS));
     }
 
     public function test_a_rule_type_without_a_runner_is_refused(): void

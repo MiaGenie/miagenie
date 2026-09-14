@@ -93,6 +93,22 @@ class ImageStore
     }
 
     /**
+     * Mark a slot's current file as being redone, so pages can show it and nobody starts a second one.
+     */
+    public function markRevising(AiRunStepFile $image): void
+    {
+        $image->update(['revising_at' => now(), 'revision_error' => null]);
+    }
+
+    /**
+     * A revision did not produce a file: the slot keeps its image and remembers why.
+     */
+    public function markRevisionFailed(AiRunStepFile $image, string $error): void
+    {
+        $image->update(['revising_at' => null, 'revision_error' => mb_substr($error, 0, 255)]);
+    }
+
+    /**
      * The SDK only reports a MIME type; the extension follows from it, PNG being what OpenAI returns.
      */
     protected function extensionFor(string $mime): string

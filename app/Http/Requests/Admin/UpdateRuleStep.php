@@ -20,7 +20,7 @@ class UpdateRuleStep extends FormRequest
             'post_format' => [
                 'nullable',
                 ValidationRule::enum(PostFormat::class),
-                ValidationRule::requiredIf(fn () => $this->step()->rule_sub_type?->isGenerator() ?? false),
+                ValidationRule::requiredIf(fn () => $this->step()->rule_sub_type?->requiresPostFormat() ?? false),
             ],
             ...$this->modalityRules(),
             'name' => ['required', 'string', 'max:255'],
@@ -44,6 +44,11 @@ class UpdateRuleStep extends FormRequest
     protected function step(): RuleStep
     {
         return RuleStep::firstOrFailByUuid($this->route('step'));
+    }
+
+    protected function modalitySubType(): ?RuleSubType
+    {
+        return $this->step()->rule_sub_type;
     }
 
     public function handle(): int

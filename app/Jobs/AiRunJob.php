@@ -53,6 +53,10 @@ class AiRunJob implements ShouldQueue
 
     public function __construct(public AiRun $run)
     {
+        // Queued bare: loaded relations are re-loaded on the worker through the global scopes,
+        // before handle() has set the current workspace.
+        $this->run = $run->withoutRelations();
+
         $this->onQueue(self::QUEUE);
     }
 

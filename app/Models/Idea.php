@@ -10,6 +10,7 @@ use App\Enums\PostFormat;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 use Inovector\Mixpost\Concerns\OwnedByWorkspace;
 
@@ -84,6 +85,16 @@ class Idea extends Model
     public function runStep(): BelongsTo
     {
         return $this->belongsTo(AiRunStep::class, 'run_step_id');
+    }
+
+    /**
+     * The post Genie produced from this idea, while its Mixpost draft is not trashed.
+     */
+    public function post(): HasOne
+    {
+        return $this->hasOne(GeniePost::class, 'idea_id')
+            ->whereHas('mixpostPost')
+            ->latestOfMany();
     }
 
     public function drafts(): HasMany

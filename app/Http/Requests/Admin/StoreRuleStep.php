@@ -21,7 +21,7 @@ class StoreRuleStep extends FormRequest
             'post_format' => [
                 'nullable',
                 ValidationRule::enum(PostFormat::class),
-                ValidationRule::requiredIf(fn () => $this->subType()?->isGenerator() ?? false),
+                ValidationRule::requiredIf(fn () => $this->subType()?->requiresPostFormat() ?? false),
             ],
             ...$this->modalityRules(),
             'name' => ['required', 'string', 'max:255'],
@@ -39,13 +39,18 @@ class StoreRuleStep extends FormRequest
     }
 
     /**
-     * A generator step must name the format it generates for; any other has none.
+     * An ideas generator step must name the format it generates for; a posts step may.
      */
     protected function subType(): ?RuleSubType
     {
         $value = $this->input('rule_sub_type');
 
         return is_numeric($value) ? RuleSubType::tryFrom((int) $value) : null;
+    }
+
+    protected function modalitySubType(): ?RuleSubType
+    {
+        return $this->subType();
     }
 
     public function handle(): RuleStep

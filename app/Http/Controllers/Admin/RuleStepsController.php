@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Ai\StepAgentFactory;
 use App\Concerns\Controller\GenieFields;
-use App\Enums\Modality;
 use App\Enums\PostFormat;
 use App\Enums\RuleStatus;
 use App\Enums\RuleSubType;
@@ -116,11 +115,10 @@ class RuleStepsController extends Controller
             'rule' => new RuleResource($rule),
             'ruleTypes' => RuleType::withTitle(),
             // IDEAS_MULTIPLE is the legacy per-pillar step; a new ideas step is a format step.
-            'ruleSubTypes' => RuleSubType::withTitle('', $rule->rule_type->value)
+            'ruleSubTypes' => RuleSubType::forEditor($rule->rule_type->value)
                 ->reject(fn ($subType) => $subType['value'] === RuleSubType::IDEAS_MULTIPLE->value)
                 ->values(),
             'postFormats' => PostFormat::withTitle(),
-            'modalities' => Modality::configurable(),
             'imageProviders' => StepAgentFactory::IMAGE_PROVIDERS,
             'record' => null,
             'version' => new VersionResource($version),
@@ -186,9 +184,8 @@ class RuleStepsController extends Controller
             'rule' => new RuleResource($rule),
             'targetRules' => RuleResource::collection($targetRules),
             'ruleTypes' => RuleType::withTitle(),
-            'ruleSubTypes' => RuleSubType::withTitle('', $rule->rule_type->value),
+            'ruleSubTypes' => RuleSubType::forEditor($rule->rule_type->value),
             'postFormats' => PostFormat::withTitle(),
-            'modalities' => Modality::configurable(),
             'imageProviders' => StepAgentFactory::IMAGE_PROVIDERS,
             'record' => new RuleStepResource($record),
             'version' => new VersionResource($version),

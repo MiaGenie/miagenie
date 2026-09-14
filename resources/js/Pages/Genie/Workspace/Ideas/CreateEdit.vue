@@ -1,6 +1,6 @@
 <script setup>
 import {Head, router, useForm} from '@inertiajs/vue3';
-import {computed, inject, watch} from "vue";
+import {computed, inject, ref, watch} from "vue";
 import {useI18n} from "vue-i18n";
 import useRouter from "@/Composables/useRouter";
 import {cloneDeep, find} from "lodash";
@@ -26,6 +26,9 @@ import ArrowUturnLeft from "@/Icons/ArrowUturnLeft.vue";
 import PureDangerButton from "@/Components/Button/PureDangerButton.vue";
 import Plus from "@/Icons/Plus.vue";
 import ProviderIcon from "@/Components/Account/ProviderIcon.vue";
+import WarningButton from "@/Components/Button/WarningButton.vue";
+import Sparkles from "@/Icons/Sparkles.vue";
+import ArrowTopRightOnSquare from "@/Icons/ArrowTopRightOnSquare.vue";
 
 const {t: $t} = useI18n()
 
@@ -223,6 +226,25 @@ const backToList = () => {
             funnel_stage: props.funnelStage > 0 ? props.funnelStage : null,
         }
     ));
+}
+
+/**
+ * Genie post: create the Mixpost draft and start the run, or open the draft that already exists.
+ */
+const creatingPost = ref(false);
+
+const createPost = () => {
+    creatingPost.value = true;
+
+    router.put(route('genie.posts.generate', {workspace: workspaceCtx.id, idea: props.record.id}), {}, {
+        onFinish: () => {
+            creatingPost.value = false;
+        },
+    });
+}
+
+const viewPost = () => {
+    router.get(route('mixpost.posts.edit', {workspace: workspaceCtx.id, post: props.record.post.mixpost_post}));
 }
 
 const deleteIdea = () => {
@@ -542,6 +564,32 @@ const approveIdea = () => {
                             {{ $t("general.close") }}
                             <template #icon>
                                 <X/>
+                            </template>
+                        </SecondaryButton>
+
+                        <WarningButton
+                            v-if="isEdit && formStatus().name === 'APPROVED' && !record.post"
+                            type="button"
+                            @click="createPost"
+                            :isLoading="creatingPost"
+                            :disabled="creatingPost || form.isDirty"
+                            :hidden-text-on-small-screen=true
+                        >
+                            {{ $t("genie.create_post") }}
+                            <template #icon>
+                                <Sparkles/>
+                            </template>
+                        </WarningButton>
+
+                        <SecondaryButton
+                            v-if="isEdit && record.post?.mixpost_post"
+                            type="button"
+                            @click="viewPost"
+                            :hidden-text-on-small-screen=true
+                        >
+                            {{ $t("genie.view_post") }}
+                            <template #icon>
+                                <ArrowTopRightOnSquare/>
                             </template>
                         </SecondaryButton>
 

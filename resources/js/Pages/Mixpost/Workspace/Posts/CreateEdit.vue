@@ -1,5 +1,5 @@
 <script setup>
-import { computed, inject, provide, reactive, ref, watch } from 'vue'
+import { computed, inject, onBeforeUnmount, onMounted, provide, reactive, ref, watch } from 'vue'
 import { Head, useForm, router } from '@inertiajs/vue3'
 import { cloneDeep, debounce } from 'lodash'
 import useMounted from '@/Composables/useMounted'
@@ -24,6 +24,8 @@ import PostActivity from '@/Components/PostActivity/PostActivity.vue'
 import ChatBubbleBottomCenterText from '@/Icons/ChatBubbleBottomCenterText.vue'
 import SidebarIcon from '@/Icons/Sidebar.vue'
 import PostActivitySubscription from '@/Components/PostActivity/Subscription.vue'
+import Preloader from '@/Components/Util/Preloader.vue'
+import GeniePanel from '@/Components/Genie/Posts/GeniePanel.vue'
 
 const props = defineProps({
   post: {
@@ -41,6 +43,11 @@ const props = defineProps({
   prefill: {
     type: Object,
     default: () => ({})
+  },
+  // Set when Genie produced this post from an idea; drives the Genie panel and the busy state.
+  geniePost: {
+    type: [Object, null],
+    default: null
   }
 })
 
@@ -83,7 +90,7 @@ const setTab = id => {
 }
 
 const { isInHistory, isScheduleProcessing, editAllowed } = usePost()
-const { versionObject } = usePostVersions()
+const { versionObject, getOriginalVersion } = usePostVersions()
 const { connectToBroadcast } = usePostBroadcast({ props, context })
 const {
   VIEW_DEFAULT: ACTIVITY_VIEW_DEFAULT,
@@ -120,7 +127,7 @@ const store = data => {
 const update = data => {
   isLoading.value = true
 
-  axios
+  return axios
     .put(route('mixpost.posts.update', { workspace: workspaceCtx.id, post: props.post.id }), data)
     .then(response => {
       hasError.value = false
@@ -192,11 +199,83 @@ const save = () => {
   }
 
   if (!props.post) {
-    store(data)
+    return store(data)
   }
 
-  if (props.post) {
-    update(data)
+  return update(data)
+}
+
+/**
+ * Genie: while a run or an image revision is writing to this post, the form is blocked and
+ * autosave is off, so a stale form never overwrites what the job wrote. When it finishes the form
+ * is re-seeded from the server. Mixpost's UpdatePost recreates every version from the payload,
+ * which is why re-seeding — and never storing version ids — is the only safe way back in sync.
+ */
+const genieBusy = computed(() => Boolean(props.geniePost?.busy))
+
+// The media the post carries right now, from the live form rather than the server snapshot, so a
+// Genie slot reads "removed" the moment its image leaves the media strip.
+const postMediaIds = computed(() =>
+  (getOriginalVersion(form.versions)?.content?.[0]?.media ?? []).map(media => String(media.id))
+)
+
+const reseed = () => {
+  if (!props.post) return
+
+  form.versions = cloneDeep(props.post.versions)
+  form.accounts = props.post.accounts.map(account => account.id)
+  form.tags = props.post.tags
+}
+
+let geniePoll = null
+
+const stopGeniePoll = () => {
+  if (geniePoll) {
+    clearInterval(geniePoll)
+    geniePoll = null
+  }
+}
+
+const startGeniePoll = () => {
+  if (geniePoll || !props.post) return
+
+  geniePoll = setInterval(() => {
+    router.get(
+      route('mixpost.posts.edit', { workspace: workspaceCtx.id, post: props.post.id }),
+      {},
+      { preserveState: true, preserveScroll: true, only: ['post', 'geniePost'] }
+    )
+  }, 2500)
+}
+
+watch(genieBusy, (busy, wasBusy) => {
+  if (busy) {
+    startGeniePoll()
+  } else {
+    stopGeniePoll()
+
+    if (wasBusy) {
+      reseed()
+    }
+  }
+})
+
+onMounted(() => {
+  if (genieBusy.value) {
+    startGeniePoll()
+  }
+})
+
+onBeforeUnmount(stopGeniePoll)
+
+// A panel action starts by saving what the user typed, so nothing is lost when the job rewrites the post.
+const saveBeforeGenieAction = async () => {
+  if (props.post && editAllowed.value && !genieBusy.value) {
+    await save()
+
+    if (hasError.value) {
+      throw new Error('The post could not be saved.')
+    }
   }
 }
 
@@ -219,7 +298,7 @@ if (props.post) {
 watch(
   form,
   debounce(() => {
-    if (editAllowed.value) {
+    if (editAllowed.value && !genieBusy.value) {
       save()
     }
   }, 300)
@@ -293,7 +372,24 @@ watch(offline, state => {
                 </Alert>
               </template>
 
-              <PostForm :form="form" :accounts="$page.props.accounts" />
+              <div class="relative">
+                <PostForm :form="form" :accounts="$page.props.accounts" />
+
+                <Preloader v-if="genieBusy" :opacity="75" rounded>
+                  <span class="ml-sm text-gray-600">{{ $t('genie.post_generating_overlay') }}</span>
+                </Preloader>
+              </div>
+
+              <GeniePanel
+                v-if="geniePost"
+                :genie-post="geniePost"
+                :post-id="post ? post.id : null"
+                :busy="genieBusy"
+                :post-media-ids="postMediaIds"
+                class="mt-xl"
+                :before-action="saveBeforeGenieAction"
+                @done="reseed"
+              />
             </div>
           </div>
         </div>

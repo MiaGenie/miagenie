@@ -242,4 +242,14 @@ class StepSchemaBuilderTest extends TestCase
 
         $this->assertSame(['ideas'], array_keys($properties));
     }
+
+    public function test_a_posts_step_states_the_post_schema_in_code(): void
+    {
+        $step = new RuleStep(['name' => 'Simple post', 'response_format' => 'json_schema']);
+        $step->setRelation('rule', new Rule(['rule_type' => RuleType::POSTS]));
+
+        $properties = (new StepSchemaBuilder)->propertiesForStep($step, 'en-GB');
+
+        $this->assertSame(['post'], array_keys($properties));
+    }
 }

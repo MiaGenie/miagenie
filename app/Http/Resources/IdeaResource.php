@@ -28,6 +28,11 @@ class IdeaResource extends JsonResource
             'funnel_stage' => $this->funnel_stage,
             'post_format' => $this->post_format,
             'content_pillar' => $this->content_pillar,
+            'post' => $this->post ? [
+                'id' => $this->post->uuid,
+                'mixpost_post' => $this->post->mixpostPost?->uuid,
+                'status' => $this->post->status,
+            ] : null,
             'created_at' => $this->created_at,
         ];
 
