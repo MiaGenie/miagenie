@@ -80,18 +80,26 @@ class GeniePostResource extends JsonResource
         $images = [];
 
         foreach ($this->resource->slots() as $slot) {
-            $current = $slot['file_id']
+            // The lineage names the slot (through its file's row); the slot's current row is read by
+            // run step and position, so a just-persisted revision is current even before the lineage
+            // has been updated to it.
+            $lineage = $slot['file_id']
                 ? WorkspaceFile::with('runStepFile')->find($slot['file_id'])?->runStepFile
                 : null;
 
-            $history = $current
+            $rows = $lineage
                 ? AiRunStepFile::with('file')
-                    ->where('run_step_id', $current->run_step_id)
+                    ->where('run_step_id', $lineage->run_step_id)
                     ->where('position', $slot['position'])
-                    ->whereKeyNot($current->id)
                     ->orderByDesc('id')
                     ->get()
                 : collect();
+
+            $current = $rows->first(fn (AiRunStepFile $row) => $row->superseded_at === null) ?? $rows->first();
+
+            $history = $current ? $rows->reject(fn (AiRunStepFile $row) => $row->is($current))->values() : collect();
+
+            $revising = $rows->contains(fn (AiRunStepFile $row) => $row->revising_at !== null);
 
             $images[] = [
                 'position' => $slot['position'],
@@ -102,7 +110,7 @@ class GeniePostResource extends JsonResource
                 'brief' => $current?->brief,
                 'feedback' => $current?->feedback,
                 'mode' => $current?->mode,
-                'revising' => $current?->isRevising() ?? false,
+                'revising' => $revising,
                 'revision_error' => $current?->revision_error,
                 'history' => $history->map(fn (AiRunStepFile $version) => [
                     'id' => $version->id,

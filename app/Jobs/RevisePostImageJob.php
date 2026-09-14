@@ -7,6 +7,7 @@ use App\Enums\Modality;
 use App\Enums\RunStatus;
 use App\Genie\Images\ImageOptions;
 use App\Genie\Images\ImageRevision;
+use App\Genie\Images\ImageStore;
 use App\Genie\Posts\PostMediaSync;
 use App\Genie\Posts\PostsContext;
 use App\Genie\Posts\PostsImageContext;
@@ -67,7 +68,7 @@ class RevisePostImageJob implements ShouldQueue
         $this->onQueue(AiRunJob::QUEUE);
     }
 
-    public function handle(ImageRevision $revision, WorkspaceFileToMedia $media, PostMediaSync $sync): void
+    public function handle(ImageRevision $revision, WorkspaceFileToMedia $media, PostMediaSync $sync, ImageStore $store): void
     {
         WorkspaceManager::setCurrent($this->post->workspace);
 
@@ -131,6 +132,9 @@ class RevisePostImageJob implements ShouldQueue
         }
 
         PostUpdated::dispatch($this->post->mixpostPost);
+
+        // Only now is the slot done: the post reads the new media and the lineage points at the new file.
+        $store->markRevisionDone($this->image);
     }
 
     public function failed(?Throwable $exception): void

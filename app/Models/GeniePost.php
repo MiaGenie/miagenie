@@ -143,8 +143,9 @@ class GeniePost extends Model
 
         $fileIds = array_filter(array_column($this->images ?? [], 'file_id'));
 
+        // Not `current()`: a superseded parent keeps `revising_at` until the revision job has copied
+        // the new file where the post reads it, so the post stays busy through that last stretch.
         return $fileIds !== [] && AiRunStepFile::whereIn('workspace_file_id', $fileIds)
-            ->current()
             ->whereNotNull('revising_at')
             ->exists();
     }

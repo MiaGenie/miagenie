@@ -70,7 +70,9 @@ class ImageStore
                     'source' => WorkspaceFileSource::GENERATED,
                 ]);
 
-                $parent?->update(['superseded_at' => now(), 'revising_at' => null, 'revision_error' => null]);
+                // The parent keeps `revising_at`: the caller still has work to do after this (copying the
+                // file where the post reads it) and ends the revision with markRevisionDone().
+                $parent?->update(['superseded_at' => now(), 'revision_error' => null]);
 
                 $row = AiRunStepFile::create([
                     'run_step_id' => $runStep->id,
@@ -106,6 +108,14 @@ class ImageStore
     public function markRevisionFailed(AiRunStepFile $image, string $error): void
     {
         $image->update(['revising_at' => null, 'revision_error' => mb_substr($error, 0, 255)]);
+    }
+
+    /**
+     * The revision is finished everywhere it had to land; the slot is no longer busy.
+     */
+    public function markRevisionDone(AiRunStepFile $image): void
+    {
+        $image->update(['revising_at' => null, 'revision_error' => null]);
     }
 
     /**
