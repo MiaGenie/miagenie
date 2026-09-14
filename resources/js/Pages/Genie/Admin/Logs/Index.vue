@@ -11,6 +11,7 @@ import LogItem from "@/Components/Genie/Logs/LogItem.vue";
 import Pagination from "@/Components/Navigation/Pagination.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import NoResult from "@/Components/Util/NoResult.vue";
+import Alert from "@/Components/Util/Alert.vue";
 
 defineOptions({layout: AdminLayout});
 
@@ -28,6 +29,15 @@ const props = defineProps({
     genieSyncStatus: {
         type: Object,
         require: true
+    },
+    filter: {
+        type: Object,
+        default: () => ({run_step: ''})
+    },
+    // Set when the list is narrowed to one run step's calls.
+    runStep: {
+        type: [Object, null],
+        default: null
     }
 });
 
@@ -40,6 +50,24 @@ const props = defineProps({
         <PageHeader :title="$t('genie.logs')" />
 
         <div class="w-full row-px">
+
+            <Alert v-if="runStep" :closeable="false" class="mt-lg">
+                <div class="flex flex-wrap items-center gap-sm">
+                    <span>
+                        {{ $t('genie.logs_filtered_by_step', {position: runStep.position, name: runStep.name ?? '----------'}) }}
+                    </span>
+                    <a
+                        v-if="runStep.run"
+                        :href="route('genie.admin.runs.steps.view', {run: runStep.run, step: runStep.id})"
+                        class="text-primary-500 hover:underline"
+                    >
+                        {{ $t('genie.run_step_data') }}
+                    </a>
+                    <a :href="route('genie.admin.logs.index')" class="text-primary-500 hover:underline">
+                        {{ $t('general.clear_filter') }}
+                    </a>
+                </div>
+            </Alert>
 
             <Panel :with-padding="false" class="mt-lg">
 

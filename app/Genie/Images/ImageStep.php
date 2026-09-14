@@ -5,12 +5,14 @@ namespace App\Genie\Images;
 use App\Models\AiRun;
 use App\Models\AiRunStep;
 use App\Models\AiRunStepFile;
+use Throwable;
 
 /**
  * Runs an image step: one generated file per brief, each in its own slot.
  *
  * A slot that already holds a file is left alone, so a step retried after failing half-way only
  * pays for the images it is still missing. The step's output lists every slot, present or fresh.
+ * Every call made — successful or not — is one genie_logs entry on the run step.
  */
 class ImageStep
 {
@@ -24,6 +26,7 @@ class ImageStep
     public function __construct(
         protected ImageGenerator $generator = new ImageGenerator,
         protected ImageStore $store = new ImageStore,
+        protected ImageCallLog $log = new ImageCallLog,
     ) {}
 
     /**
@@ -56,11 +59,21 @@ class ImageStep
 
             $this->lastPrompt = $prompt;
 
-            $response = $this->generator->generate($prompt, $options);
+            $started = microtime(true);
 
-            $this->written[] = $this->entry(
-                $this->store->persist($runStep, $run, $position, $prompt, $response->firstImage()),
-            );
+            try {
+                $response = $this->generator->generate($prompt, $options);
+
+                $file = $this->store->persist($runStep, $run, $position, $prompt, $response->firstImage());
+            } catch (Throwable $exception) {
+                $this->log->record($runStep, $prompt, null, $this->seconds($started), $exception->getMessage());
+
+                throw $exception;
+            }
+
+            $this->log->record($runStep, $prompt, $file, $this->seconds($started));
+
+            $this->written[] = $this->entry($file);
         }
 
         return ['images' => $this->written];
@@ -77,6 +90,11 @@ class ImageStep
             $this->lastPrompt?->describe() ?? ['modality' => 'image'],
             ['files' => array_column($this->written, 'file_uuid')],
         );
+    }
+
+    protected function seconds(float $started): int
+    {
+        return (int) round(microtime(true) - $started);
     }
 
     /**

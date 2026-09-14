@@ -4,6 +4,7 @@ namespace App\Genie\Images;
 
 use App\Enums\ImageRevisionMode;
 use App\Models\AiRun;
+use App\Models\AiRunStep;
 use App\Models\AiRunStepFile;
 use App\Models\RuleStep;
 use InvalidArgumentException;
@@ -17,16 +18,21 @@ use Throwable;
  * attached. Either way a rule step's message is the template — the one given, or the step that
  * drew the image — the caller supplies the placeholders (an image context, which a run type may
  * extend), and the new file supersedes the old one in the same slot, on the run step that drew
- * it so the slot's history stays together. Nothing here knows about Mixpost.
+ * it so the slot's history stays together. The call is one genie_logs entry on that run step.
+ * Nothing here knows about Mixpost.
  */
 class ImageRevision
 {
     public function __construct(
         protected ImageGenerator $generator = new ImageGenerator,
         protected ImageStore $store = new ImageStore,
+        protected ImageCallLog $log = new ImageCallLog,
     ) {}
 
     /**
+     * @param  RuleStep|null  $template  the step whose message and profile the call uses; the slot's own step when null
+     * @param  AiRunStep|null  $recordOn  the run step the call is logged on; the slot's own step when null
+     *
      * @throws InvalidArgumentException when the mode's required input is missing
      * @throws Throwable when the model call fails; the slot then carries `revision_error`
      */
@@ -38,6 +44,7 @@ class ImageRevision
         string $locale,
         ImageOptions $options = new ImageOptions,
         ?RuleStep $template = null,
+        ?AiRunStep $recordOn = null,
     ): AiRunStepFile {
         if ($mode->needsFeedback() && ! $context->hasFeedback()) {
             throw new InvalidArgumentException('Fixing an image needs feedback.');
@@ -48,21 +55,24 @@ class ImageRevision
         }
 
         $runStep = $image->runStep;
+        $recordOn ??= $runStep;
 
         $this->store->markRevising($image);
 
-        try {
-            $prompt = new ImagePrompt(
-                $run,
-                $template ?? $runStep->step,
-                $locale,
-                $context,
-                $mode->attachesReference() ? $image->file : null,
-            );
+        $prompt = new ImagePrompt(
+            $run,
+            $template ?? $runStep->step,
+            $locale,
+            $context,
+            $mode->attachesReference() ? $image->file : null,
+        );
 
+        $started = microtime(true);
+
+        try {
             $response = $this->generator->generate($prompt, $options);
 
-            return $this->store->persist(
+            $revised = $this->store->persist(
                 $runStep,
                 $run,
                 (int) $image->position,
@@ -74,7 +84,13 @@ class ImageRevision
         } catch (Throwable $exception) {
             $this->store->markRevisionFailed($image, $exception->getMessage());
 
+            $this->log->record($recordOn, $prompt, null, (int) round(microtime(true) - $started), $exception->getMessage(), $mode->value, $image);
+
             throw $exception;
         }
+
+        $this->log->record($recordOn, $prompt, $revised, (int) round(microtime(true) - $started), null, $mode->value, $image);
+
+        return $revised;
     }
 }

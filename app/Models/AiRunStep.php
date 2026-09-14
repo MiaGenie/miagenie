@@ -65,6 +65,15 @@ class AiRunStep extends Model
         return $this->hasMany(Idea::class, 'run_step_id');
     }
 
+    /**
+     * Every model call made for this step, newest first: one for a text step, one per brief and
+     * per revision for an image step.
+     */
+    public function logs(): HasMany
+    {
+        return $this->hasMany(Log::class, 'run_step_id')->latest('id');
+    }
+
     public function review(): HasOne
     {
         return $this->hasOne(AiRunStepReview::class, 'run_step_id')->latestOfMany();

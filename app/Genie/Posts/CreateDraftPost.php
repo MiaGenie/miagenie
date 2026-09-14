@@ -4,6 +4,8 @@ namespace App\Genie\Posts;
 
 use App\Enums\GeniePostStatus;
 use App\Enums\IdeaStatus;
+use App\Enums\Modality;
+use App\Enums\RuleSubType;
 use App\Enums\RuleType;
 use App\Enums\RunStatus;
 use App\Jobs\AiRunJob;
@@ -90,12 +92,16 @@ class CreateDraftPost
     }
 
     /**
-     * Redo the caption (or the images) of an existing post with the reviewer's feedback.
+     * Redo the caption of an existing post with the reviewer's feedback, as a step of the post's
+     * own run.
      *
-     * The new run continues the previous run's conversation, so the model sees the caption it
-     * wrote and the feedback on it rather than starting from a blank thread.
+     * A post has one run. The first pass recorded the revise-text step as SKIPPED; regenerating
+     * rewrites the run's parameters (`only = text`, the feedback), reopens that step and dispatches
+     * the same run again, so the loop executes the reopened step inside the run's conversation —
+     * the model sees the caption it wrote and the feedback on it — and the admin sees every
+     * regeneration as a step of that run.
      *
-     * @throws PostsException when a run or a revision is already working on the post, or the rule has no step for it
+     * @throws PostsException when the post is busy or not ready, or the rule has no revise-text step
      */
     public function regenerate(GeniePost $post, ?string $only, ?string $feedback): AiRun
     {
@@ -103,21 +109,38 @@ class CreateDraftPost
             throw PostsException::busy();
         }
 
-        $idea = $post->idea;
+        $run = $post->run ? AiRun::withoutWorkspace()->find($post->run->id) : null;
 
-        $rule = $this->rule($post->workspace_id);
+        if (! $run || $post->status !== GeniePostStatus::READY) {
+            throw PostsException::notReady();
+        }
 
-        $run = DB::transaction(function () use ($post, $idea, $rule, $only, $feedback) {
-            $request = new PostsRequest($idea?->id ?? 0, $post->id, $post->post_format, $only, $feedback);
+        $step = $post->stepFor(RuleSubType::POSTS_REVISE_TEXT) ?? throw PostsException::noReviseTextStep();
 
-            $run = $this->run($post, $rule, $request, $post->run?->conversation_id, PostsException::noReviseTextStep());
+        $request = new PostsRequest($post->idea?->id ?? 0, $post->id, $post->post_format, $only, $feedback);
 
-            $post->update(['status' => GeniePostStatus::GENERATING, 'error' => null, 'run_id' => $run->id]);
+        DB::transaction(function () use ($post, $run, $step, $request) {
+            $run->update([
+                'parameters' => $request->toArray(),
+                'status' => RunStatus::RUNNING,
+                'completed_at' => null,
+            ]);
 
-            return $run;
+            $run->steps()->updateOrCreate(
+                ['step_id' => $step->id],
+                [
+                    'position' => $step->position,
+                    'modality' => $step->modality ?? Modality::TEXT,
+                    'status' => RunStatus::OPEN,
+                    'error' => null,
+                    'error_details' => null,
+                ],
+            );
+
+            $post->update(['status' => GeniePostStatus::GENERATING, 'error' => null]);
         });
 
-        AiRunJob::dispatch($run);
+        AiRunJob::dispatch($run->fresh());
 
         return $run;
     }
@@ -137,23 +160,22 @@ class CreateDraftPost
     }
 
     /**
-     * Build and save the run, refusing first when no step would run for the request.
+     * Build and save the post's run, refusing first when no step would run for the request.
      */
-    protected function run(GeniePost $post, Rule $rule, PostsRequest $request, ?string $conversationId = null, ?PostsException $whenEmpty = null): AiRun
+    protected function run(GeniePost $post, Rule $rule, PostsRequest $request): AiRun
     {
         $run = new AiRun([
             'workspace_id' => $post->workspace_id,
             'rule_id' => $rule->id,
             'strategy_id' => $post->idea?->strategy_id,
             'parameters' => $request->toArray(),
-            'conversation_id' => $conversationId,
             'status' => RunStatus::OPEN,
         ]);
 
         $run->setRelation('rule', $rule);
 
         if ($this->gate->generators($run)->isEmpty()) {
-            throw $whenEmpty ?? PostsException::noGeneratorForFormat();
+            throw PostsException::noGeneratorForFormat();
         }
 
         $run->save();

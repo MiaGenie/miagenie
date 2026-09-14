@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Ai\StepAgentFactory;
 use App\Enums\ImageRevisionMode;
 use App\Enums\ModelTier;
+use App\Genie\Images\ImageCallLog;
 use App\Genie\Images\ImageContext;
 use App\Genie\Images\ImageGenerator;
 use App\Genie\Images\ImageOptions;
@@ -69,8 +70,32 @@ class ImageRevisionTest extends TestCase
 
                 $row = new AiRunStepFile(['position' => $position, 'workspace_file_id' => 200, 'mode' => $mode]);
                 $row->id = 77;
+                $row->setRelation('file', new WorkspaceFile(['uuid' => 'revised-77']));
 
                 return $row;
+            }
+        };
+    }
+
+    /**
+     * A call log that records to an array instead of the database.
+     */
+    protected function callLog(): ImageCallLog
+    {
+        return new class extends ImageCallLog
+        {
+            public array $records = [];
+
+            public function record(AiRunStep $runStep, ImagePrompt $prompt, ?AiRunStepFile $file, int $duration, ?string $error = null, ?string $mode = null, ?AiRunStepFile $parent = null): void
+            {
+                $this->records[] = [
+                    'run_step' => $runStep->id,
+                    'prompt' => $prompt->text(),
+                    'file' => $file?->file?->uuid,
+                    'error' => $error,
+                    'mode' => $mode,
+                    'parent' => $parent?->id,
+                ];
             }
         };
     }
@@ -92,14 +117,14 @@ class ImageRevisionTest extends TestCase
         return $image;
     }
 
-    protected function revision(ImageStore $store): ImageRevision
+    protected function revision(ImageStore $store, ?ImageCallLog $log = null): ImageRevision
     {
         $agents = $this->createMock(StepAgentFactory::class);
         $agents->method('prepare')->willReturn(Lab::OpenAI);
         $agents->method('timeout')->willReturn(60);
         $agents->method('imageModel')->willReturn(null);
 
-        return new ImageRevision(new ImageGenerator($agents), $store);
+        return new ImageRevision(new ImageGenerator($agents), $store, $log ?? $this->callLog());
     }
 
     public function test_fix_attaches_the_current_file_keeps_the_brief_and_persists_as_a_fix(): void
@@ -143,6 +168,39 @@ class ImageRevisionTest extends TestCase
         $this->assertSame('Fix a red chair: bluer', $store->persisted['prompt']);
         $this->assertSame(2, $store->persisted['position']);
         $this->assertSame(40, $store->persisted['parent']);
+    }
+
+    public function test_a_revision_is_one_logged_call_with_its_mode_and_parent(): void
+    {
+        Image::fake();
+
+        $log = $this->callLog();
+
+        $this->revision($this->store(), $log)->revise($this->image(), new AiRun, ImageRevisionMode::FIX, new ImageContext('a red chair', 'bluer', 2), 'en-GB');
+
+        $this->assertCount(1, $log->records);
+        $this->assertSame(5, $log->records[0]['run_step']);
+        $this->assertSame('revised-77', $log->records[0]['file']);
+        $this->assertSame('fix', $log->records[0]['mode']);
+        $this->assertSame(40, $log->records[0]['parent']);
+        $this->assertNull($log->records[0]['error']);
+    }
+
+    public function test_the_call_is_logged_on_the_step_it_is_told_to_while_the_file_stays_on_the_slot_step(): void
+    {
+        Image::fake();
+
+        $store = $this->store();
+        $log = $this->callLog();
+
+        $revisionStep = new AiRunStep(['step_id' => 55]);
+        $revisionStep->id = 9;
+
+        $this->revision($store, $log)->revise($this->image(), new AiRun, ImageRevisionMode::FIX, new ImageContext('a red chair', 'bluer', 2), 'en-GB', new ImageOptions, null, $revisionStep);
+
+        $this->assertSame(9, $log->records[0]['run_step']);
+        $this->assertSame(40, $store->persisted['parent']);
+        $this->assertSame(2, $store->persisted['position']);
     }
 
     public function test_rethink_attaches_nothing_and_uses_the_submitted_brief(): void
@@ -213,5 +271,21 @@ class ImageRevisionTest extends TestCase
         $this->assertCount(1, $store->failed);
         $this->assertSame(40, $store->failed[0][0]);
         $this->assertNull($store->persisted);
+    }
+
+    public function test_a_failed_revision_is_logged_with_its_error(): void
+    {
+        Image::fake([new ImageResponse(new Collection, new Usage, new Meta('openai', 'gpt-image-2'))]);
+
+        $log = $this->callLog();
+
+        try {
+            $this->revision($this->store(), $log)->revise($this->image(), new AiRun, ImageRevisionMode::FIX, new ImageContext('a red chair', 'bluer', 2), 'en-GB');
+        } catch (RuntimeException) {
+        }
+
+        $this->assertCount(1, $log->records);
+        $this->assertSame('fix', $log->records[0]['mode']);
+        $this->assertStringContainsString('returned no image', $log->records[0]['error']);
     }
 }

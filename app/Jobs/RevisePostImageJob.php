@@ -3,6 +3,8 @@
 namespace App\Jobs;
 
 use App\Enums\ImageRevisionMode;
+use App\Enums\Modality;
+use App\Enums\RunStatus;
 use App\Genie\Images\ImageOptions;
 use App\Genie\Images\ImageRevision;
 use App\Genie\Posts\PostMediaSync;
@@ -11,6 +13,7 @@ use App\Genie\Posts\PostsImageContext;
 use App\Genie\Posts\PostsRequest;
 use App\Genie\Posts\WorkspaceFileToMedia;
 use App\Models\AiRun;
+use App\Models\AiRunStep;
 use App\Models\AiRunStepFile;
 use App\Models\GeniePost;
 use App\Models\RuleStep;
@@ -80,7 +83,38 @@ class RevisePostImageJob implements ShouldQueue
             $position,
         );
 
-        $revised = $revision->revise($this->image, $run, $this->mode, $context, $locale, new ImageOptions('1:1', 'medium'), $this->template);
+        // The revision is a step of the post's run: the fix/rethink rule step's row (SKIPPED by the
+        // first pass, or new when the step was added later) records it, and the call logs on it.
+        // The slot rows stay on the image step that drew the slot, so its history stays together.
+        $revisionStep = $this->openRevisionStep($run);
+
+        $started = microtime(true);
+
+        try {
+            $revised = $revision->revise($this->image, $run, $this->mode, $context, $locale, new ImageOptions('1:1', 'medium'), $this->template, $revisionStep);
+        } catch (Throwable $exception) {
+            $revisionStep->update([
+                'status' => RunStatus::ERROR,
+                'error_details' => mb_substr($exception->getMessage(), 0, 255),
+                'duration' => (int) round(microtime(true) - $started),
+            ]);
+
+            throw $exception;
+        }
+
+        $revisionStep->update([
+            'status' => RunStatus::COMPLETE,
+            'output' => ['revisions' => [
+                ...($revisionStep->output['revisions'] ?? []),
+                [
+                    'position' => $position,
+                    'mode' => $this->mode->value,
+                    'file_uuid' => $revised->file?->uuid,
+                    'parent_uuid' => $this->image->file?->uuid,
+                ],
+            ]],
+            'duration' => (int) round(microtime(true) - $started),
+        ]);
 
         $previous = $this->post->slot($position)['media_id'] ?? null;
 
@@ -107,11 +141,37 @@ class RevisePostImageJob implements ShouldQueue
             'exception' => $exception?->getMessage(),
         ]);
 
+        // A failure after the model call (media copy, sync) leaves the revision step RUNNING; close it.
+        AiRun::withoutWorkspace()->find($this->post->run_id)?->steps()
+            ->where('step_id', $this->template->id)
+            ->where('status', RunStatus::RUNNING)
+            ->update([
+                'status' => RunStatus::ERROR,
+                'error_details' => mb_substr((string) $exception?->getMessage(), 0, 255),
+            ]);
+
         // A failure after the file was stored leaves the old slot marked; clear it so the slot is usable again.
         $this->image->update([
             'revising_at' => null,
             'revision_error' => $this->image->fresh()?->revision_error ?? mb_substr((string) $exception?->getMessage(), 0, 255),
         ]);
+    }
+
+    /**
+     * The run step that records this revision: the fix/rethink rule step's row in the post's run.
+     */
+    protected function openRevisionStep(AiRun $run): AiRunStep
+    {
+        return $run->steps()->updateOrCreate(
+            ['step_id' => $this->template->id],
+            [
+                'position' => $this->template->position,
+                'modality' => Modality::IMAGE,
+                'status' => RunStatus::RUNNING,
+                'error' => null,
+                'error_details' => null,
+            ],
+        );
     }
 
     /**

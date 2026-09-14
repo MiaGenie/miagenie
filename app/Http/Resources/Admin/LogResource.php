@@ -11,10 +11,6 @@ class LogResource extends JsonResource
      */
     public static $wrap = null;
 
-    /**
-     * @param $request
-     * @return array
-     */
     public function toArray($request): array
     {
 
@@ -23,11 +19,12 @@ class LogResource extends JsonResource
             'uuid' => $this->uuid,
             'type' => $this->type,
             'action' => $this->action,
+            'run_step_id' => $this->run_step_id,
             'request' => $this->request,
             'response' => $this->response,
             'duration' => $this->duration,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at
+            'updated_at' => $this->updated_at,
         ];
 
     }

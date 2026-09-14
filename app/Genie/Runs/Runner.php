@@ -334,8 +334,7 @@ abstract class Runner
 
             $this->imagesWritten($runStep, $output);
 
-            $this->log(null, $runStep, ['structured' => $output], $this->images->describe());
-
+            // No summarising entry: the image step logged one entry per call it made.
             $this->state->completed($runStep);
 
             return $runStep->fresh()->status === RunStatus::COMPLETE;
@@ -396,6 +395,7 @@ abstract class Runner
         RunLog::create([
             'type' => GenieType::RUN_RESPONSE,
             'action' => GenieSyncAction::CREATE,
+            'run_step_id' => $runStep->id,
             'request' => $request ?? $prompt?->describe() ?? ['step_id' => $runStep->step_id],
             'response' => $response,
             'duration' => $runStep->duration ?? 0,

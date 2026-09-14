@@ -13,6 +13,7 @@ import DangerButton from "@/Components/Button/DangerButton.vue";
 import X from "@/Icons/X.vue";
 import Trash from "@/Icons/Trash.vue";
 import RunStepImages from "@/Components/Genie/Runs/RunStepImages.vue";
+import RunStepLogs from "@/Components/Genie/Runs/RunStepLogs.vue";
 
 defineOptions({layout: AdminLayout});
 
@@ -56,6 +57,10 @@ const props = defineProps({
         default: () => ({})
     },
     images: {
+        type: Array,
+        default: () => [],
+    },
+    logs: {
         type: Array,
         default: () => [],
     },
@@ -224,6 +229,14 @@ const deleteStep = () => {
                         {{ blank }}
                     </div>
                 </template>
+
+                <div class="pb-2 pl-2 pt-5">
+                    {{ $t('genie.run_step_calls') }}
+                </div>
+                <RunStepLogs v-if="logs.length" :logs="logs"/>
+                <div v-else class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
+                    {{ blank }}
+                </div>
 
                 <div class="pb-2 pl-2 pt-5">
                     {{ $t('genie.run_prompt') }}

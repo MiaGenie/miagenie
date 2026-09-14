@@ -9,6 +9,7 @@ use App\Http\Requests\Admin\DeleteRunStep;
 use App\Http\Resources\Admin\AiRunResource;
 use App\Http\Resources\Admin\AiRunStepImageResource;
 use App\Http\Resources\Admin\AiRunStepResource;
+use App\Http\Resources\Admin\LogResource;
 use App\Models\AiRun;
 use App\Models\AiRunStep;
 use Illuminate\Http\RedirectResponse;
@@ -69,9 +70,11 @@ class RunStepsController extends Controller
             'modalities' => Modality::withTitle(),
             'runStep' => new AiRunStepResource($runStep),
             'conversation' => $this->conversation($runStep),
+            // Resolved to plain lists: a resource collection would otherwise arrive wrapped in `data`.
             'images' => AiRunStepImageResource::collection(
                 $runStep->images()->with(['file', 'parent'])->get()
-            ),
+            )->resolve(),
+            'logs' => LogResource::collection($runStep->logs()->get())->resolve(),
             'isLast' => $last?->id === $runStep->id,
         ]);
     }

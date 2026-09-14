@@ -6,6 +6,7 @@ use App\Enums\GenieSyncAction;
 use App\Enums\GenieType;
 use Illuminate\Database\Eloquent\Casts\AsCollection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 
 class Log extends Model
@@ -19,6 +20,7 @@ class Log extends Model
         'uuid',
         'type',
         'action',
+        'run_step_id',
         'request',
         'response',
         'duration',
@@ -32,4 +34,12 @@ class Log extends Model
         'request' => AsCollection::class,
         'response' => AsCollection::class,
     ];
+
+    /**
+     * The run step this call was made for, when it belongs to a run.
+     */
+    public function runStep(): BelongsTo
+    {
+        return $this->belongsTo(AiRunStep::class, 'run_step_id');
+    }
 }
