@@ -14,7 +14,10 @@ use Illuminate\Support\Collection;
  * The strategy side of what BriefingContext does for the briefing, and deliberately the same shape:
  * `answers()` for the field-by-field `{{{strategy.<code_name>}}}` substitutions, and `full()` for
  * `{{{strategy.FULL}}}`, the whole strategy as one block for a step that needs everything decided
- * so far rather than a handful of named fields.
+ * so far rather than a handful of named fields. A strategy field is rarely a single value, so
+ * `subAnswers()` adds one level of addressing on top: `{{{strategy.<code_name>.<sub_field>}}}` for a
+ * step that wants one property of a field — or, when the field is a list, that property of every
+ * item.
  *
  * A strategy value's shape is described by its field's sub-field tree, so a value is rendered by
  * walking the two together: the tree supplies the labels and the reading order the admin defined,
@@ -50,6 +53,32 @@ class StrategyContext
 
         foreach ($this->content() as $codeName => $value) {
             $answers[$codeName] = $this->render($codeName, $value);
+        }
+
+        return $answers;
+    }
+
+    /**
+     * Every stored field's properties, one level down, keyed `<code_name>.<sub_code_name>`.
+     *
+     * A string, boolean or object property is its value; an array property is every value as a
+     * list, one per line. When the field itself is a list of objects the property is plucked across
+     * every item, so `content_pillars.title` is every pillar's title. Deeper paths are not
+     * addressed: a placeholder for one passes through the prompt untouched, like any unknown key.
+     *
+     * Walks the stored content, as answers() does, so a retired field still resolves from its own
+     * keys.
+     *
+     * @return array<string, string>
+     */
+    public function subAnswers(): array
+    {
+        $answers = [];
+
+        foreach ($this->content() as $codeName => $value) {
+            foreach ($this->subValues($codeName, $value) as $subCodeName => $rendered) {
+                $answers[$codeName.'.'.$subCodeName] = $rendered;
+            }
         }
 
         return $answers;
@@ -132,6 +161,172 @@ class StrategyContext
     }
 
     /**
+     * One field's properties, rendered, keyed by sub_code_name.
+     *
+     * Which keys a field has follows the same single-root collapse as render(): several roots are
+     * the properties themselves, one OBJECT root lends its children, and one ARRAY root with
+     * children lends them too — read across every item, since the value is a list. A field that is
+     * a bare string or a list of strings has no property to address. A field the version no longer
+     * describes is read from the value's own keys.
+     *
+     * @return array<string, string>
+     */
+    protected function subValues(string $codeName, mixed $value): array
+    {
+        if (! is_array($value) || $value === []) {
+            return [];
+        }
+
+        $field = $this->fields()->get($codeName);
+
+        $all = $field ? $this->subFieldsOf($field) : new Collection;
+
+        $roots = $all->whereNull('parent_id')->sortBy('position')->values();
+
+        $plucked = array_is_list($value);
+
+        if ($roots->count() === 1) {
+            $root = $roots->first();
+
+            $properties = match ($root->type) {
+                SubFieldType::OBJECT, SubFieldType::ARRAY => $this->childrenOf($root, $all),
+                SubFieldType::STRING, SubFieldType::BOOLEAN => new Collection,
+            };
+
+            if ($properties->isEmpty()) {
+                return [];
+            }
+        } else {
+            $properties = $roots;
+        }
+
+        $collected = $plucked ? $this->pluck($value) : array_map(fn ($item) => [$item], $value);
+
+        $described = [];
+        $rendered = [];
+
+        foreach ($properties as $subField) {
+            $described[] = $subField->sub_code_name;
+
+            if (! array_key_exists($subField->sub_code_name, $collected)) {
+                continue;
+            }
+
+            $rendered[$subField->sub_code_name] = $plucked
+                ? $this->renderPlucked($subField, $all, $collected[$subField->sub_code_name])
+                : $this->renderSubValue($subField, $all, $collected[$subField->sub_code_name][0]);
+        }
+
+        // A key the tree no longer describes still answers under its own name, as it does in
+        // renderProperties().
+        foreach ($collected as $key => $values) {
+            if (in_array($key, $described, true)) {
+                continue;
+            }
+
+            $rendered[(string) $key] = $plucked
+                ? $this->renderPlucked(null, $all, $values)
+                : $this->renderSubValue(null, $all, $values[0]);
+        }
+
+        return $rendered;
+    }
+
+    /**
+     * Every key across a list of items, each with the values the items hold for it, in the order
+     * the keys are first met.
+     *
+     * @param  array<int, mixed>  $items
+     * @return array<string, array<int, mixed>>
+     */
+    protected function pluck(array $items): array
+    {
+        $collected = [];
+
+        foreach ($items as $item) {
+            if (! is_array($item) || array_is_list($item)) {
+                continue;
+            }
+
+            foreach ($item as $key => $value) {
+                $collected[$key][] = $value;
+            }
+        }
+
+        return $collected;
+    }
+
+    /**
+     * One property's value as a substitution: a list as bullets, anything else as itself.
+     *
+     * @param  Collection<int, VersionFieldSubField>  $all
+     */
+    protected function renderSubValue(?VersionFieldSubField $subField, Collection $all, mixed $value): string
+    {
+        $isList = $subField
+            ? $subField->type === SubFieldType::ARRAY
+            : is_array($value) && array_is_list($value);
+
+        if ($isList && is_array($value)) {
+            return $this->bullets(array_map(
+                fn ($item) => $this->renderItem($subField, $all, $item),
+                array_values($value),
+            ));
+        }
+
+        return $this->renderItem($subField, $all, $value);
+    }
+
+    /**
+     * One property plucked across a list field, as bullets.
+     *
+     * An array property contributes every item's values rather than one list per item, so the
+     * topics of every pillar read as one list of topics.
+     *
+     * @param  Collection<int, VersionFieldSubField>  $all
+     * @param  array<int, mixed>  $values
+     */
+    protected function renderPlucked(?VersionFieldSubField $subField, Collection $all, array $values): string
+    {
+        $items = [];
+
+        foreach ($values as $value) {
+            if (is_array($value) && array_is_list($value)) {
+                array_push($items, ...array_values($value));
+            } else {
+                $items[] = $value;
+            }
+        }
+
+        return $this->bullets(array_map(fn ($item) => $this->renderItem($subField, $all, $item), $items));
+    }
+
+    /**
+     * One element of a property: an object as its labelled lines, a scalar as itself.
+     *
+     * An ARRAY sub-field arrives here per item, so its children describe the item when it has
+     * any, and otherwise the item is one of its strings.
+     *
+     * @param  Collection<int, VersionFieldSubField>  $all
+     */
+    protected function renderItem(?VersionFieldSubField $subField, Collection $all, mixed $item): string
+    {
+        if (! $subField) {
+            return $this->renderUnknown($item);
+        }
+
+        $children = $this->childrenOf($subField, $all);
+
+        return match ($subField->type) {
+            SubFieldType::OBJECT => $this->renderProperties($children, $all, $item),
+            SubFieldType::ARRAY => $children->isEmpty()
+                ? $this->scalar($item)
+                : $this->renderProperties($children, $all, $item),
+            SubFieldType::STRING, SubFieldType::BOOLEAN => $this->scalar($item),
+        };
+    }
+
+    /**
      * One sub-field's value, recursing into its children.
      *
      * @param  Collection<int, VersionFieldSubField>  $all
@@ -203,21 +398,10 @@ class StrategyContext
             return $this->scalar($value);
         }
 
-        $bullets = [];
-
-        foreach ($value as $item) {
-            $rendered = is_array($item)
-                ? $this->renderProperties($children, $all, $item)
-                : $this->scalar($item);
-
-            if (blank($rendered)) {
-                continue;
-            }
-
-            $bullets[] = $this->bullet($rendered);
-        }
-
-        return implode("\n", $bullets);
+        return $this->bullets(array_map(
+            fn ($item) => is_array($item) ? $this->renderProperties($children, $all, $item) : $this->scalar($item),
+            array_values($value),
+        ));
     }
 
     /**
@@ -248,19 +432,7 @@ class StrategyContext
                 return $this->renderList($value);
             }
 
-            $bullets = [];
-
-            foreach ($value as $item) {
-                $rendered = $this->renderUnknown($item);
-
-                if (blank($rendered)) {
-                    continue;
-                }
-
-                $bullets[] = $this->bullet($rendered);
-            }
-
-            return implode("\n", $bullets);
+            return $this->bullets(array_map($this->renderUnknown(...), $value));
         }
 
         $lines = [];
@@ -388,6 +560,18 @@ class StrategyContext
     protected function bullet(string $block): string
     {
         return '- '.substr($this->indent($block), 2);
+    }
+
+    /**
+     * Rendered items as one bullet each, blanks left out.
+     *
+     * @param  array<int, string>  $rendered
+     */
+    protected function bullets(array $rendered): string
+    {
+        $blocks = array_filter($rendered, fn (string $block) => filled($block));
+
+        return implode("\n", array_map($this->bullet(...), $blocks));
     }
 
     /**

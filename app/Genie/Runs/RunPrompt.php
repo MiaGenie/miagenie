@@ -13,9 +13,13 @@ use Illuminate\Support\Arr;
  * Builds the message sent for one step of a run.
  *
  * Every run type can read the briefing and the strategy — `{{{briefings.<code_name>}}}`,
- * `{{{strategy.<code_name>}}}` and their `FULL` forms — and sees the reviewer's edits to the step
- * before it. A run type with more to say adds a PromptContext, whose values answer bare
- * placeholders such as `{{{pillar}}}`.
+ * `{{{strategy.<code_name>}}}`, one level into a strategy field with
+ * `{{{strategy.<code_name>.<sub_field>}}}`, and the `FULL` forms of both — and sees the reviewer's
+ * edits to the step before it. A run type with more to say adds a PromptContext, whose values
+ * answer bare placeholders such as `{{{pillar}}}`.
+ *
+ * Every key is precomputed flat: GenieParser looks a placeholder up by its whole text and walks no
+ * paths, so a new depth is a new set of keys here rather than a change to the parser.
  */
 class RunPrompt
 {
@@ -88,15 +92,16 @@ class RunPrompt
     }
 
     /**
-     * The strategy written so far, field by field, plus `FULL` — everything decided so far in one
-     * block, for a step that builds on the whole strategy rather than a handful of named fields.
+     * The strategy written so far, field by field, one level into each field, plus `FULL` —
+     * everything decided so far in one block, for a step that builds on the whole strategy rather
+     * than a handful of named fields.
      *
      * Scoped to the run's own strategy rather than "the newest strategy in the workspace", which
      * is what the previous implementation looked up and which went wrong as soon as a workspace
      * had more than one.
      *
-     * As on the briefing side, `FULL` cannot shadow a field: a code_name goes through
-     * App\Rules\SnakeCase and is always lowercase.
+     * As on the briefing side, neither `FULL` nor a dotted `<code_name>.<sub_field>` key can shadow
+     * a field: a code_name goes through App\Rules\SnakeCase and is always lowercase with no dots.
      *
      * @return array<string, mixed>
      */
@@ -105,7 +110,7 @@ class RunPrompt
         $strategy = new StrategyContext($this->run, $this->locale);
 
         return Arr::prependKeysWith(
-            array_merge($strategy->answers(), ['FULL' => $strategy->full()]),
+            array_merge($strategy->answers(), $strategy->subAnswers(), ['FULL' => $strategy->full()]),
             'strategy.'
         );
     }
