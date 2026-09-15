@@ -452,6 +452,7 @@ watch(offline, state => {
       </div>
     </div>
 
-    <PostActions :form="form" :has-available-times="$page.props.has_available_times" />
+    <!-- Mixpost's posting queue is not used: with no available times the actions hide "Add to queue". -->
+    <PostActions :form="form" :has-available-times="false" />
   </div>
 </template>
