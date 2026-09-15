@@ -38,6 +38,7 @@ import ls from "@/Services/ls.js";
 import PureSuccessButton from "@/Components/Button/Genie/PureSuccessButton.vue";
 import ArrowUturnLeft from "@/Icons/ArrowUturnLeft.vue";
 import Sparkles from "@/Icons/Sparkles.vue";
+import CreatePostModal from "@/Components/Genie/Posts/CreatePostModal.vue";
 import SuccessButton from "@/Components/Button/SuccessButton.vue";
 import GenerateIdeasModal from "@/Components/Genie/Ideas/GenerateIdeasModal.vue";
 
@@ -264,10 +265,15 @@ const restoreIdeas = () => {
 /**
  * One Mixpost draft per selected approved idea; the runs fill them in the background.
  */
-const createPosts = () => {
+const creatingPosts = ref(false);
+
+const createPosts = ({images}) => {
+    creatingPosts.value = true;
+
     router.post(route('genie.posts.generateMultiple', {workspace: workspaceCtx.id}), {
         ideas: selectedRecords.value,
-        filter: currentFilter.value
+        filter: currentFilter.value,
+        images,
     }, {
         preserveScroll: true,
         onSuccess: () => {
@@ -275,6 +281,7 @@ const createPosts = () => {
         },
         onFinish: () => {
             confirmationPosts.value = false;
+            creatingPosts.value = false;
         },
     });
 }
@@ -654,21 +661,14 @@ const statusValue = (status) => {
             <SuccessButton @click="restoreIdeas">{{ $t("general.restore") }}</SuccessButton>
         </template>
     </ConfirmationModal>
-    <ConfirmationModal :show="confirmationPosts" @close="confirmationPosts = false">
-        <template #header>
-            {{ $t("genie.create_posts") }}
-        </template>
-        <template #body>
-            {{ $t("genie.create_posts_confirm") }}
-        </template>
-        <template #footer>
-            <SecondaryButton @click="confirmationPosts = false" class="mr-xs rtl:mr-0 rtl:ml-xs">{{
-                    $t("general.cancel")
-                }}
-            </SecondaryButton>
-            <WarningButton @click="createPosts">{{ $t("genie.create_posts") }}</WarningButton>
-        </template>
-    </ConfirmationModal>
+    <CreatePostModal
+        :show="confirmationPosts"
+        :count="selectedRecords.length"
+        :images-available="true"
+        :processing="creatingPosts"
+        @close="confirmationPosts = false"
+        @submit="createPosts"
+    />
     <GenerateIdeasModal
         :show="showGenerate"
         :post-formats="postFormats"

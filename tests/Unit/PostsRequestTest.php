@@ -49,6 +49,28 @@ class PostsRequestTest extends TestCase
         $this->assertTrue($request->isRegeneration());
     }
 
+    public function test_images_default_to_on_and_can_be_switched_off_for_a_first_run(): void
+    {
+        $this->assertTrue(PostsRequest::fromArray(['idea' => 1, 'post' => 2])->images);
+        $this->assertTrue(PostsRequest::fromArray(['idea' => 1, 'post' => 2])->wantsImages());
+
+        $request = new PostsRequest(1, 2, PostFormat::CAROUSEL, images: false);
+
+        $this->assertFalse($request->wantsImages());
+        $this->assertTrue($request->wantsText());
+        $this->assertFalse($request->isRegeneration());
+
+        $read = PostsRequest::fromRun(new AiRun(['parameters' => $request->toArray()]));
+
+        $this->assertFalse($read->images);
+        $this->assertFalse($read->wantsImages());
+
+        $later = new PostsRequest(1, 2, PostFormat::CAROUSEL, PostsRequest::ONLY_IMAGES);
+
+        $this->assertTrue($later->wantsImages());
+        $this->assertFalse($later->wantsText());
+    }
+
     public function test_malformed_parameters_fall_back_to_defaults(): void
     {
         $request = PostsRequest::fromArray(['only' => 'everything', 'feedback' => '   ', 'post_format' => 'x']);

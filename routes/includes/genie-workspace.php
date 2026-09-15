@@ -99,6 +99,7 @@ Route::middleware(array_merge([
             Route::put('generate/{idea}', [GeniePostsController::class, 'generate'])->name('generate');
             Route::post('generate', GenerateGeniePostsController::class)->name('generateMultiple');
             Route::post('{post}/regenerate', [GeniePostsController::class, 'regenerateText'])->name('regenerateText');
+            Route::post('{post}/images', [GeniePostsController::class, 'generateImages'])->name('generateImages');
             Route::post('{post}/images/{file}', [GeniePostsController::class, 'regenerateImage'])->name('regenerateImage');
             Route::post('{post}/images/{file}/reattach', [GeniePostsController::class, 'reattachImage'])->name('reattachImage');
             Route::post('{post}/images/{file}/restore', [GeniePostsController::class, 'restoreImage'])->name('restoreImage');

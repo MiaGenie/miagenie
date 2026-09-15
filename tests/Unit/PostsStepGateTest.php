@@ -54,9 +54,9 @@ class PostsStepGateTest extends TestCase
         ];
     }
 
-    protected function runFor(PostFormat $format, ?string $only, array $steps, ?string $feedback = null): AiRun
+    protected function runFor(PostFormat $format, ?string $only, array $steps, ?string $feedback = null, bool $images = true): AiRun
     {
-        $run = new AiRun(['parameters' => (new PostsRequest(1, 2, $format, $only, $feedback))->toArray()]);
+        $run = new AiRun(['parameters' => (new PostsRequest(1, 2, $format, $only, $feedback, $images))->toArray()]);
 
         $rule = new Rule;
         $rule->setRelation('steps', new Collection(array_values($steps)));
@@ -74,6 +74,17 @@ class PostsStepGateTest extends TestCase
         $this->assertFalse($this->gate->passes($run, $steps['revise']));
         $this->assertFalse($this->gate->passes($run, $steps['fix']));
         $this->assertFalse($this->gate->passes($run, $steps['rethink']));
+    }
+
+    public function test_a_first_run_without_images_runs_the_content_step_only_and_images_can_follow(): void
+    {
+        $steps = $this->fullRule();
+
+        $first = $this->runFor(PostFormat::CAROUSEL, null, $steps, null, false);
+        $this->assertSame([1], $this->gate->generators($first)->pluck('id')->all());
+
+        $later = $this->runFor(PostFormat::CAROUSEL, PostsRequest::ONLY_IMAGES, $steps);
+        $this->assertSame([2], $this->gate->generators($later)->pluck('id')->all());
     }
 
     public function test_a_caption_regeneration_runs_the_revise_text_step_alone(): void

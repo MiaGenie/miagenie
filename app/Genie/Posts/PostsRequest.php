@@ -11,7 +11,8 @@ use App\Models\AiRun;
  *
  * A run always works on one idea and the Mixpost post produced from it. The format is the idea's,
  * stored under the gate's key so only that format's steps run. `only` narrows a regeneration to
- * the text or the image steps; `feedback` is what the reviewer wants changed.
+ * the text or the image steps; `feedback` is what the reviewer wants changed; `images` false
+ * creates the post without drawing (the caption only), to be drawn later from the post.
  */
 final class PostsRequest
 {
@@ -25,6 +26,7 @@ final class PostsRequest
         public readonly ?PostFormat $postFormat,
         public readonly ?string $only = null,
         public readonly ?string $feedback = null,
+        public readonly bool $images = true,
     ) {}
 
     /**
@@ -44,6 +46,7 @@ final class PostsRequest
             is_numeric($format) ? PostFormat::tryFrom((int) $format) : null,
             in_array($only, [self::ONLY_TEXT, self::ONLY_IMAGES], true) ? $only : null,
             is_string($feedback) && filled($feedback) ? $feedback : null,
+            filter_var($parameters['images'] ?? true, FILTER_VALIDATE_BOOLEAN),
         );
     }
 
@@ -63,6 +66,7 @@ final class PostsRequest
             PostFormatGate::PARAMETER => $this->postFormat?->value,
             'only' => $this->only,
             'feedback' => $this->feedback,
+            'images' => $this->images,
         ];
     }
 
@@ -71,9 +75,13 @@ final class PostsRequest
         return $this->only !== self::ONLY_IMAGES;
     }
 
+    /**
+     * Images are drawn unless the run is text-only or the post was created without them (the
+     * `images` flag from the create modal); a later "generate images" run sets both back.
+     */
     public function wantsImages(): bool
     {
-        return $this->only !== self::ONLY_TEXT;
+        return $this->only !== self::ONLY_TEXT && $this->images;
     }
 
     public function isRegeneration(): bool

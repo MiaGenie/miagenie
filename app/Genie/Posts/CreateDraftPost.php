@@ -13,6 +13,7 @@ use App\Models\AiRun;
 use App\Models\GeniePost;
 use App\Models\Idea;
 use App\Models\Rule;
+use App\Models\RuleStep;
 use App\Models\WorkspaceVersion;
 use Illuminate\Support\Facades\DB;
 use Inovector\Mixpost\Enums\PostStatus;
@@ -35,7 +36,10 @@ class CreateDraftPost
     /**
      * @throws PostsException when the idea is not approved, already has a post, or no step can generate for it
      */
-    public function forIdea(Idea $idea, int $userId): GeniePost
+    /**
+     * @param  bool  $images  draw the images now; false writes the caption only and leaves the image step SKIPPED for "Generate images" later
+     */
+    public function forIdea(Idea $idea, int $userId, bool $images = true): GeniePost
     {
         if ($idea->status !== IdeaStatus::APPROVED) {
             throw PostsException::ideaNotApproved();
@@ -49,7 +53,7 @@ class CreateDraftPost
 
         $rule = $this->rule($workspace->id);
 
-        [$post, $run] = DB::transaction(function () use ($idea, $userId, $workspace, $rule) {
+        [$post, $run] = DB::transaction(function () use ($idea, $userId, $workspace, $rule, $images) {
             $mixpostPost = Post::create([
                 'user_id' => $userId,
                 'status' => PostStatus::DRAFT,
@@ -77,7 +81,7 @@ class CreateDraftPost
                 'status' => GeniePostStatus::GENERATING,
             ]);
 
-            $run = $this->run($post, $rule, new PostsRequest($idea->id, $post->id, $idea->post_format));
+            $run = $this->run($post, $rule, new PostsRequest($idea->id, $post->id, $idea->post_format, images: $images));
 
             $post->update(['run_id' => $run->id]);
 
@@ -89,6 +93,46 @@ class CreateDraftPost
         AiRunJob::dispatch($run);
 
         return $post;
+    }
+
+    /**
+     * Draw the images of a post that was created without them, as a step of the post's own run.
+     *
+     * Reopens the `posts_image` run step the first pass recorded as SKIPPED and dispatches the
+     * same run with `only = images`. Only for a post with no slots yet: once images exist they are
+     * redone per slot (fix / rethink).
+     *
+     * @throws PostsException when the post is busy or not ready, has no image format, already has images, or the rule has no image step
+     */
+    public function generateImages(GeniePost $post): AiRun
+    {
+        if ($post->isBusy()) {
+            throw PostsException::busy();
+        }
+
+        $run = $post->run ? AiRun::withoutWorkspace()->find($post->run->id) : null;
+
+        if (! $run || $post->status !== GeniePostStatus::READY) {
+            throw PostsException::notReady();
+        }
+
+        if (! $post->hasImages()) {
+            throw PostsException::formatWithoutImages();
+        }
+
+        if (($post->images ?? []) !== []) {
+            throw PostsException::imagesExist();
+        }
+
+        $step = $post->stepFor(RuleSubType::POSTS_IMAGE) ?? throw PostsException::noImageStep();
+
+        $request = new PostsRequest($post->idea?->id ?? 0, $post->id, $post->post_format, PostsRequest::ONLY_IMAGES);
+
+        $this->reopen($post, $run, $step, $request);
+
+        AiRunJob::dispatch($run->fresh());
+
+        return $run;
     }
 
     /**
@@ -119,6 +163,18 @@ class CreateDraftPost
 
         $request = new PostsRequest($post->idea?->id ?? 0, $post->id, $post->post_format, $only, $feedback);
 
+        $this->reopen($post, $run, $step, $request);
+
+        AiRunJob::dispatch($run->fresh());
+
+        return $run;
+    }
+
+    /**
+     * Point the post's run at a new request and reopen one of its steps for the loop to execute.
+     */
+    protected function reopen(GeniePost $post, AiRun $run, RuleStep $step, PostsRequest $request): void
+    {
         DB::transaction(function () use ($post, $run, $step, $request) {
             $run->update([
                 'parameters' => $request->toArray(),
@@ -139,10 +195,6 @@ class CreateDraftPost
 
             $post->update(['status' => GeniePostStatus::GENERATING, 'error' => null]);
         });
-
-        AiRunJob::dispatch($run->fresh());
-
-        return $run;
     }
 
     /**

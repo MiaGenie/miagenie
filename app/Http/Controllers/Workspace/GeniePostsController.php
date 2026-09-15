@@ -43,7 +43,7 @@ class GeniePostsController extends Controller
         $idea = Idea::firstOrFailByUuid($request->route('idea'));
 
         try {
-            $post = $this->drafts->forIdea($idea, Auth::id());
+            $post = $this->drafts->forIdea($idea, Auth::id(), $request->boolean('images', true));
         } catch (PostsException $exception) {
             return redirect()->back()->with('error', $exception->getMessage());
         }
@@ -65,6 +65,22 @@ class GeniePostsController extends Controller
         }
 
         return redirect()->back()->with('success', __('genie.post_regeneration_started'));
+    }
+
+    /**
+     * Draw the images of a post created without them.
+     */
+    public function generateImages(Request $request): RedirectResponse
+    {
+        $post = $this->post($request);
+
+        try {
+            $this->drafts->generateImages($post);
+        } catch (PostsException $exception) {
+            return redirect()->back()->with('error', $exception->getMessage());
+        }
+
+        return redirect()->back()->with('success', __('genie.post_images_started'));
     }
 
     public function regenerateImage(RegeneratePostImage $request, ImageStore $store): RedirectResponse

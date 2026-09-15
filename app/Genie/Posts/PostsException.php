@@ -64,6 +64,21 @@ class PostsException extends RuntimeException
         return new self('post_not_ready');
     }
 
+    public static function noImageStep(): self
+    {
+        return new self('post_no_image_step');
+    }
+
+    public static function formatWithoutImages(): self
+    {
+        return new self('post_format_no_images');
+    }
+
+    public static function imagesExist(): self
+    {
+        return new self('post_images_exist');
+    }
+
     public static function noImage(): self
     {
         return new self('post_image_missing');

@@ -50,9 +50,27 @@ class GeniePostTest extends TestCase
         $this->assertSame($genericFix, $simple->stepFor(RuleSubType::POSTS_IMAGE_FIX));
 
         $this->assertSame(
-            ['revise_text' => true, 'fix' => true, 'rethink' => false],
+            ['revise_text' => true, 'fix' => true, 'rethink' => false, 'generate_images' => false],
             $simple->actions(),
         );
+    }
+
+    public function test_generate_images_is_offered_only_before_any_slot_exists_on_an_image_format(): void
+    {
+        $image = $this->step(RuleSubType::POSTS_IMAGE, null, 1);
+
+        $empty = $this->geniePost(PostFormat::CAROUSEL, [$image]);
+        $this->assertTrue($empty->actions()['generate_images']);
+
+        $drawn = $this->geniePost(PostFormat::CAROUSEL, [$image]);
+        $drawn->images = [['position' => 1, 'file_id' => 4, 'media_id' => '11']];
+        $this->assertFalse($drawn->actions()['generate_images']);
+
+        $video = $this->geniePost(PostFormat::SHORT_VIDEO, [$image]);
+        $this->assertFalse($video->actions()['generate_images']);
+
+        $noStep = $this->geniePost(PostFormat::CAROUSEL, []);
+        $this->assertFalse($noStep->actions()['generate_images']);
     }
 
     public function test_a_post_whose_rule_is_gone_offers_no_actions(): void
@@ -60,6 +78,6 @@ class GeniePostTest extends TestCase
         $post = new GeniePost(['post_format' => PostFormat::SIMPLE_POST]);
         $post->setRelation('run', null);
 
-        $this->assertSame(['revise_text' => false, 'fix' => false, 'rethink' => false], $post->actions());
+        $this->assertSame(['revise_text' => false, 'fix' => false, 'rethink' => false, 'generate_images' => false], $post->actions());
     }
 }

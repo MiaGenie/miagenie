@@ -91,7 +91,7 @@ class GeniePost extends Model
     /**
      * Which regeneration actions the rule supports.
      *
-     * @return array{revise_text: bool, fix: bool, rethink: bool}
+     * @return array{revise_text: bool, fix: bool, rethink: bool, generate_images: bool}
      */
     public function actions(): array
     {
@@ -99,6 +99,10 @@ class GeniePost extends Model
             'revise_text' => $this->stepFor(RuleSubType::POSTS_REVISE_TEXT) !== null,
             'fix' => $this->stepFor(RuleSubType::POSTS_IMAGE_FIX) !== null,
             'rethink' => $this->stepFor(RuleSubType::POSTS_IMAGE_RETHINK) !== null,
+            // Drawing later is offered only while the post has no slots yet and the format has images.
+            'generate_images' => $this->hasImages()
+                && ($this->images ?? []) === []
+                && $this->stepFor(RuleSubType::POSTS_IMAGE) !== null,
         ];
     }
 

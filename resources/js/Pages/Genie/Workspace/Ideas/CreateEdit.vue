@@ -29,6 +29,7 @@ import ProviderIcon from "@/Components/Account/ProviderIcon.vue";
 import WarningButton from "@/Components/Button/WarningButton.vue";
 import Sparkles from "@/Icons/Sparkles.vue";
 import ArrowTopRightOnSquare from "@/Icons/ArrowTopRightOnSquare.vue";
+import CreatePostModal from "@/Components/Genie/Posts/CreatePostModal.vue";
 
 const {t: $t} = useI18n()
 
@@ -232,13 +233,15 @@ const backToList = () => {
  * Genie post: create the Mixpost draft and start the run, or open the draft that already exists.
  */
 const creatingPost = ref(false);
+const showCreatePost = ref(false);
 
-const createPost = () => {
+const createPost = ({images}) => {
     creatingPost.value = true;
 
-    router.put(route('genie.posts.generate', {workspace: workspaceCtx.id, idea: props.record.id}), {}, {
+    router.put(route('genie.posts.generate', {workspace: workspaceCtx.id, idea: props.record.id}), {images}, {
         onFinish: () => {
             creatingPost.value = false;
+            showCreatePost.value = false;
         },
     });
 }
@@ -570,7 +573,7 @@ const approveIdea = () => {
                         <WarningButton
                             v-if="isEdit && formStatus().name === 'APPROVED' && !record.post"
                             type="button"
-                            @click="createPost"
+                            @click="showCreatePost = true"
                             :isLoading="creatingPost"
                             :disabled="creatingPost || form.isDirty"
                             :hidden-text-on-small-screen=true
@@ -626,4 +629,13 @@ const approveIdea = () => {
             </form>
         </div>
     </div>
+
+    <CreatePostModal
+        v-if="isEdit"
+        :show="showCreatePost"
+        :images-available="imageRange !== null"
+        :processing="creatingPost"
+        @close="showCreatePost = false"
+        @submit="createPost"
+    />
 </template>

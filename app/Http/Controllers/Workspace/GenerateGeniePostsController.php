@@ -25,12 +25,14 @@ class GenerateGeniePostsController extends Controller
             ->byWorkspace(WorkspaceManager::current())
             ->get();
 
+        $images = $request->boolean('images', true);
+
         $created = 0;
         $errors = [];
 
         foreach ($ideas as $idea) {
             try {
-                $drafts->forIdea($idea, Auth::id());
+                $drafts->forIdea($idea, Auth::id(), $images);
                 $created++;
             } catch (PostsException $exception) {
                 $errors[] = $idea->theme.': '.$exception->getMessage();

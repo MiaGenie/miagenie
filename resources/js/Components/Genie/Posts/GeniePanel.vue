@@ -10,6 +10,7 @@ import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import WarningButton from "@/Components/Button/WarningButton.vue";
 import Sparkles from "@/Icons/Sparkles.vue";
 import Refresh from "@/Icons/Refresh.vue";
+import Photo from "@/Icons/Photo.vue";
 import ArrowTopRightOnSquare from "@/Icons/ArrowTopRightOnSquare.vue";
 import GenieImageSlot from "@/Components/Genie/Posts/GenieImageSlot.vue";
 import RegenerateTextModal from "@/Components/Genie/Posts/RegenerateTextModal.vue";
@@ -139,6 +140,8 @@ const restore = (version) =>
     act(postRoute("restoreImage", { file: version.file.id }));
 
 const retry = () => act(postRoute("retry"));
+
+const generateImages = () => act(postRoute("generateImages"));
 </script>
 
 <template>
@@ -174,18 +177,27 @@ const retry = () => act(postRoute("retry"));
             {{ $t("genie.post_actions_missing_steps") }}
         </Alert>
 
-        <Flex :responsive="false" class="flex-wrap gap-sm">
-            <WarningButton v-if="actions.revise_text" :disabled="locked" :isLoading="submitting" @click="showText = true">
-                <template #icon>
-                    <Refresh />
-                </template>
-                {{ $t("genie.post_regenerate_text") }}
-            </WarningButton>
+        <div class="flex flex-wrap items-center justify-between gap-sm">
+            <Flex :responsive="false" class="flex-wrap gap-sm">
+                <WarningButton v-if="actions.revise_text" :disabled="locked" :isLoading="submitting" @click="showText = true">
+                    <template #icon>
+                        <Refresh />
+                    </template>
+                    {{ $t("genie.post_regenerate_text") }}
+                </WarningButton>
 
-            <SecondaryButton v-if="failed" :disabled="locked" @click="retry">
-                {{ $t("genie.post_retry") }}
-            </SecondaryButton>
-        </Flex>
+                <SecondaryButton v-if="failed" :disabled="locked" @click="retry">
+                    {{ $t("genie.post_retry") }}
+                </SecondaryButton>
+            </Flex>
+
+            <WarningButton v-if="actions.generate_images" :disabled="locked" :isLoading="submitting" @click="generateImages">
+                <template #icon>
+                    <Photo />
+                </template>
+                {{ $t("genie.post_generate_images") }}
+            </WarningButton>
+        </div>
 
         <div v-if="geniePost.images.length" class="mt-lg">
             <div class="font-medium mb-sm">{{ $t("genie.post_images") }}</div>
