@@ -10,8 +10,8 @@ use Illuminate\Support\Collection;
  * The customer's briefing, rendered for a prompt.
  *
  * Everything a step's message can ask of the briefing is answered here, in both the shapes it is
- * asked for: `answers()` for the field-by-field `{{{briefings.<code_name>}}}` substitutions, and
- * `full()` for `{{{briefings.FULL}}}`, the whole thing as one block for a step that needs the
+ * asked for: `answers()` for the field-by-field `{{{briefing.<code_name>}}}` substitutions, and
+ * `full()` for `{{{briefing.FULL}}}`, the whole thing as one block for a step that needs the
  * customer's context rather than a handful of named fields. Sharing one class is what keeps the two
  * agreeing about what an answer says — an option code reads as the label a human wrote either way —
  * and lets the version's fields be read once instead of once per answer.

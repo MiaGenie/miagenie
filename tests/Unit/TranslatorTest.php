@@ -78,15 +78,15 @@ class TranslatorTest extends TestCase
     public function test_the_prompt_names_the_locales_and_carries_the_text(): void
     {
         TranslationAgent::fake([
-            ['translations' => [['locale' => 'pt-PT', 'texts' => ['Olá {{{briefings.company_name}}}']]]],
+            ['translations' => [['locale' => 'pt-PT', 'texts' => ['Olá {{{briefing.company_name}}}']]]],
         ]);
 
-        $this->translator()->translate('Hello {{{briefings.company_name}}}', 'en-GB', ['pt-PT']);
+        $this->translator()->translate('Hello {{{briefing.company_name}}}', 'en-GB', ['pt-PT']);
 
         TranslationAgent::assertPrompted(function (AgentPrompt $prompt) {
             return $prompt->contains('Source locale: en-GB (English)')
                 && $prompt->contains('- pt-PT (Portuguese)')
-                && $prompt->contains('Hello {{{briefings.company_name}}}');
+                && $prompt->contains('Hello {{{briefing.company_name}}}');
         });
     }
 

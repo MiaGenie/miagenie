@@ -12,7 +12,7 @@ use Illuminate\Support\Arr;
 /**
  * Builds the message sent for one step of a run.
  *
- * Every run type can read the briefing and the strategy — `{{{briefings.<code_name>}}}`,
+ * Every run type can read the briefing and the strategy — `{{{briefing.<code_name>}}}`,
  * `{{{strategy.<code_name>}}}`, one level into a strategy field with
  * `{{{strategy.<code_name>.<sub_field>}}}`, and the `FULL` forms of both — and sees the reviewer's
  * edits to the step before it. A run type with more to say adds a PromptContext, whose values
@@ -87,7 +87,7 @@ class RunPrompt
 
         return Arr::prependKeysWith(
             array_merge($briefing->answers(), ['FULL' => $briefing->full()]),
-            'briefings.'
+            'briefing.'
         );
     }
 
