@@ -50,11 +50,6 @@ class WorkspaceFile extends Model
         return $this->hasOne(AiRunStepFile::class, 'workspace_file_id');
     }
 
-    public function runResponseWorkspaceFile(): HasOne
-    {
-        return $this->HasOne(RunResponseWorkspaceFile::class, 'run_response_id');
-    }
-
     public function getFullPath(): string
     {
         if ($this->disk === 'external_media') {

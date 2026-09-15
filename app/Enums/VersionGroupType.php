@@ -8,34 +8,25 @@ use App\Concerns\Enum\WithTitle;
 
 enum VersionGroupType: int
 {
-    use WithTitle;
-    use WithGroupOptions;
     use FromName;
+    use WithGroupOptions;
+    use WithTitle;
 
     case BRIEFINGS = 1;
-    case COMPETITORS = 2;
     case STRATEGIES = 3;
 
-    /**
-     * @return string
-     */
     public function title(): string
     {
         return match ($this) {
             self::BRIEFINGS => 'briefings',
-            self::COMPETITORS => 'competitors',
             self::STRATEGIES => 'strategies'
         };
     }
 
-    /**
-     * @return bool
-     */
     public function hasIdentifier(): bool
     {
         return match ($this) {
             self::BRIEFINGS => false,
-            self::COMPETITORS => true,
             self::STRATEGIES => false
         };
     }

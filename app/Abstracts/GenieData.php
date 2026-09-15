@@ -6,7 +6,6 @@ use App\Contracts\GenieDataContract;
 use App\Enums\GenieSyncAction;
 use App\Enums\GenieType;
 use App\Models\File;
-use App\Models\RunResponse;
 use App\Models\Vector;
 use Illuminate\Support\Str;
 
@@ -14,7 +13,7 @@ abstract class GenieData implements GenieDataContract
 {
     protected GenieSyncAction $action;
 
-    protected File|Vector|RunResponse $model;
+    protected File|Vector $model;
 
     protected array $data;
 
@@ -29,7 +28,7 @@ abstract class GenieData implements GenieDataContract
     protected ?GenieSyncAction $nextAction;
 
     public function __construct(
-        File|Vector|RunResponse $model,
+        File|Vector $model,
         GenieSyncAction $action,
     ) {
         $this->model = $model;
@@ -52,7 +51,7 @@ abstract class GenieData implements GenieDataContract
         return GenieType::fromName(Str::snake(class_basename($this->model)));
     }
 
-    public function getModel(): File|Vector|RunResponse
+    public function getModel(): File|Vector
     {
         return $this->model;
     }

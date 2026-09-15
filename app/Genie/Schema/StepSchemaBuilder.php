@@ -24,7 +24,7 @@ use RuntimeException;
  * strategy fields it writes to.
  *
  * The root object carries one property per entry in the step's `output` array, keyed by the
- * strategy field's `code_name`, which is the shape `GenieOutputStrategy` reads back.
+ * strategy field's `code_name`, which is the shape `StrategyOutput` reads back.
  *
  * A field's own type comes from its root sub-fields: a single root sub-field *is* the field's
  * node, while several roots are wrapped in an implicit object.

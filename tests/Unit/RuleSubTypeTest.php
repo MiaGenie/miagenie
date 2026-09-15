@@ -11,8 +11,6 @@ class RuleSubTypeTest extends TestCase
     public function test_the_initial_steps_are_context_steps(): void
     {
         $this->assertTrue(RuleSubType::IDEAS_INITIAL->isContext());
-        $this->assertTrue(RuleSubType::DRAFTS_INITIAL->isContext());
-        $this->assertTrue(RuleSubType::PRE_POSTS_INITIAL->isContext());
 
         $this->assertFalse(RuleSubType::IDEAS_FORMAT->isContext());
         $this->assertFalse(RuleSubType::BRIEFINGS->isContext());

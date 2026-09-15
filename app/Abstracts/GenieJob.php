@@ -2,16 +2,12 @@
 
 namespace App\Abstracts;
 
-use App\Actions\GenieState\GenieStateRuns;
-use App\Actions\GenieState\GenieStateStrategies;
 use App\Concerns\GenieLogger;
 use App\Contracts\GenieOutputContract;
 use App\Contracts\GenieStateContract;
 use App\Contracts\GenieSyncContract;
 use App\Enums\GenieSyncAction;
 use App\Models\File;
-use App\Models\Run;
-use App\Models\RunResponse;
 use App\Models\Vector;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Support\Facades\App;
@@ -20,12 +16,12 @@ abstract class GenieJob
 {
     use GenieLogger;
 
-    protected File|Vector|Run|RunResponse $model;
+    protected File|Vector $model;
 
     protected GenieSyncAction $action;
 
     public function __construct(
-        File|Vector|Run|RunResponse $model,
+        File|Vector $model,
         GenieSyncAction $action,
     ) {
         $this->model = $model;
@@ -93,25 +89,5 @@ abstract class GenieJob
                 'type' => $data->getType(),
             ]
         );
-    }
-
-    /**
-     * @return GenieStateRuns
-     *
-     * @throws BindingResolutionException
-     */
-    protected function getGenieStateRuns(): mixed
-    {
-        return App::make(GenieStateRuns::class);
-    }
-
-    /**
-     * @return GenieStateStrategies
-     *
-     * @throws BindingResolutionException
-     */
-    protected function getGenieStateStrategy(): mixed
-    {
-        return App::make(GenieStateStrategies::class);
     }
 }

@@ -9,7 +9,6 @@ use App\Enums\IdeaStatus;
 use App\Enums\PostFormat;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 use Inovector\Mixpost\Concerns\OwnedByWorkspace;
@@ -31,7 +30,6 @@ class Idea extends Model
         'workspace_id',
         'strategy_id',
         'run_step_id',
-        'run_response_id',
         'theme',
         'objective',
         'suggested_content',
@@ -95,15 +93,5 @@ class Idea extends Model
         return $this->hasOne(GeniePost::class, 'idea_id')
             ->whereHas('mixpostPost')
             ->latestOfMany();
-    }
-
-    public function drafts(): HasMany
-    {
-        return $this->HasMany(Draft::class);
-    }
-
-    public function runResponse(): BelongsTo
-    {
-        return $this->belongsTo(RunResponse::class);
     }
 }

@@ -8,7 +8,6 @@ use App\Genie\Posts\PostsRunner;
 use App\Genie\Posts\PostsRunState;
 use App\Genie\Strategy\StrategyRunner;
 use App\Genie\Strategy\StrategyRunState;
-use RuntimeException;
 
 /**
  * Which runner drives a rule type.
@@ -24,7 +23,6 @@ final class Runners
             RuleType::STRATEGY => app(StrategyRunner::class),
             RuleType::IDEAS => app(IdeasRunner::class),
             RuleType::POSTS => app(PostsRunner::class),
-            default => throw new RuntimeException("No runner drives rule type [{$type->name}]."),
         };
     }
 
@@ -34,12 +32,11 @@ final class Runners
             RuleType::STRATEGY => app(StrategyRunState::class),
             RuleType::IDEAS => app(RunState::class),
             RuleType::POSTS => app(PostsRunState::class),
-            default => throw new RuntimeException("No run state tracks rule type [{$type->name}]."),
         };
     }
 
     public static function supports(RuleType $type): bool
     {
-        return in_array($type, [RuleType::STRATEGY, RuleType::IDEAS, RuleType::POSTS], true);
+        return in_array($type, RuleType::cases(), true);
     }
 }
