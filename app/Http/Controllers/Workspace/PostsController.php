@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Workspace;
 
+use App\Genie\Posts\GenieTag;
 use App\Http\Resources\GeniePostResource;
 use App\Models\GeniePost;
 use Illuminate\Http\Request;
@@ -15,6 +16,7 @@ use Inovector\Mixpost\Configs\MediaConfig;
 use Inovector\Mixpost\Facades\AIManager;
 use Inovector\Mixpost\Facades\ServiceManager;
 use Inovector\Mixpost\Facades\WorkspaceManager;
+use Inovector\Mixpost\Http\Base\Requests\Workspace\Post\UpdatePost;
 use Inovector\Mixpost\Http\Base\Resources\AccountResource;
 use Inovector\Mixpost\Http\Base\Resources\PostResource;
 use Inovector\Mixpost\Http\Base\Resources\TagResource;
@@ -26,6 +28,34 @@ use Inovector\Mixpost\Support\EagerLoadPostVersionsMedia;
 
 class PostsController extends Controller
 {
+    /**
+     * Save the post as the package does, with one correction: the Genie tag marks the posts Genie
+     * created and is not the user's to add or remove, so its presence in `tags` follows whether the
+     * post has a Genie record, whatever the form sent.
+     */
+    public function update(UpdatePost $updatePost): PostResource
+    {
+        $genieTagId = Tag::where('name', GenieTag::NAME)->value('id');
+
+        if ($genieTagId) {
+            $tags = array_values(array_filter(
+                array_map('intval', (array) $updatePost->input('tags', [])),
+                fn (int $id) => $id !== (int) $genieTagId,
+            ));
+
+            if (GeniePost::where('post_id', $updatePost->getPost()->id)->exists()) {
+                $tags[] = (int) $genieTagId;
+            }
+
+            $updatePost->merge(['tags' => $tags]);
+        }
+
+        $updatePost->handle();
+
+        // PostResource serialises tags only when loaded; the editor reads them back to correct its picker.
+        return new PostResource($updatePost->getPost()->load('tags'));
+    }
+
     public function create(Request $request): Response
     {
         return Inertia::render('Mixpost/Workspace/Posts/CreateEdit', [

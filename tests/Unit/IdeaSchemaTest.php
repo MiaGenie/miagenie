@@ -156,7 +156,7 @@ class IdeaSchemaTest extends TestCase
 
         $this->assertSame('array', $images['type']);
         $this->assertSame('string', $images['items']['type']);
-        $this->assertSame(3, $images['minItems']);
+        $this->assertSame(2, $images['minItems']);
         $this->assertSame(10, $images['maxItems']);
         $this->assertSame(__('genie.idea_images_desc'), $images['description']);
         $this->assertSame(__('genie.idea_image_brief'), $images['items']['title']);
@@ -206,6 +206,6 @@ class IdeaSchemaTest extends TestCase
             $step->post_format,
         ));
 
-        $this->assertSame(3, $schema['properties']['ideas']['items']['properties']['images']['minItems']);
+        $this->assertSame(2, $schema['properties']['ideas']['items']['properties']['images']['minItems']);
     }
 }

@@ -14,7 +14,7 @@ class PostFormatTest extends TestCase
 
     public function test_a_carousel_carries_three_to_ten_images(): void
     {
-        $this->assertSame([3, 10], PostFormat::CAROUSEL->imageRange());
+        $this->assertSame([2, 10], PostFormat::CAROUSEL->imageRange());
     }
 
     public function test_a_video_carries_no_images(): void
@@ -27,7 +27,7 @@ class PostFormatTest extends TestCase
     {
         $this->assertSame([
             PostFormat::SIMPLE_POST->value => [1, 1],
-            PostFormat::CAROUSEL->value => [3, 10],
+            PostFormat::CAROUSEL->value => [2, 10],
         ], PostFormat::imageRanges());
     }
 }

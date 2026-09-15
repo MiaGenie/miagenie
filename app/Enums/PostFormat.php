@@ -33,7 +33,7 @@ enum PostFormat: int
      * a video rather than a set of images.
      *
      * A carousel is capped at ten by the channels that publish it (Instagram, LinkedIn, TikTok);
-     * three is the least that still reads as a sequence.
+     * two is the least that reads as a sequence.
      *
      * @return array{int, int}|null
      */
@@ -41,7 +41,7 @@ enum PostFormat: int
     {
         return match ($this) {
             self::SIMPLE_POST => [1, 1],
-            self::CAROUSEL => [3, 10],
+            self::CAROUSEL => [2, 10],
             self::SHORT_VIDEO, self::LONG_VIDEO => null,
         };
     }
