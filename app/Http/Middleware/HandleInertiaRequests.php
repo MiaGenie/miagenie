@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Genie\Posts\GenieTag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Str;
@@ -76,7 +77,8 @@ class HandleInertiaRequests extends Middleware
             ],
             'genie' => [
                 'core_path' => 'genie',
-                'mime_types' => Config::get('genie.mime_types')
+                'mime_types' => Config::get('genie.mime_types'),
+                'system_tag' => GenieTag::NAME
             ],
             'mixpost' => [
                 'core_path' => Util::corePath(),

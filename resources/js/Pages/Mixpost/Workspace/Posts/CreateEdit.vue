@@ -1,6 +1,7 @@
 <script setup>
 import { computed, inject, onBeforeUnmount, onMounted, provide, reactive, ref, watch } from 'vue'
 import { Head, useForm, router } from '@inertiajs/vue3'
+import { useI18n } from 'vue-i18n'
 import { cloneDeep, debounce } from 'lodash'
 import useMounted from '@/Composables/useMounted'
 import usePost from '@/Composables/usePost'
@@ -11,7 +12,7 @@ import useOffline from '@/Composables/useOffline'
 import usePostActivity from '@/Composables/usePostActivity'
 import PageHeader from '@/Components/DataDisplay/PageHeader.vue'
 import PostForm from '@/Components/Post/PostForm.vue'
-import PostActions from '@/Components/Post/PostActions.vue'
+import PostActions from '@/Components/Genie/Posts/PostActions.vue'
 import PostPreviewProviders from '@/Components/Post/PostPreviewProviders.vue'
 import SecondaryButton from '@/Components/Button/SecondaryButton.vue'
 import PostStatus from '@/Components/Post/PostStatus.vue'
@@ -101,6 +102,7 @@ const {
   fetchThreadItems: activityFetchThreadItems
 } = usePostActivity({ context })
 const { notify } = useNotifications()
+const { t: $t } = useI18n()
 const { offline } = useOffline()
 
 const form = useForm({
@@ -131,6 +133,17 @@ const update = data => {
     .put(route('mixpost.posts.update', { workspace: workspaceCtx.id, post: props.post.id }), data)
     .then(response => {
       hasError.value = false
+
+      // Genie decides the Genie tag: when the server corrected the tags, take its list so the
+      // picker matches what was saved, and say why once.
+      const savedTags = Array.isArray(response.data.tags) ? response.data.tags : null
+      const savedTagIds = (savedTags ?? []).map(tag => tag.id).sort()
+      const formTagIds = form.tags.map(tag => tag.id).sort()
+
+      if (savedTags && JSON.stringify(savedTagIds) !== JSON.stringify(formTagIds)) {
+        form.tags = response.data.tags
+        notify('error', $t('genie.genie_tag_managed'))
+      }
 
       if (response.data.status !== props.post.status) {
         router.get(route('mixpost.posts.edit', { workspace: workspaceCtx.id, post: props.post.id }))
