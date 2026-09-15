@@ -8,10 +8,10 @@ use App\Enums\IdeaStatus;
 use App\Enums\PostFormat;
 use App\Genie\Ideas\IdeasOutput;
 use App\Genie\Ideas\IdeasRequest;
-use App\Genie\Ideas\PublishTargets;
 use App\Models\AiRun;
 use App\Models\AiRunStep;
 use App\Models\RuleStep;
+use App\Support\PublishTargets;
 use RuntimeException;
 use Tests\TestCase;
 

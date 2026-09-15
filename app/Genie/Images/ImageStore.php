@@ -1,0 +1,133 @@
+<?php
+
+namespace App\Genie\Images;
+
+use App\Enums\WorkspaceFileSource;
+use App\Enums\WorkspaceFileType;
+use App\Models\AiRun;
+use App\Models\AiRunStep;
+use App\Models\AiRunStepFile;
+use App\Models\WorkspaceFile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Laravel\Ai\Responses\Data\GeneratedImage;
+use Throwable;
+
+/**
+ * Where a generated image lands: a file on the Genie disk, a WorkspaceFile row, and the slot row
+ * that ties it to the run step. The only image class that touches storage or the database.
+ */
+class ImageStore
+{
+    /**
+     * The file currently filling a slot, or null when the slot is empty.
+     */
+    public function current(AiRunStep $runStep, int $position): ?AiRunStepFile
+    {
+        return $runStep->images()
+            ->current()
+            ->where('position', $position)
+            ->latest('id')
+            ->first();
+    }
+
+    /**
+     * Keep a generated image as the current file of a slot.
+     *
+     * The run is passed rather than read from the step because `AiRun` is workspace scoped and a
+     * queued job may not have the scope the admin page has. When the image replaces an earlier
+     * one, the earlier row is superseded in the same transaction so a slot never shows two files.
+     */
+    public function persist(
+        AiRunStep $runStep,
+        AiRun $run,
+        int $position,
+        ImagePrompt $prompt,
+        GeneratedImage $image,
+        ?AiRunStepFile $parent = null,
+        ?string $mode = null,
+    ): AiRunStepFile {
+        $content = $image->content();
+        $disk = config('genie.disk');
+        $uuid = (string) Str::uuid();
+        $extension = $this->extensionFor($image->mime());
+        $path = sprintf('workspace/%s/generated/%s.%s', $run->workspace->uuid, $uuid, $extension);
+
+        Storage::disk($disk)->put($path, $content);
+
+        try {
+            return DB::transaction(function () use ($runStep, $run, $position, $prompt, $image, $parent, $mode, $content, $disk, $uuid, $extension, $path) {
+                $file = WorkspaceFile::create([
+                    'uuid' => $uuid,
+                    'workspace_id' => $run->workspace_id,
+                    'name' => sprintf('step-%d-%s.%s', $position, $uuid, $extension),
+                    'mime_type' => $image->mime(),
+                    'disk' => $disk,
+                    'path' => $path,
+                    'size' => strlen($content),
+                    'type' => WorkspaceFileType::STEP_IMAGE,
+                    'source' => WorkspaceFileSource::GENERATED,
+                ]);
+
+                // The parent keeps `revising_at`: the caller still has work to do after this (copying the
+                // file where the post reads it) and ends the revision with markRevisionDone().
+                $parent?->update(['superseded_at' => now(), 'revision_error' => null]);
+
+                $row = AiRunStepFile::create([
+                    'run_step_id' => $runStep->id,
+                    'workspace_file_id' => $file->id,
+                    'position' => $position,
+                    'brief' => $prompt->context()->brief,
+                    'prompt' => $prompt->text(),
+                    'feedback' => $prompt->context()->feedback,
+                    'mode' => $mode,
+                    'parent_file_id' => $parent?->workspace_file_id,
+                ]);
+
+                return $row->setRelation('file', $file);
+            });
+        } catch (Throwable $exception) {
+            Storage::disk($disk)->delete($path);
+
+            throw $exception;
+        }
+    }
+
+    /**
+     * Mark a slot's current file as being redone, so pages can show it and nobody starts a second one.
+     */
+    public function markRevising(AiRunStepFile $image): void
+    {
+        $image->update(['revising_at' => now(), 'revision_error' => null]);
+    }
+
+    /**
+     * A revision did not produce a file: the slot keeps its image and remembers why.
+     */
+    public function markRevisionFailed(AiRunStepFile $image, string $error): void
+    {
+        $image->update(['revising_at' => null, 'revision_error' => mb_substr($error, 0, 255)]);
+    }
+
+    /**
+     * The revision is finished everywhere it had to land; the slot is no longer busy.
+     */
+    public function markRevisionDone(AiRunStepFile $image): void
+    {
+        $image->update(['revising_at' => null, 'revision_error' => null]);
+    }
+
+    /**
+     * The SDK only reports a MIME type; the extension follows from it, PNG being what OpenAI returns.
+     */
+    protected function extensionFor(string $mime): string
+    {
+        return match ($mime) {
+            'image/jpeg', 'image/jpg' => 'jpg',
+            'image/webp' => 'webp',
+            'image/gif' => 'gif',
+            default => 'png',
+        };
+    }
+}

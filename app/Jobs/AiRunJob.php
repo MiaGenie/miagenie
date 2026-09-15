@@ -33,11 +33,16 @@ class AiRunJob implements ShouldQueue
 
     /**
      * The model call is the long pole; this, the SDK per-call timeout and the Horizon supervisor
-     * timeout all cap each other, so they are kept in step.
+     * timeout all cap each other, so they are kept in step: the `genie-ai` supervisor allows 660
+     * seconds, this job 600, and the step's profile timeout stays below both.
      */
     public int $timeout = 600;
 
-    public const QUEUE = 'default';
+    /**
+     * The `default` queue's supervisor kills a job after 60 seconds, which no model call — and no
+     * image generation, which takes minutes — survives.
+     */
+    public const QUEUE = 'genie-ai';
 
     /**
      * Wait progressively longer between retries, so a rate limit has time to clear.
@@ -48,6 +53,10 @@ class AiRunJob implements ShouldQueue
 
     public function __construct(public AiRun $run)
     {
+        // Queued bare: loaded relations are re-loaded on the worker through the global scopes,
+        // before handle() has set the current workspace.
+        $this->run = $run->withoutRelations();
+
         $this->onQueue(self::QUEUE);
     }
 

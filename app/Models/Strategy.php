@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 use Inovector\Mixpost\Concerns\OwnedByWorkspace;
-use Inovector\Mixpost\Models\Workspace;
 
 class Strategy extends Model
 {
@@ -56,11 +55,6 @@ class Strategy extends Model
     public function aiRun(): HasOne
     {
         return $this->hasOne(AiRun::class, 'strategy_id');
-    }
-
-    public function workspace(): BelongsTo
-    {
-        return $this->belongsTo(Workspace::class);
     }
 
     public function ideas(): HasMany

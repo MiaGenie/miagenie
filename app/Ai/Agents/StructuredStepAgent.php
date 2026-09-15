@@ -19,6 +19,6 @@ class StructuredStepAgent extends StepAgent implements HasStructuredOutput
      */
     public function schema(JsonSchema $schema): array
     {
-        return new StepSchemaBuilder($schema)->propertiesForStep($this->step, $this->locale);
+        return new StepSchemaBuilder($schema)->propertiesForStep($this->step, $this->locale) ?? [];
     }
 }

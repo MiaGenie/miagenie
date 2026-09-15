@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 use Inovector\Mixpost\Concerns\OwnedByWorkspace;
-use Inovector\Mixpost\Models\Workspace;
 
 /**
  * One generation run: a rule applied to a briefing, producing a strategy.
@@ -42,11 +41,6 @@ class AiRun extends Model
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
     ];
-
-    public function workspace(): BelongsTo
-    {
-        return $this->belongsTo(Workspace::class);
-    }
 
     public function rule(): BelongsTo
     {

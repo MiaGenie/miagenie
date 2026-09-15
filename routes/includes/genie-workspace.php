@@ -7,6 +7,8 @@ use App\Http\Controllers\Workspace\ConfigController;
 use App\Http\Controllers\Workspace\DeleteDraftsController;
 use App\Http\Controllers\Workspace\DeleteIdeasController;
 use App\Http\Controllers\Workspace\DraftsController;
+use App\Http\Controllers\Workspace\GenerateGeniePostsController;
+use App\Http\Controllers\Workspace\GeniePostsController;
 use App\Http\Controllers\Workspace\IdeasController;
 use App\Http\Controllers\Workspace\PrePostsController;
 use App\Http\Controllers\Workspace\RestoreDraftsController;
@@ -90,6 +92,18 @@ Route::middleware(array_merge([
             Route::delete('{idea}', [IdeasController::class, 'destroy'])->name('delete');
             Route::delete('/', DeleteIdeasController::class)->name('deleteMultiple');
             Route::post('/', RestoreIdeasController::class)->name('restoreMultiple');
+        });
+
+        // posts produced from ideas: the draft itself lives in Mixpost, these only start and redo the generation
+        Route::prefix('posts')->name('posts.')->middleware($editorMiddleware)->group(function () {
+            Route::put('generate/{idea}', [GeniePostsController::class, 'generate'])->name('generate');
+            Route::post('generate', GenerateGeniePostsController::class)->name('generateMultiple');
+            Route::post('{post}/regenerate', [GeniePostsController::class, 'regenerateText'])->name('regenerateText');
+            Route::post('{post}/images', [GeniePostsController::class, 'generateImages'])->name('generateImages');
+            Route::post('{post}/images/{file}', [GeniePostsController::class, 'regenerateImage'])->name('regenerateImage');
+            Route::post('{post}/images/{file}/reattach', [GeniePostsController::class, 'reattachImage'])->name('reattachImage');
+            Route::post('{post}/images/{file}/restore', [GeniePostsController::class, 'restoreImage'])->name('restoreImage');
+            Route::post('{post}/retry', [GeniePostsController::class, 'retry'])->name('retry');
         });
 
         Route::prefix('drafts')->name('drafts.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {

@@ -9,6 +9,7 @@ use App\Concerns\ConfiguresAiProvider;
 use App\Configs\OpenAIConfig;
 use App\Genie\Runs\SchemaDefinition;
 use App\Genie\Schema\StepSchemaBuilder;
+use App\Models\ModelProfile;
 use App\Models\RuleStep;
 use Laravel\Ai\Enums\Lab;
 use RuntimeException;
@@ -22,6 +23,13 @@ class StepAgentFactory
      */
     public const DEFAULT_TIMEOUT = 300;
 
+    /**
+     * Providers the SDK can generate images with, as `ModelProfile::$provider` values.
+     *
+     * @var list<string>
+     */
+    public const IMAGE_PROVIDERS = ['openai', 'azure', 'gemini', 'xai', 'openrouter', 'bedrock'];
+
     public function __construct(protected StepSchemaBuilder $schemas = new StepSchemaBuilder) {}
 
     /**
@@ -29,7 +37,7 @@ class StepAgentFactory
      */
     public function make(RuleStep $step, string $locale): StepAgent
     {
-        $this->configureAiProvider($this->provider($step));
+        $this->prepare($step);
 
         return $this->hasSchema($step)
             ? new StructuredStepAgent($step, $locale)
@@ -45,7 +53,7 @@ class StepAgentFactory
      */
     public function makeText(RuleStep $step, string $locale): StepAgent
     {
-        $this->configureAiProvider($this->provider($step));
+        $this->prepare($step);
 
         return new StepAgent($step, $locale);
     }
@@ -59,7 +67,7 @@ class StepAgentFactory
      */
     public function makeDefined(RuleStep $step, string $locale, SchemaDefinition $definition): StepAgent
     {
-        $this->configureAiProvider($this->provider($step));
+        $this->prepare($step);
 
         return new DefinedSchemaStepAgent($step, $locale, $definition);
     }
@@ -72,6 +80,40 @@ class StepAgentFactory
     public function hasSchema(RuleStep $step, ?string $locale = null): bool
     {
         return $this->schemas->closureForStep($step, $locale) !== null;
+    }
+
+    /**
+     * Resolve the step's provider and make sure it is credentialed, for a call that goes to the
+     * SDK directly rather than through an agent — image generation.
+     */
+    public function prepare(RuleStep $step): Lab|string
+    {
+        $provider = $this->provider($step);
+
+        $this->configureAiProvider($provider);
+
+        return $provider;
+    }
+
+    /**
+     * The image model a step names outright, or null to let the provider pick its default.
+     *
+     * Image providers have a single tier, so a profile on DEFAULT, CHEAPEST or SMARTEST all mean
+     * the provider's one image model; only OTHER carries a model name of its own.
+     */
+    public function imageModel(RuleStep $step): ?string
+    {
+        return $step->modelProfile?->explicitModel();
+    }
+
+    /**
+     * Whether the profile's provider can generate images at all.
+     */
+    public static function supportsImages(ModelProfile|RuleStep $subject): bool
+    {
+        $profile = $subject instanceof RuleStep ? $subject->modelProfile : $subject;
+
+        return $profile !== null && in_array($profile->provider, self::IMAGE_PROVIDERS, true);
     }
 
     public function provider(RuleStep $step): Lab|string

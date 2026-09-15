@@ -11,7 +11,6 @@ use App\Enums\RunStatus;
 use App\Enums\StrategyStatus;
 use App\Genie\Ideas\ContentPillars;
 use App\Genie\Ideas\IdeasRequest;
-use App\Genie\Ideas\PublishTargets;
 use App\Genie\Runs\PostFormatGate;
 use App\Http\Requests\Workspace\Idea\GenerateIdeas;
 use App\Http\Requests\Workspace\Idea\StoreIdea;
@@ -24,6 +23,7 @@ use App\Models\Idea;
 use App\Models\Rule;
 use App\Models\Strategy;
 use App\Models\WorkspaceVersion;
+use App\Support\PublishTargets;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -36,6 +36,7 @@ class IdeasController
     public function index(Request $request): Response
     {
         $records = IdeaQuery::apply($request)
+            ->with('post.mixpostPost')
             ->latest()
             ->paginate(100)
             ->onEachSide(1)

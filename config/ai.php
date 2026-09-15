@@ -14,7 +14,7 @@ return [
     */
 
     'default' => 'openai',
-    'default_for_images' => 'gemini',
+    'default_for_images' => 'openai',
     'default_for_audio' => 'openai',
     'default_for_transcription' => 'openai',
     'default_for_embeddings' => 'openai',
@@ -151,6 +151,12 @@ return [
             'key' => env('OPENAI_API_KEY'),
             'url' => env('OPENAI_URL', 'https://api.openai.com/v1'),
             'store' => env('OPENAI_STORE', true),
+            // The one image tier Genie steps use; a profile with tier "other" overrides it per step.
+            'models' => [
+                'image' => [
+                    'default' => env('OPENAI_IMAGE_MODEL', 'gpt-image-2'),
+                ],
+            ],
         ],
 
         'openai-compatible' => [

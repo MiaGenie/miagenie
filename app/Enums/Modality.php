@@ -4,13 +4,14 @@ namespace App\Enums;
 
 use App\Concerns\Enum\FromName;
 use App\Concerns\Enum\WithTitle;
+use Illuminate\Support\Collection;
 
 /**
  * What a step produces.
  *
- * Every step is text today. Image and video are coming, and they differ in where the result is
- * kept: text lands in the step's `output`, while image and video land in workspace files linked
- * through `genie_ai_run_step_files`.
+ * A text step is a turn in the run's conversation and lands in the step's `output`; an image step
+ * is one or more stateless image calls whose files are kept as workspace files linked through
+ * `genie_ai_run_step_files` (see App\Genie\Images). Video is reserved and cannot be configured yet.
  */
 enum Modality: int
 {
@@ -28,6 +29,14 @@ enum Modality: int
             self::IMAGE => 'image',
             self::VIDEO => 'video',
         };
+    }
+
+    /**
+     * The modalities an admin can give a rule step, as withTitle() rows.
+     */
+    public static function configurable(): Collection
+    {
+        return self::withTitle()->reject(fn ($row) => $row['value'] === self::VIDEO->value)->values();
     }
 
     /**

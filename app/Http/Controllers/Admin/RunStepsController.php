@@ -7,7 +7,9 @@ use App\Enums\RuleSubType;
 use App\Enums\RunStatus;
 use App\Http\Requests\Admin\DeleteRunStep;
 use App\Http\Resources\Admin\AiRunResource;
+use App\Http\Resources\Admin\AiRunStepImageResource;
 use App\Http\Resources\Admin\AiRunStepResource;
+use App\Http\Resources\Admin\LogResource;
 use App\Models\AiRun;
 use App\Models\AiRunStep;
 use Illuminate\Http\RedirectResponse;
@@ -42,7 +44,8 @@ class RunStepsController extends Controller
     }
 
     /**
-     * One turn of the run, with the conversation it produced.
+     * One turn of the run, with the conversation it produced — or, for an image step, the files
+     * it produced with the prompt each was generated from.
      *
      * The rule step is read through the relation rather than looked up: `step_id` is nulled when a
      * rule step is deleted, and a run that outlived its rule still has to be readable.
@@ -67,6 +70,11 @@ class RunStepsController extends Controller
             'modalities' => Modality::withTitle(),
             'runStep' => new AiRunStepResource($runStep),
             'conversation' => $this->conversation($runStep),
+            // Resolved to plain lists: a resource collection would otherwise arrive wrapped in `data`.
+            'images' => AiRunStepImageResource::collection(
+                $runStep->images()->with(['file', 'parent'])->get()
+            )->resolve(),
+            'logs' => LogResource::collection($runStep->logs()->get())->resolve(),
             'isLast' => $last?->id === $runStep->id,
         ]);
     }

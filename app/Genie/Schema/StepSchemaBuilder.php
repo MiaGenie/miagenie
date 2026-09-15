@@ -2,10 +2,12 @@
 
 namespace App\Genie\Schema;
 
+use App\Enums\Modality;
 use App\Enums\RuleType;
 use App\Enums\SubFieldType;
 use App\Enums\VersionGroupType;
 use App\Genie\Ideas\IdeaSchema;
+use App\Genie\Posts\PostSchema;
 use App\Models\RuleStep;
 use App\Models\VersionField;
 use App\Models\VersionFieldSubField;
@@ -38,11 +40,13 @@ class StepSchemaBuilder
      */
     public function forStep(RuleStep $step, ?string $locale = null): ?array
     {
-        return new ObjectSchema(
-            $this->propertiesForStep($step, $locale),
-            $this->schemaName($step),
-            strict: true,
-        )->toSchema();
+        $properties = $this->propertiesForStep($step, $locale);
+
+        if ($properties === null) {
+            return null;
+        }
+
+        return new ObjectSchema($properties, $this->schemaName($step), strict: true)->toSchema();
     }
 
     /**
@@ -86,12 +90,12 @@ class StepSchemaBuilder
      */
     public function closureForStep(RuleStep $step, ?string $locale = null): ?Closure
     {
-        if ($step->response_format !== 'json_schema') {
+        if ($step->response_format !== 'json_schema' || $step->modality === Modality::IMAGE) {
             return null;
         }
 
         return function (JsonSchema $schema) use ($step, $locale): array {
-            return new self($schema)->propertiesForStep($step, $locale);
+            return new self($schema)->propertiesForStep($step, $locale) ?? [];
         };
     }
 
@@ -105,10 +109,17 @@ class StepSchemaBuilder
      * column happened to hold, so editing a sub-field no longer changed what was sent. A step that
      * cannot state its contract refuses instead.
      *
-     * @return array<string, Type>
+     * An image step has no schema at all — its result is files, not structured text — so it
+     * answers null before any rule type is consulted, and the admin preview shows nothing.
+     *
+     * @return array<string, Type>|null
      */
-    public function propertiesForStep(RuleStep $step, ?string $locale = null): array
+    public function propertiesForStep(RuleStep $step, ?string $locale = null): ?array
     {
+        if ($step->modality === Modality::IMAGE) {
+            return null;
+        }
+
         $locale ??= app()->getLocale();
 
         // A run type whose contract is fixed by the model that stores the result states it in
@@ -117,6 +128,7 @@ class StepSchemaBuilder
         // and hasSchema() see.
         $defined = match ($step->rule?->rule_type) {
             RuleType::IDEAS => IdeaSchema::preview($locale),
+            RuleType::POSTS => PostSchema::preview($locale),
             default => null,
         };
 
