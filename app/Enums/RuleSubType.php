@@ -17,10 +17,6 @@ enum RuleSubType: int
     case IDEAS_INITIAL = 21;
     case IDEAS_FORMAT = 22;
     case IDEAS_MULTIPLE = 23;
-    case DRAFTS_INITIAL = 31;
-    case DRAFTS = 32;
-    case PRE_POSTS_INITIAL = 41;
-    case PRE_POSTS = 42;
 
     /*
      * The admin step editor offers the sub types whose value starts with the rule type's value
@@ -46,10 +42,6 @@ enum RuleSubType: int
             self::IDEAS_INITIAL => 'ideas_initial',
             self::IDEAS_FORMAT => 'ideas_format',
             self::IDEAS_MULTIPLE => 'ideas_multiple',
-            self::DRAFTS_INITIAL => 'drafts_initial',
-            self::DRAFTS => 'drafts',
-            self::PRE_POSTS_INITIAL => 'pre_posts_initial',
-            self::PRE_POSTS => 'pre_posts',
             self::POSTS_CONTENT => 'posts_content',
             self::POSTS_IMAGE => 'posts_image',
             self::POSTS_REVISE_TEXT => 'posts_revise_text',
@@ -64,7 +56,7 @@ enum RuleSubType: int
     public function isContext(): bool
     {
         return match ($this) {
-            self::IDEAS_INITIAL, self::DRAFTS_INITIAL, self::PRE_POSTS_INITIAL => true,
+            self::IDEAS_INITIAL => true,
             default => false,
         };
     }

@@ -2,16 +2,10 @@
 
 use App\Http\Controllers\MixpostEnterprise\DashboardController;
 use App\Http\Controllers\Workspace\BriefingsController;
-use App\Http\Controllers\Workspace\CompetitorsController;
-use App\Http\Controllers\Workspace\ConfigController;
-use App\Http\Controllers\Workspace\DeleteDraftsController;
 use App\Http\Controllers\Workspace\DeleteIdeasController;
-use App\Http\Controllers\Workspace\DraftsController;
 use App\Http\Controllers\Workspace\GenerateGeniePostsController;
 use App\Http\Controllers\Workspace\GeniePostsController;
 use App\Http\Controllers\Workspace\IdeasController;
-use App\Http\Controllers\Workspace\PrePostsController;
-use App\Http\Controllers\Workspace\RestoreDraftsController;
 use App\Http\Controllers\Workspace\RestoreIdeasController;
 use App\Http\Controllers\Workspace\StrategiesController;
 use App\Http\Controllers\Workspace\StrategyPresentationController;
@@ -35,50 +29,21 @@ Route::middleware(array_merge([
             Route::get('/', DashboardController::class)->name('dashboard');
         });
 
-        Route::prefix('config')->name('config.')->group(function () {
-            Route::get('/', ConfigController::class)->name('config');
-        });
-
-        // competitor
-        Route::prefix('competitors')->name('competitors.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
-            Route::get('/', [CompetitorsController::class, 'index'])->name('index')->withoutMiddleware($editorMiddleware);
-            Route::get('create', [CompetitorsController::class, 'create'])->name('create');
-            Route::post('store', [CompetitorsController::class, 'store'])->name('store');
-            Route::get('{competitor}', [CompetitorsController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
-            Route::post('update/{competitor}', [CompetitorsController::class, 'update'])->name('update');
-            Route::delete('{competitor}', [CompetitorsController::class, 'destroy'])->name('delete');
-        });
-
         // briefing
-        Route::prefix('briefings')->name('briefings.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
-            Route::get('/', [BriefingsController::class, 'index'])->name('index')->withoutMiddleware($editorMiddleware);
-            Route::get('create', [BriefingsController::class, 'create'])->name('create');
+        Route::prefix('briefings')->name('briefings.')->middleware($editorMiddleware)->group(function () {
             Route::get('wizard', [BriefingsController::class, 'wizard'])->name('wizard');
             Route::post('wizard', [BriefingsController::class, 'wizardSave'])->name('wizard_save');
-            Route::post('store', [BriefingsController::class, 'store'])->name('store');
-            Route::get('{briefing}', [BriefingsController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
-            Route::post('update/{briefing}', [BriefingsController::class, 'update'])->name('update');
-            Route::delete('{briefing}', [BriefingsController::class, 'destroy'])->name('delete');
         });
 
         // strategy
         Route::prefix('strategies')->name('strategies.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
-            Route::get('/', [StrategiesController::class, 'index'])->name('index')->withoutMiddleware($editorMiddleware);
-            Route::get('list', [StrategiesController::class, 'list'])->name('list')->withoutMiddleware($editorMiddleware);
             Route::get('overview', [StrategyPresentationController::class, 'overview'])->name('overview')->withoutMiddleware($editorMiddleware);
             Route::post('generate', [StrategyPresentationController::class, 'generate'])->name('generate');
             Route::get('step-review', [StrategyPresentationController::class, 'review'])->name('step_review')->withoutMiddleware($editorMiddleware);
             Route::put('step-review/{runStep}', [StrategyPresentationController::class, 'approveReview'])->name('step_review_approve');
             Route::get('presentation', [StrategyPresentationController::class, 'index'])->name('presentation')->withoutMiddleware($editorMiddleware);
             Route::put('presentation/{strategy}', [StrategyPresentationController::class, 'update'])->name('presentation_update');
-            Route::get('create', [StrategiesController::class, 'create'])->name('create');
-            Route::post('store', [StrategiesController::class, 'store'])->name('store');
-            Route::get('edit/{strategy}', [StrategiesController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
-            Route::put('update/{strategy}', [StrategiesController::class, 'update'])->name('update');
             Route::put('approve/{strategy}', [StrategiesController::class, 'approve'])->name('approve');
-            Route::get('review/{strategy}', [StrategiesController::class, 'review'])->name('review')->withoutMiddleware($editorMiddleware);
-            Route::put('review_update/{strategy}', [StrategiesController::class, 'review_update'])->name('review_update');
-            Route::delete('{strategy}', [StrategiesController::class, 'destroy'])->name('delete');
         });
 
         // idea
@@ -104,31 +69,5 @@ Route::middleware(array_merge([
             Route::post('{post}/images/{file}/reattach', [GeniePostsController::class, 'reattachImage'])->name('reattachImage');
             Route::post('{post}/images/{file}/restore', [GeniePostsController::class, 'restoreImage'])->name('restoreImage');
             Route::post('{post}/retry', [GeniePostsController::class, 'retry'])->name('retry');
-        });
-
-        Route::prefix('drafts')->name('drafts.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
-            Route::get('/', [DraftsController::class, 'index'])->name('index')->withoutMiddleware($editorMiddleware);
-            Route::get('create', [DraftsController::class, 'create'])->name('create');
-            Route::put('generate/{idea}', [DraftsController::class, 'generate'])->name('generate');
-            Route::post('store', [DraftsController::class, 'store'])->name('store');
-            Route::get('{draft}', [DraftsController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
-            Route::get('generating/{draft}', [DraftsController::class, 'generating'])->name('generating')->withoutMiddleware($editorMiddleware);
-            Route::put('approve/{draft}', [DraftsController::class, 'approve'])->name('approve');
-            Route::put('{draft}', [DraftsController::class, 'update'])->name('update');
-            Route::delete('{draft}', [DraftsController::class, 'destroy'])->name('delete');
-            Route::post('generateMultiple', [DraftsController::class, 'generateMultiple'])->name('generateMultiple');
-            Route::delete('/', DeleteDraftsController::class)->name('deleteMultiple');
-            Route::post('/', RestoreDraftsController::class)->name('restoreMultiple');
-        });
-
-        Route::prefix('pre_posts')->name('pre_posts.')->middleware($editorMiddleware)->group(function () use ($editorMiddleware) {
-            Route::get('/', [PrePostsController::class, 'index'])->name('index')->withoutMiddleware($editorMiddleware);
-            Route::get('create', [PrePostsController::class, 'create'])->name('create');
-            Route::post('store', [PrePostsController::class, 'store'])->name('store');
-            Route::post('updateGenerate', [PrePostsController::class, 'updateGenerate'])->name('updateGenerate');
-            Route::get('{pre_post}', [PrePostsController::class, 'edit'])->name('edit')->withoutMiddleware($editorMiddleware);
-            Route::put('{pre_post}', [PrePostsController::class, 'update'])->name('update');
-            Route::delete('{pre_post}', [PrePostsController::class, 'destroy'])->name('delete');
-            Route::post('generateMultiple', [PrePostsController::class, 'generateMultiple'])->name('generateMultiple');
         });
     });

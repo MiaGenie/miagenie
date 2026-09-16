@@ -30,7 +30,7 @@ class TranslationAgent implements Agent, HasStructuredOutput
         Translate every numbered source text into every requested target locale, keeping the meaning, tone, register and approximate length of each source.
         For each locale return the translations as a list in exactly the same order and count as the numbered source texts, without the numbers.
         Return only the translations — no explanations, no quotes around the text.
-        Preserve verbatim, without translating or altering: HTML tags and attributes, Markdown syntax, line breaks, URLs, and any placeholder token written between triple braces such as {{{briefings.company_name}}} or {{{strategy.FULL}}}.
+        Preserve verbatim, without translating or altering: HTML tags and attributes, Markdown syntax, line breaks, URLs, and any placeholder token written between triple braces such as {{{briefing.company_name}}} or {{{strategy.FULL}}}.
         Use the locale codes exactly as they were given.
         TEXT;
     }

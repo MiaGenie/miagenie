@@ -39,10 +39,6 @@ class CloneFieldInto extends FormRequest
         $newField->version_id = $target->id;
         $newField->position = (clone $targetGroup)->max('position') + 1;
 
-        if ($newField->is_identifier && (clone $targetGroup)->where('is_identifier', true)->exists()) {
-            $newField->is_identifier = false;
-        }
-
         return DB::transaction(function () use ($field, $newField) {
             $newField->save();
 

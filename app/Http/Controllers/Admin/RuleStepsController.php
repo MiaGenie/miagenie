@@ -19,10 +19,8 @@ use App\Http\Resources\Admin\RuleResource;
 use App\Http\Resources\Admin\RuleStepResource;
 use App\Http\Resources\Admin\RuleStepTranslationResource;
 use App\Http\Resources\Admin\VersionResource;
-use App\Models\Draft;
 use App\Models\Idea;
 use App\Models\ModelProfile;
-use App\Models\PrePost;
 use App\Models\Rule;
 use App\Models\RuleStep;
 use App\Models\Version;
@@ -125,8 +123,6 @@ class RuleStepsController extends Controller
             'modelProfiles' => ModelProfile::orderBy('position')->get(),
             'outputFields' => $outputFields,
             'outputIdeaFields' => (new Idea)->getGenieFields(),
-            'outputDraftFields' => (new Draft)->getGenieFields(),
-            'outputPrePostFields' => (new PrePost)->getGenieFields(),
             'versionStatusTypes' => VersionStatus::withTitle(),
             'ruleStatusTypes' => RuleStatus::withTitle(),
         ]);
@@ -192,8 +188,6 @@ class RuleStepsController extends Controller
             'modelProfiles' => ModelProfile::orderBy('position')->get(),
             'outputFields' => $outputFields,
             'outputIdeaFields' => (new Idea)->getGenieFields(),
-            'outputDraftFields' => (new Draft)->getGenieFields(),
-            'outputPrePostFields' => (new PrePost)->getGenieFields(),
             'versionStatusTypes' => VersionStatus::withTitle(),
             'ruleStatusTypes' => RuleStatus::withTitle(),
         ]);

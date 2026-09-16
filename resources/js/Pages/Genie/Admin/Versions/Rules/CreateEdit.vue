@@ -290,23 +290,6 @@ const cloneRuleInto = (target) => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup
-                        v-if="ruleType['name'] === 'DRAFTS' || ruleType['name'] === 'PRE_POSTS'"
-                        class="form-field"
-                    >
-                        <template #title>
-                            <label for="link_upstream">{{ $t("genie.step_link_upstream") }}</label>
-                        </template>
-
-                        <Switch
-                            v-model="form.link_upstream"
-                            id="link_upstream"
-                        />
-
-                        <template #footer>
-                            <Error :message="form.errors.link_upstream"/>
-                        </template>
-                    </VerticalGroup>
 
                     <VerticalGroup class="form-field mt-lg">
                         <template #title>

@@ -18,9 +18,6 @@ enum FormInputType: int
     case EMAIL = 6;
     case URL = 7;
 
-    /**
-     * @return string
-     */
     public function title(): string
     {
         return match ($this) {
@@ -34,9 +31,6 @@ enum FormInputType: int
         };
     }
 
-    /**
-     * @return bool
-     */
     public function hasLength(): bool
     {
         return match ($this) {
@@ -50,9 +44,6 @@ enum FormInputType: int
         };
     }
 
-    /**
-     * @return bool
-     */
     public function hasStep(): bool
     {
         return match ($this) {
@@ -66,31 +57,12 @@ enum FormInputType: int
         };
     }
 
-    /**
-     * @return bool
-     */
     public function hasValues(): bool
     {
         return match ($this) {
             self::TEXT => false,
             self::NUMBER => true,
             self::RANGE => true,
-            self::DATE => false,
-            self::DATETIME => false,
-            self::EMAIL => false,
-            self::URL => false
-        };
-    }
-
-    /**
-     * @return bool
-     */
-    public function isIdentifier(): bool
-    {
-        return match ($this) {
-            self::TEXT => true,
-            self::NUMBER => false,
-            self::RANGE => false,
             self::DATE => false,
             self::DATETIME => false,
             self::EMAIL => false,

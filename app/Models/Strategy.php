@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\StrategyStatus;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
@@ -16,7 +15,6 @@ class Strategy extends Model
     use OwnedByWorkspace;
 
     protected $fillable = [
-        'run_id',
         'workspace_id',
         'content',
         'status',
@@ -41,16 +39,8 @@ class Strategy extends Model
         'status' => StrategyStatus::class,
     ];
 
-    public function run(): BelongsTo
-    {
-        return $this->belongsTo(Run::class);
-    }
-
     /**
-     * The run that produced this strategy on the current pipeline.
-     *
-     * The legacy `run()` above points the other way — the strategy holds the foreign key — while
-     * the new run owns the link through `genie_ai_runs.strategy_id`.
+     * The run that produced this strategy; the run owns the link through `genie_ai_runs.strategy_id`.
      */
     public function aiRun(): HasOne
     {

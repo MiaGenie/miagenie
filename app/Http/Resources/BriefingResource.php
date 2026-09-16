@@ -11,10 +11,6 @@ class BriefingResource extends JsonResource
      */
     public static $wrap = null;
 
-    /**
-     * @param $request
-     * @return array
-     */
     public function toArray($request): array
     {
 
@@ -23,7 +19,6 @@ class BriefingResource extends JsonResource
             'name' => $this->name,
             'active' => $this->active,
             'content' => $this->content,
-            'runStatus' =>  $this->runBriefing?->run->status->name
         ];
 
     }

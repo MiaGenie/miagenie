@@ -119,6 +119,14 @@ class StrategyContextTest extends TestCase
         return (new StrategyContext($this->runWith($fields, $content), 'en-GB'))->answers();
     }
 
+    /**
+     * @return array<string, string>
+     */
+    protected function subAnswers(array $fields, array $content): array
+    {
+        return (new StrategyContext($this->runWith($fields, $content), 'en-GB'))->subAnswers();
+    }
+
     public function test_each_field_is_a_labelled_block_in_the_order_the_version_defines(): void
     {
         $block = $this->full(
@@ -349,5 +357,193 @@ class StrategyContextTest extends TestCase
 
         $this->assertSame('', $context->full());
         $this->assertSame([], $context->answers());
+        $this->assertSame([], $context->subAnswers());
+    }
+
+    public function test_the_roots_of_an_implicit_object_answer_one_level_down(): void
+    {
+        $answers = $this->subAnswers(
+            [$this->field('brand', 'Brand', $this->tree([
+                $this->sub('promise', 'Promise', position: 0),
+                $this->sub('runs_ads', 'Runs Ads', SubFieldType::BOOLEAN, position: 1),
+                $this->sub('channels', 'Channels', SubFieldType::ARRAY, position: 2),
+                $this->sub('voice', 'Voice', SubFieldType::OBJECT, [
+                    $this->sub('tone', 'Tone', position: 0),
+                    $this->sub('avoid', 'Avoid', position: 1),
+                ], position: 3),
+            ]))],
+            ['brand' => [
+                'promise' => 'Ship in weeks',
+                'runs_ads' => true,
+                'channels' => ['Instagram', 'LinkedIn'],
+                'voice' => ['tone' => 'Plain', 'avoid' => 'Hype'],
+            ]],
+        );
+
+        $this->assertSame([
+            'brand.promise' => 'Ship in weeks',
+            'brand.runs_ads' => 'Yes',
+            // An array is every value as a list, one per line.
+            'brand.channels' => "- Instagram\n- LinkedIn",
+            // An object is its value: the labelled lines full() would print for it.
+            'brand.voice' => "**Tone**: Plain\n**Avoid**: Hype",
+        ], $answers);
+    }
+
+    public function test_a_single_object_root_lends_its_children_but_only_one_level(): void
+    {
+        $answers = $this->subAnswers(
+            [$this->field('brand', 'Brand', $this->tree([
+                $this->sub('brand', 'Brand', SubFieldType::OBJECT, [
+                    $this->sub('promise', 'Promise', position: 0),
+                    $this->sub('voice', 'Voice', SubFieldType::OBJECT, [
+                        $this->sub('tone', 'Tone', position: 0),
+                    ], position: 1),
+                ]),
+            ]))],
+            ['brand' => ['promise' => 'Ship in weeks', 'voice' => ['tone' => 'Plain']]],
+        );
+
+        $this->assertSame([
+            'brand.promise' => 'Ship in weeks',
+            'brand.voice' => '**Tone**: Plain',
+        ], $answers);
+
+        $this->assertArrayNotHasKey('brand.voice.tone', $answers);
+    }
+
+    public function test_a_list_field_plucks_a_property_across_every_item(): void
+    {
+        $answers = $this->subAnswers(
+            [$this->field('content_pillars', 'Content Pillars', $this->tree([
+                $this->sub('pillars', 'Pillars', SubFieldType::ARRAY, [
+                    $this->sub('title', 'Title', position: 0),
+                    $this->sub('topics', 'Topics', SubFieldType::ARRAY, position: 1),
+                    $this->sub('style', 'Style', SubFieldType::OBJECT, [
+                        $this->sub('tone', 'Tone', position: 0),
+                        $this->sub('format', 'Format', position: 1),
+                    ], position: 2),
+                ]),
+            ]))],
+            ['content_pillars' => [
+                [
+                    'title' => 'Behind the scenes',
+                    'topics' => ['Studio life', 'Process'],
+                    'style' => ['tone' => 'Candid', 'format' => 'Reel'],
+                ],
+                [
+                    'title' => 'Client stories',
+                    'topics' => ['Case studies'],
+                    'style' => ['tone' => 'Proud', 'format' => 'Carousel'],
+                ],
+                // An item without the property is skipped rather than leaving an empty bullet.
+                ['topics' => ['Announcements']],
+            ]],
+        );
+
+        $this->assertSame([
+            'content_pillars.title' => "- Behind the scenes\n- Client stories",
+            // An array property is every item's values as one list, not one list per item.
+            'content_pillars.topics' => "- Studio life\n- Process\n- Case studies\n- Announcements",
+            'content_pillars.style' => "- **Tone**: Candid\n  **Format**: Reel\n- **Tone**: Proud\n  **Format**: Carousel",
+        ], $answers);
+    }
+
+    public function test_a_list_property_of_a_list_field_is_one_block_per_object(): void
+    {
+        $answers = $this->subAnswers(
+            [$this->field('content_pillars', 'Content Pillars', $this->tree([
+                $this->sub('pillars', 'Pillars', SubFieldType::ARRAY, [
+                    $this->sub('title', 'Title', position: 0),
+                    $this->sub('hooks', 'Hooks', SubFieldType::ARRAY, [
+                        $this->sub('hook', 'Hook', position: 0),
+                        $this->sub('angle', 'Angle', position: 1),
+                    ], position: 1),
+                ]),
+            ]))],
+            ['content_pillars' => [
+                ['title' => 'Behind the scenes', 'hooks' => [['hook' => 'Day one', 'angle' => 'Start']]],
+                ['title' => 'Client stories', 'hooks' => [['hook' => 'The call', 'angle' => 'Trust']]],
+            ]],
+        );
+
+        $this->assertSame(
+            "- **Hook**: Day one\n  **Angle**: Start\n- **Hook**: The call\n  **Angle**: Trust",
+            $answers['content_pillars.hooks'],
+        );
+    }
+
+    public function test_a_field_that_is_a_bare_value_or_a_list_of_strings_has_no_properties(): void
+    {
+        $answers = $this->subAnswers(
+            [
+                $this->field('positioning', 'Positioning', $this->sub('positioning', 'Positioning')),
+                $this->field('channels', 'Channels', $this->sub('channels', 'Channels', SubFieldType::ARRAY)),
+                $this->field('paid', 'Paid', $this->sub('paid', 'Paid', SubFieldType::BOOLEAN)),
+            ],
+            ['positioning' => 'The studio for founders', 'channels' => ['Instagram', 'LinkedIn'], 'paid' => true],
+        );
+
+        $this->assertSame([], $answers);
+    }
+
+    public function test_a_sub_key_the_tree_no_longer_has_answers_under_its_raw_key(): void
+    {
+        $answers = $this->subAnswers(
+            [$this->field('audience', 'Audience', $this->tree([
+                $this->sub('primary', 'Primary', position: 0),
+                $this->sub('secondary', 'Secondary', position: 1),
+            ]))],
+            ['audience' => ['primary' => 'Founders', 'tertiary' => 'Agencies', 'regions' => ['EU', 'UK']]],
+        );
+
+        $this->assertSame([
+            'audience.primary' => 'Founders',
+            'audience.tertiary' => 'Agencies',
+            'audience.regions' => "- EU\n- UK",
+        ], $answers);
+    }
+
+    public function test_a_null_property_answers_blank_and_an_absent_one_not_at_all(): void
+    {
+        $answers = $this->subAnswers(
+            [$this->field('audience', 'Audience', $this->tree([
+                $this->sub('primary', 'Primary', position: 0),
+                $this->sub('secondary', 'Secondary', position: 1),
+                $this->sub('notes', 'Notes', position: 2),
+            ]))],
+            ['audience' => ['primary' => 'Founders', 'secondary' => null]],
+        );
+
+        $this->assertSame(['audience.primary' => 'Founders', 'audience.secondary' => ''], $answers);
+        $this->assertArrayNotHasKey('audience.notes', $answers);
+    }
+
+    public function test_a_field_the_version_has_dropped_answers_from_its_own_keys(): void
+    {
+        $answers = $this->subAnswers([], [
+            'retired_object' => ['tone' => 'Plain', 'channels' => ['Instagram', 'LinkedIn']],
+            'retired_items' => [
+                ['pillar' => 'Behind the scenes', 'topics' => ['Studio life']],
+                ['pillar' => 'Client stories', 'topics' => ['Case studies']],
+            ],
+            'retired_text' => 'Kept',
+        ]);
+
+        $this->assertSame([
+            'retired_object.tone' => 'Plain',
+            'retired_object.channels' => "- Instagram\n- LinkedIn",
+            'retired_items.pillar' => "- Behind the scenes\n- Client stories",
+            'retired_items.topics' => "- Studio life\n- Case studies",
+        ], $answers);
+    }
+
+    public function test_a_run_without_a_rule_still_answers_properties_from_the_stored_keys(): void
+    {
+        $run = new AiRun;
+        $run->setRelation('rule', null);
+        $run->setRelation('strategy', new Strategy(['content' => ['audience' => ['primary' => 'Founders']]]));
+
+        $this->assertSame(['audience.primary' => 'Founders'], (new StrategyContext($run, 'en-GB'))->subAnswers());
     }
 }

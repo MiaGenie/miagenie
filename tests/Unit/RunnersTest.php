@@ -10,7 +10,6 @@ use App\Genie\Runs\Runners;
 use App\Genie\Runs\RunState;
 use App\Genie\Strategy\StrategyRunner;
 use App\Genie\Strategy\StrategyRunState;
-use RuntimeException;
 use Tests\TestCase;
 
 class RunnersTest extends TestCase
@@ -33,14 +32,5 @@ class RunnersTest extends TestCase
         $this->assertTrue(Runners::supports(RuleType::POSTS));
         $this->assertInstanceOf(PostsRunner::class, Runners::for(RuleType::POSTS));
         $this->assertInstanceOf(PostsRunState::class, Runners::stateFor(RuleType::POSTS));
-    }
-
-    public function test_a_rule_type_without_a_runner_is_refused(): void
-    {
-        $this->assertFalse(Runners::supports(RuleType::DRAFTS));
-
-        $this->expectException(RuntimeException::class);
-
-        Runners::for(RuleType::DRAFTS);
     }
 }

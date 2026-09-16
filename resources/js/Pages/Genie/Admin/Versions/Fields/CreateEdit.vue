@@ -1,6 +1,6 @@
 <script setup>
 import {Head, router, useForm} from '@inertiajs/vue3';
-import {provide, inject, onBeforeMount, ref, watch} from "vue";
+import {provide, inject, onBeforeMount} from "vue";
 import {cloneDeep, keys} from "lodash";
 import {useI18n} from "vue-i18n";
 import useNotifications from "@/Composables/useNotifications";
@@ -106,7 +106,6 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     is_multiple: false,
     required: false,
     genie_required: true,
-    is_identifier: false,
     hidden: false,
     is_linkable: false,
     display_title: true,
@@ -125,7 +124,6 @@ const {
     formatSubFields,
     optionsErrors,
     subFieldsErrors,
-    currentGroupType,
     currentFieldType,
     currentInputType,
     currentFileType,
@@ -146,30 +144,6 @@ onBeforeMount( () => {
     formatSubFields();
     formatOptions();
 })
-
-const identifierAvailable = ref (
-    currentGroupType.value?.hasIdentifier &&
-    currentFieldType.value?.isInput &&
-    currentInputType.value?.name === 'TEXT'
-);
-
-watch( () => form.is_identifier, () => {
-    if (form.is_identifier) {
-        form.required = true;
-        form.genie_required = true;
-    }
-})
-
-watch([currentGroupType, currentFieldType, currentInputType], () => {
-
-    identifierAvailable.value = currentGroupType.value?.hasIdentifier &&
-        currentFieldType.value?.isInput &&
-        currentInputType.value?.name === 'TEXT';
-
-    if (!identifierAvailable.value) {
-        form.is_identifier = false;
-    }
-});
 
 const store = () => {
     form.post(
@@ -709,7 +683,6 @@ const cloneFieldInto = (target) => {
                             <Switch
                                 v-model="form.genie_required"
                                 id="genie_required"
-                                :disabled="form.is_identifier"
                             />
 
                             <template #footer>
@@ -725,29 +698,10 @@ const cloneFieldInto = (target) => {
                             <Switch
                                 v-model="form.required"
                                 id="required"
-                                :disabled="form.is_identifier"
                             />
 
                             <template #footer>
                                 <Error :message="form.errors.required"/>
-                            </template>
-                        </VerticalGroup>
-
-                        <VerticalGroup
-                            v-if="identifierAvailable"
-                            class="form-field basis-1/3"
-                        >
-                            <template #title>
-                                <label for="is_identifier">{{ $t("genie.field_is_identifier") }}</label>
-                            </template>
-
-                            <Switch
-                                v-model="form.is_identifier"
-                                id="is_identifier"
-                            />
-
-                            <template #footer>
-                                <Error :message="form.errors.is_identifier"/>
                             </template>
                         </VerticalGroup>
 
@@ -759,7 +713,6 @@ const cloneFieldInto = (target) => {
                             <Switch
                                 v-model="form.is_multiple"
                                 id="is_multiple"
-                                :disabled="form.is_identifier"
                             />
 
                             <template #footer>
@@ -775,7 +728,6 @@ const cloneFieldInto = (target) => {
                             <Switch
                                 v-model="form.is_linkable"
                                 id="is_linkable"
-                                :disabled="form.is_identifier"
                             />
 
                             <template #footer>
@@ -798,7 +750,6 @@ const cloneFieldInto = (target) => {
                             <Switch
                                 v-model="form.hidden"
                                 id="hidden"
-                                :disabled="form.is_identifier"
                             />
 
                             <template #footer>
@@ -830,7 +781,6 @@ const cloneFieldInto = (target) => {
                             <Switch
                                 v-model="form.display_grouped"
                                 id="display_grouped"
-                                :disabled="form.is_identifier"
                             />
 
                             <template #footer>

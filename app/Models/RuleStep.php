@@ -8,7 +8,6 @@ use App\Enums\PostFormat;
 use App\Enums\RuleSubType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 
@@ -67,11 +66,6 @@ class RuleStep extends Model
     public function modelProfile(): BelongsTo
     {
         return $this->belongsTo(ModelProfile::class, 'model_profile_id');
-    }
-
-    public function competitors(): HasMany
-    {
-        return $this->hasMany(RunResponse::class, 'step_id');
     }
 
     public function dependsOnField(): HasOne

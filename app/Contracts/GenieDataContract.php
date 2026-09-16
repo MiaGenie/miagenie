@@ -5,8 +5,6 @@ namespace App\Contracts;
 use App\Enums\GenieSyncAction;
 use App\Enums\GenieType;
 use App\Models\File;
-use App\Models\Run;
-use App\Models\RunResponse;
 use App\Models\Vector;
 
 interface GenieDataContract
@@ -15,7 +13,7 @@ interface GenieDataContract
 
     public function getAction(): GenieSyncAction;
 
-    public function getModel(): File|Vector|Run|RunResponse;
+    public function getModel(): File|Vector;
 
     public function getModelProviderId(): ?string;
 

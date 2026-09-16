@@ -29,7 +29,6 @@ class Rule extends Model
         'rule_type' => RuleType::class,
     ];
 
-
     protected function linkUpstream(): Attribute
     {
         return Attribute::make(
@@ -39,28 +38,13 @@ class Rule extends Model
         );
     }
 
-    /**
-     * @return BelongsTo
-     */
     public function version(): BelongsTo
     {
         return $this->belongsTo(Version::class);
     }
 
-
-    /**
-     * @return HasMany
-     */
     public function steps(): HasMany
     {
         return $this->hasMany(RuleStep::class, 'rule_id')->orderBy('position');
-    }
-
-    /**
-     * @return HasMany
-     */
-    public function runs(): HasMany
-    {
-        return $this->hasMany(Run::class, 'rule_id');
     }
 }

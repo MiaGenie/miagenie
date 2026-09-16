@@ -10,7 +10,7 @@ use App\Models\WorkspaceFile;
 /**
  * The prompt sent to generate one image of a step.
  *
- * The admin writes the image prompt as the step's message, with the same `{{{briefings.*}}}` and
+ * The admin writes the image prompt as the step's message, with the same `{{{briefing.*}}}` and
  * `{{{strategy.*}}}` placeholders every run can use plus the slot's own (ImageContext). Images are
  * not conversation turns: each call is stateless, so a revision resends the template with the
  * feedback and attaches the previous file as a reference.

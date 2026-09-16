@@ -77,14 +77,6 @@ const props = defineProps({
         type: Array,
         required: true,
     },
-    outputDraftFields: {
-        type: Array,
-        required: true,
-    },
-    outputPrePostFields: {
-        type: Array,
-        required: true,
-    },
     record: {
         type: Object,
     },
@@ -399,10 +391,7 @@ const cloneStepInto = (target) => {
                     <VerticalGroup
                         v-if="
                             ruleType['name'] === 'IDEAS' ||
-                            ruleSubType['name'] === 'CHANNELS' ||
-                            (ruleType['name'] === 'DRAFTS' &&
-                                !props.rule.link_upstream &&
-                                ruleSubType['name'] === 'DRAFTS')
+                            ruleSubType['name'] === 'CHANNELS'
                         "
                         class="form-field"
                     >
@@ -656,8 +645,7 @@ const cloneStepInto = (target) => {
                             !isImage &&
                             ruleType['name'] === 'STRATEGY' &&
                             ruleSubType['name'] !== 'BRIEFINGS_MULTIPLE' &&
-                            ruleSubType['name'] !== 'IDEAS_INITIAL' &&
-                            ruleSubType['name'] !== 'DRAFTS_INITIAL'
+                            ruleSubType['name'] !== 'IDEAS_INITIAL'
                         "
                         class="form-field mt-lg"
                     >
@@ -689,11 +677,7 @@ const cloneStepInto = (target) => {
                     <VerticalGroup
                         v-if="
                             !isImage &&
-                            (ruleType['name'] === 'DRAFTS' ||
-                                ruleType['name'] === 'PRE_POSTS' ||
-                                ruleSubType['name'] === 'BRIEFINGS_MULTIPLE') &&
-                            ruleSubType['name'] !== 'DRAFTS_INITIAL' &&
-                            ruleSubType['name'] !== 'PRE_POSTS_INITIAL'
+                            ruleSubType['name'] === 'BRIEFINGS_MULTIPLE'
                         "
                         class="form-field mt-lg"
                     >
@@ -729,36 +713,6 @@ const cloneStepInto = (target) => {
                                         :value="idea_output"
                                     />
                                     {{ idea_output }}
-                                </Flex>
-                            </template>
-                            <template
-                                v-else-if="ruleType['name'] === 'DRAFTS'"
-                                v-for="(
-                                    draft_output, index
-                                ) in outputDraftFields"
-                                :key="draft_output"
-                            >
-                                <Flex class="py-sm">
-                                    <Checkbox
-                                        v-model:checked="form.output"
-                                        :value="draft_output"
-                                    />
-                                    {{ draft_output }}
-                                </Flex>
-                            </template>
-                            <template
-                                v-else-if="ruleType['name'] === 'PRE_POSTS'"
-                                v-for="(
-                                    pre_post_output, index
-                                ) in outputPrePostFields"
-                                :key="pre_post_output"
-                            >
-                                <Flex class="py-sm">
-                                    <Checkbox
-                                        v-model:checked="form.output"
-                                        :value="pre_post_output"
-                                    />
-                                    {{ pre_post_output }}
                                 </Flex>
                             </template>
                         </TableCell>
