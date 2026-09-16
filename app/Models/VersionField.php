@@ -45,7 +45,6 @@ class VersionField extends Model
         'is_multiple',
         'required',
         'genie_required',
-        'is_identifier',
         'hidden',
         'is_linkable',
         'display_title',

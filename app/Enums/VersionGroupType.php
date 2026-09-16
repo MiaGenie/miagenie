@@ -22,12 +22,4 @@ enum VersionGroupType: int
             self::STRATEGIES => 'strategies'
         };
     }
-
-    public function hasIdentifier(): bool
-    {
-        return match ($this) {
-            self::BRIEFINGS => false,
-            self::STRATEGIES => false
-        };
-    }
 }

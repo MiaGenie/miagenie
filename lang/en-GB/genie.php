@@ -378,8 +378,6 @@ return [
     'field_block' => 'Block',
     'field_required' => 'Required',
     'field_genie_required' => 'Genie Required',
-    'field_is_identifier' => 'Identifier',
-    'field_is_identifier_invalid' => 'Invalid Identifier',
     'field_rows' => 'Rows',
     'field_name_invalid' => 'Field name is not snake case (field_name)',
 

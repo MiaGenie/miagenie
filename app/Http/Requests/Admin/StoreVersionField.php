@@ -13,7 +13,6 @@ use App\Models\Version;
 use App\Models\VersionField;
 use App\Models\VersionFieldOption;
 use App\Rules\Fields\FieldOptions;
-use App\Rules\Fields\IsIdentifier;
 use App\Rules\SnakeCase;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
@@ -52,13 +51,6 @@ class StoreVersionField extends FormRequest
             'min_value' => ['nullable', 'numeric', 'lt:max_value'],
             'max_value' => ['nullable', 'numeric', 'gt:min_value'],
             'step' => ['nullable', 'numeric'],
-            'is_identifier' => [
-                new IsIdentifier,
-                Rule::unique(VersionField::class, 'is_identifier')
-                    ->where('is_identifier', true)
-                    ->where('group_type', $this->input('group_type'))
-                    ->where('version_id', $this->version->id),
-            ],
             'required' => ['nullable', 'boolean'],
             'genie_required' => ['nullable', 'boolean'],
             'hidden' => ['nullable', 'boolean'],
@@ -103,7 +95,6 @@ class StoreVersionField extends FormRequest
                 'is_multiple' => $this->input('is_multiple'),
                 'required' => $this->input('required'),
                 'genie_required' => $this->input('genie_required'),
-                'is_identifier' => $this->input('is_identifier'),
                 'hidden' => $this->input('hidden'),
                 'is_linkable' => $this->input('is_linkable'),
                 'display_title' => $this->input('display_title'),

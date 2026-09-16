@@ -36,7 +36,6 @@ class VersionFieldResource extends JsonResource
             'is_multiple' => $this->is_multiple,
             'required' => $this->required,
             'genie_required' => $this->genie_required,
-            'is_identifier' => $this->is_identifier,
             'hidden' => $this->hidden,
             'is_linkable' => $this->is_linkable,
             'display_title' => $this->display_title,

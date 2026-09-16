@@ -331,8 +331,6 @@ return [
     'field_display_faq_text' => 'Texto da FAQ',
     'field_required' => 'Obrigatório',
     'field_genie_required' => 'Genie Obrigatório',
-    'field_is_identifier' => 'Identificador',
-    'field_is_identifier_invalid' => 'Identificador inválido',
     'field_rows' => 'Linhas',
     'field_name_invalid' => 'O nome do campo não está em snake case (field_name)',
 
