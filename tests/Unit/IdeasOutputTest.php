@@ -43,7 +43,7 @@ class IdeasOutputTest extends TestCase
     {
         return array_merge([
             'title' => 'Behind the build',
-            'objective' => 'Show the craft',
+            'goal' => 'Show the craft',
             'suggested_content' => 'A day in the studio',
             'multimedia_suggestion' => 'Short video, handheld',
             'production_instructions' => 'Three shots, natural light',
@@ -66,15 +66,15 @@ class IdeasOutputTest extends TestCase
         $this->assertSame(7, $row['workspace_id']);
         $this->assertSame(3, $row['strategy_id']);
         $this->assertSame(99, $row['run_step_id']);
-        $this->assertSame('Behind the build', $row['theme']);
-        $this->assertSame('Show the craft', $row['objective']);
+        $this->assertSame('Behind the build', $row['title']);
+        $this->assertSame('Show the craft', $row['goal']);
         $this->assertSame('A day in the studio', $row['suggested_content']);
         $this->assertSame('Short video, handheld', $row['multimedia_suggestion']);
         $this->assertSame('Three shots, natural light', $row['production_instructions']);
         $this->assertSame(PostFormat::CAROUSEL, $row['post_format']);
         $this->assertSame(IdeaStatus::PENDING_REVIEW, $row['status']);
         $this->assertSame(IdeaSource::GENIE, $row['source']);
-        $this->assertSame('Second', $rows[1]['theme']);
+        $this->assertSame('Second', $rows[1]['title']);
     }
 
     public function test_an_open_request_takes_the_stage_and_pillar_the_model_chose(): void

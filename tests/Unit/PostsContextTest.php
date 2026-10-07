@@ -34,8 +34,8 @@ class PostsContextTest extends TestCase
         $post = new GeniePost(['post_format' => PostFormat::CAROUSEL]);
         $post->setRelation('mixpostPost', $mixpost);
         $post->setRelation('idea', new Idea(array_merge([
-            'theme' => 'Launch day',
-            'objective' => 'Announce the launch',
+            'title' => 'Launch day',
+            'goal' => 'Announce the launch',
             'suggested_content' => 'Three things to know',
             'multimedia_suggestion' => 'Product shots',
             'production_instructions' => 'Bright, clean',
@@ -65,8 +65,8 @@ class PostsContextTest extends TestCase
     {
         $values = $this->context($this->geniePost(), 'Shorter please')->values();
 
-        $this->assertSame('Launch day', $values['idea.theme']);
-        $this->assertSame('Announce the launch', $values['idea.objective']);
+        $this->assertSame('Launch day', $values['idea.title']);
+        $this->assertSame('Announce the launch', $values['idea.goal']);
         $this->assertSame('Three things to know', $values['idea.suggested_content']);
         $this->assertSame('Product shots', $values['idea.multimedia_suggestion']);
         $this->assertSame('Bright, clean', $values['idea.production_instructions']);
@@ -96,7 +96,7 @@ class PostsContextTest extends TestCase
         $full = $this->context($this->geniePost(['multimedia_suggestion' => null, 'content_pillar' => null]))->full();
 
         $this->assertStringContainsString(__('genie.idea_title', [], 'en-GB').': Launch day', $full);
-        $this->assertStringContainsString(__('genie.idea_objective', [], 'en-GB').': Announce the launch', $full);
+        $this->assertStringContainsString(__('genie.idea_goal', [], 'en-GB').': Announce the launch', $full);
         $this->assertStringContainsString(__('genie.idea_images', [], 'en-GB').': 1. Cover: the box', $full);
         $this->assertStringNotContainsString(__('genie.idea_multimedia_suggestion', [], 'en-GB').':', $full);
         $this->assertStringNotContainsString(__('genie.content_pillar', [], 'en-GB').':', $full);
@@ -125,7 +125,7 @@ class PostsContextTest extends TestCase
         $this->assertSame('Slide: the product', $values['brief']);
         $this->assertSame('More contrast', $values['feedback']);
         $this->assertSame('2', $values['position']);
-        $this->assertSame('Launch day', $values['idea.theme']);
+        $this->assertSame('Launch day', $values['idea.title']);
         $this->assertSame("Current caption\nsecond line", $values['post.caption']);
         $this->assertTrue($image->hasFeedback());
     }

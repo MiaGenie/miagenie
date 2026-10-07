@@ -35,7 +35,7 @@ class GenerateGeniePostsController extends Controller
                 $drafts->forIdea($idea, Auth::id(), $images);
                 $created++;
             } catch (PostsException $exception) {
-                $errors[] = $idea->theme.': '.$exception->getMessage();
+                $errors[] = $idea->title.': '.$exception->getMessage();
             }
         }
 

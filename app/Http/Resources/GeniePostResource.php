@@ -55,9 +55,9 @@ class GeniePostResource extends JsonResource
 
         return [
             'id' => $idea->uuid,
-            'theme' => $idea->theme,
+            'title' => $idea->title,
             'url' => route('genie.ideas.edit', ['workspace' => WorkspaceManager::current()->uuid, 'idea' => $idea->uuid]),
-            'objective' => $idea->objective,
+            'goal' => $idea->goal,
             'suggested_content' => $idea->suggested_content,
             'multimedia_suggestion' => $idea->multimedia_suggestion,
             'production_instructions' => $idea->production_instructions,

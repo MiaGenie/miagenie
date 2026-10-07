@@ -50,7 +50,7 @@ const openPost = () => {
         </TableCell>
 
         <TableCell :clickable="true" @click="edit">
-            {{ item.theme }}
+            {{ item.title }}
             <Flex class="items-start sm:hidden">
                 <Badge :variant="statusBadge()">
                     {{ $t('genie.' + ideaStatus().title) }}

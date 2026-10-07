@@ -22,7 +22,7 @@ class PostsContext implements PromptContext
      *
      * @var list<string>
      */
-    public const TEXTS = ['theme', 'objective', 'suggested_content', 'multimedia_suggestion', 'production_instructions'];
+    public const TEXTS = ['title', 'goal', 'suggested_content', 'multimedia_suggestion', 'production_instructions'];
 
     protected ?GeniePost $post;
 
@@ -172,7 +172,7 @@ class PostsContext implements PromptContext
 
     protected function label(string $name): string
     {
-        return $this->text($name === 'theme' ? 'idea_title' : 'idea_'.$name);
+        return $this->text('idea_'.$name);
     }
 
     protected function text(string $key): string

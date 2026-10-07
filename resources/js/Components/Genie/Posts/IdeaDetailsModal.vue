@@ -25,13 +25,13 @@ defineEmits(["close"]);
 /**
  * The idea's texts, in the order they read; each has a `genie.idea_*` label.
  */
-const texts = ["objective", "suggested_content", "multimedia_suggestion", "production_instructions"];
+const texts = ["goal", "suggested_content", "multimedia_suggestion", "production_instructions"];
 </script>
 
 <template>
     <DialogModal :show="show" max-width="2xl" scrollable-body @close="$emit('close')">
         <template #header>
-            {{ idea?.theme }}
+            {{ idea?.title }}
         </template>
 
         <template #body>

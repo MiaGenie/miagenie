@@ -43,7 +43,7 @@ const openPost = () => {
     <div class="relative flex flex-col h-full bg-white border border-gray-100 rounded-lg p-md hover:border-primary-100 transition-colors ease-in-out duration-200">
         <div class="flex items-start justify-between gap-xs">
             <div class="font-semibold text-black cursor-pointer break-words grow" @click="edit">
-                {{ item.theme }}
+                {{ item.title }}
             </div>
 
             <div class="flex items-center gap-xs shrink-0">
