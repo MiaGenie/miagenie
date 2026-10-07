@@ -174,7 +174,7 @@ class IdeasContext implements PromptContext
             ->when($this->step->post_format, fn ($query, $format) => $query->where('post_format', $format))
             ->latest()
             ->limit(100)
-            ->pluck('theme');
+            ->pluck('title');
 
         if ($titles->isEmpty()) {
             return $this->text('ideas_no_existing');

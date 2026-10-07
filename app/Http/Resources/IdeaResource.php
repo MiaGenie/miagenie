@@ -16,8 +16,8 @@ class IdeaResource extends JsonResource
 
         return [
             'id' => $this->uuid,
-            'theme' => $this->theme,
-            'objective' => $this->objective,
+            'title' => $this->title,
+            'goal' => $this->goal,
             'suggested_content' => $this->suggested_content,
             'multimedia_suggestion' => $this->multimedia_suggestion,
             'production_instructions' => $this->production_instructions,

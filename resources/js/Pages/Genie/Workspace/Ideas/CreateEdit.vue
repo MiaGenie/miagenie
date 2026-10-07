@@ -80,7 +80,7 @@ const confirmation = inject('confirmation');
 /**
  * The texts every idea carries, in the order they are shown; each has a label and a helper text.
  */
-const ideaTexts = ['objective', 'suggested_content', 'multimedia_suggestion', 'production_instructions'];
+const ideaTexts = ['goal', 'suggested_content', 'multimedia_suggestion', 'production_instructions'];
 
 // A null select value would match no option, so a stored null reads as the blank choice.
 const nullToBlank = (record) => ({
@@ -93,8 +93,8 @@ const nullToBlank = (record) => ({
 });
 
 const form = useForm(isEdit.value ? nullToBlank(cloneDeep(props.record)) : {
-    theme: '',
-    objective: '',
+    title: '',
+    goal: '',
     suggested_content: '',
     multimedia_suggestion: '',
     production_instructions: '',
@@ -322,21 +322,21 @@ const approveIdea = () => {
 
                     <VerticalGroup class="form-field mt-lg  mx-auto">
                         <template #title>
-                            <label for="theme">{{ $t("genie.idea_title") }}
+                            <label for="title">{{ $t("genie.idea_title") }}
                                 <LabelSuffix :danger="true">*</LabelSuffix>
                             </label>
                         </template>
 
-                        <Input v-model="form.theme"
-                               :error="form.errors.theme !== undefined"
+                        <Input v-model="form.title"
+                               :error="form.errors.title !== undefined"
                                type="text"
-                               id="theme"
+                               id="title"
                                :autofocus="isCreate"
                                required
                         />
 
                         <template #footer>
-                            <Error :message="form.errors.theme"/>
+                            <Error :message="form.errors.title"/>
                         </template>
                     </VerticalGroup>
 

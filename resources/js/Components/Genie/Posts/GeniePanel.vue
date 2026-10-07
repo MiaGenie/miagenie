@@ -160,7 +160,7 @@ const generateImages = () => act(postRoute("generateImages"));
                 class="flex items-center gap-xs text-sm text-primary-500 hover:underline text-left"
                 @click="showIdea = true"
             >
-                {{ geniePost.idea.theme }}
+                {{ geniePost.idea.title }}
                 <InformationCircle class="w-4 h-4 shrink-0" />
             </PureButton>
         </template>

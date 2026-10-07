@@ -42,7 +42,7 @@ class IdeaSchemaTest extends TestCase
         $item = $schema['properties']['ideas']['items'];
 
         $this->assertSame(
-            ['title', 'objective', 'suggested_content', 'multimedia_suggestion', 'production_instructions', 'funnel_stage', 'content_pillar'],
+            ['title', 'goal', 'suggested_content', 'multimedia_suggestion', 'production_instructions', 'funnel_stage', 'content_pillar'],
             array_keys($item['properties']),
         );
         $this->assertSame(array_keys($item['properties']), $item['required']);
@@ -105,7 +105,7 @@ class IdeaSchemaTest extends TestCase
 
         $properties = $schema['properties']['ideas']['items']['properties'];
 
-        $this->assertSame(__('genie.idea_objective_desc'), $properties['objective']['description']);
+        $this->assertSame(__('genie.idea_goal_desc'), $properties['goal']['description']);
         $this->assertSame(__('genie.idea_production_instructions'), $properties['production_instructions']['title']);
     }
 

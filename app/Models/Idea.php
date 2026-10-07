@@ -16,7 +16,7 @@ use Inovector\Mixpost\Concerns\OwnedByWorkspace;
 /**
  * One content idea, generated for a post format or written by hand.
  *
- * Everything a post is later produced from lives here: the objective, the suggested content, the
+ * Everything a post is later produced from lives here: the goal, the suggested content, the
  * multimedia suggestion and the production instructions, together with the format, content pillar
  * and funnel stage the idea was generated for.
  */
@@ -30,8 +30,8 @@ class Idea extends Model
         'workspace_id',
         'strategy_id',
         'run_step_id',
-        'theme',
-        'objective',
+        'title',
+        'goal',
         'suggested_content',
         'multimedia_suggestion',
         'production_instructions',
@@ -48,8 +48,8 @@ class Idea extends Model
      * @var string[]
      */
     protected array $genie_fields = [
-        'theme',
-        'objective',
+        'title',
+        'goal',
         'suggested_content',
         'multimedia_suggestion',
         'production_instructions',

@@ -18,8 +18,8 @@ class StoreIdea extends FormRequest
     public function rules(): array
     {
         return [
-            'theme' => ['required', 'string', 'max:255'],
-            'objective' => ['nullable', 'string', 'max:5000'],
+            'title' => ['required', 'string', 'max:255'],
+            'goal' => ['nullable', 'string', 'max:5000'],
             'suggested_content' => ['nullable', 'string', 'max:5000'],
             'multimedia_suggestion' => ['nullable', 'string', 'max:5000'],
             'production_instructions' => ['nullable', 'string', 'max:5000'],
@@ -39,8 +39,8 @@ class StoreIdea extends FormRequest
     {
         return Idea::create([
             'strategy_id' => Strategy::latest()->first()?->id,
-            'theme' => $this->input('theme'),
-            'objective' => $this->input('objective'),
+            'title' => $this->input('title'),
+            'goal' => $this->input('goal'),
             'suggested_content' => $this->input('suggested_content'),
             'multimedia_suggestion' => $this->input('multimedia_suggestion'),
             'production_instructions' => $this->input('production_instructions'),

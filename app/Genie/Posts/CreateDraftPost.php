@@ -68,7 +68,7 @@ class CreateDraftPost
                 'account_id' => 0,
                 'is_original' => true,
                 'content' => [['body' => '', 'media' => [], 'url' => null, 'video_thumbs' => []]],
-                'options' => MixpostVersionOptions::defaults($idea->theme),
+                'options' => MixpostVersionOptions::defaults($idea->title),
             ]);
 
             $mixpostPost->tags()->attach(GenieTag::resolve()->id);

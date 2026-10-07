@@ -26,7 +26,7 @@ class IdeaSchema implements SchemaDefinition
      *
      * @var list<string>
      */
-    public const TEXTS = ['title', 'objective', 'suggested_content', 'multimedia_suggestion', 'production_instructions'];
+    public const TEXTS = ['title', 'goal', 'suggested_content', 'multimedia_suggestion', 'production_instructions'];
 
     /**
      * @param  list<string>  $pillarTitles  the pillars the model may name; empty leaves it free text
