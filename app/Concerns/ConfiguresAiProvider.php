@@ -2,6 +2,9 @@
 
 namespace App\Concerns;
 
+use App\Configs\AnthropicConfig;
+use App\Configs\DeepSeekConfig;
+use App\Configs\GeminiConfig;
 use App\Configs\OpenAIConfig;
 use Laravel\Ai\Ai;
 use Laravel\Ai\Enums\Lab;
@@ -9,9 +12,9 @@ use Laravel\Ai\Enums\Lab;
 /**
  * Bridges this application's database-held credentials into the AI SDK's provider config.
  *
- * The SDK reads `config('ai.providers.<name>')` when it resolves a provider, but the OpenAI
- * key lives encrypted in the database so it stays editable from the admin UI. Pushing the
- * value into config just before prompting keeps both true.
+ * The SDK reads `config('ai.providers.<name>')` when it resolves a provider, but the OpenAI,
+ * Anthropic, Gemini and DeepSeek keys live encrypted in the database so they stay editable
+ * from the admin UI. Pushing the value into config just before prompting keeps both true.
  */
 trait ConfiguresAiProvider
 {
@@ -21,6 +24,9 @@ trait ConfiguresAiProvider
 
         $key = match ($name) {
             Lab::OpenAI->value => app(OpenAIConfig::class)->all()['api_key'] ?? null,
+            Lab::Anthropic->value => app(AnthropicConfig::class)->get('api_key'),
+            Lab::Gemini->value => app(GeminiConfig::class)->get('api_key'),
+            Lab::DeepSeek->value => app(DeepSeekConfig::class)->get('api_key'),
             default => null,
         };
 

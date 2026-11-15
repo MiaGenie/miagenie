@@ -69,7 +69,7 @@ import LogsIcon from "@/Icons/Genie/Logs.vue";
         <MenuDelimiter/>
 
         <MenuItem :url="route('genie.admin.configs.form')"
-                  :active="$page.component === 'Genie/Admin/GenieAIConfig'">
+                  :active="$page.component === 'Genie/Admin/Config/Index'">
             <template #icon>
                 <CogIcon/>
             </template>
