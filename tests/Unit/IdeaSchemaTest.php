@@ -114,8 +114,8 @@ class IdeaSchemaTest extends TestCase
         $run = new AiRun;
         $run->setRelation('strategy', new Strategy(['content' => [
             'content_pillars' => [
-                ['title' => 'First', 'importance' => 'High'],
-                ['title' => 'Second', 'importance' => 'Low'],
+                ['name' => 'First', 'importance' => 'High'],
+                ['name' => 'Second', 'importance' => 'Low'],
             ],
         ]]));
 

@@ -7,14 +7,23 @@ use App\Models\Strategy;
 /**
  * The content pillars a strategy holds, read the one way every ideas class needs them.
  *
- * A pillar is the object the strategy's `content_pillars` field stores — title, importance,
- * style, description, topics — and its title is what an idea records as its pillar.
+ * A pillar is the object the strategy's `content_pillars` field stores — name, importance,
+ * style, description, topics — and its name is what an idea records as its pillar. The key
+ * holding the name mirrors the content_pillars sub-field's `sub_code_name`, which the admin can
+ * rename: strategies keep whatever key was current when they were generated, so every key a
+ * stored strategy may use is tried, the current one first.
  */
 final class ContentPillars
 {
     public const FIELD = 'content_pillars';
 
-    public const TITLE = 'title';
+    /**
+     * The keys a pillar's name may be stored under: `name` (current) and `title` (strategies
+     * generated before the sub-field was renamed).
+     *
+     * @var list<string>
+     */
+    public const TITLE_KEYS = ['name', 'title'];
 
     /**
      * Every pillar, as stored.
@@ -59,12 +68,20 @@ final class ContentPillars
     }
 
     /**
+     * The pillar's name, from the first title key that holds a non-empty string.
+     *
      * @param  array<string, mixed>  $pillar
      */
     public static function titleOf(array $pillar): ?string
     {
-        $title = $pillar[self::TITLE] ?? null;
+        foreach (self::TITLE_KEYS as $key) {
+            $title = $pillar[$key] ?? null;
 
-        return is_string($title) ? $title : null;
+            if (is_string($title) && filled($title)) {
+                return $title;
+            }
+        }
+
+        return null;
     }
 }
