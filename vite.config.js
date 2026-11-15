@@ -54,7 +54,7 @@ export default defineConfig(({ _command, mode = '' }) => {
             cert: fs.readFileSync(crtPath)
           },
           hmr: { host },
-          host
+          host: '0.0.0.0'
         }
       } else {
         console.error('[vite] SSL is enabled but one or both certificate files were not found.')
