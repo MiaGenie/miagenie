@@ -46,6 +46,8 @@ class VersionFieldResource extends JsonResource
             'display_faq_text' => $this->display_faq_text,
             'class' => $this->class,
             'block' => $this->block,
+            'icon' => $this->icon,
+            'icon_path' => $this->icon_path,
             'position' => $this->position,
         ];
 

@@ -1,7 +1,7 @@
 <script setup>
 import {Head, router, useForm} from '@inertiajs/vue3';
-import {provide, inject, onBeforeMount} from "vue";
-import {cloneDeep, keys} from "lodash";
+import {computed, provide, inject, onBeforeMount, watch} from "vue";
+import {cloneDeep, find, keys} from "lodash";
 import {useI18n} from "vue-i18n";
 import useNotifications from "@/Composables/useNotifications";
 import usePageMode from "@/Composables/usePageMode";
@@ -22,6 +22,7 @@ import VersionFieldOptionsGroup from "@/Components/Genie/Versions/VersionFieldOp
 import VersionFieldSubFields from "@/Components/Genie/Versions/VersionFieldSubFields.vue";
 import TranslateButton from "@/Components/Genie/Translations/TranslateButton.vue";
 import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
+import IconPicker from "@/Components/Form/Genie/IconPicker.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import Trash from "@/Icons/Trash.vue";
@@ -116,6 +117,8 @@ const form = useForm(isEdit.value ? cloneDeep(props.record) : {
     display_faq_text: '',
     class: '',
     block: '',
+    icon: '',
+    icon_path: '',
     position: '',
 });
 
@@ -130,6 +133,21 @@ const {
     setCodeName,
     checkForm,
 } = useVersionField(form);
+
+/**
+ * Only a strategy field carries an icon: it heads the field's section where the workspace reviews
+ * and reads its strategy.
+ */
+const supportsIcon = computed(() => {
+    return find(props.groupTypes, ['value', Number(form.group_type)])?.name === 'STRATEGIES';
+});
+
+watch(supportsIcon, (supported) => {
+    if (!supported) {
+        form.icon = '';
+        form.icon_path = '';
+    }
+});
 
 provide('currentFieldTypeCtx', () => {return currentFieldType});
 provide('formCtx', () => {return form});
@@ -427,6 +445,28 @@ const cloneFieldInto = (target) => {
 
                         <template #footer>
                             <Error :message="form.errors.code_name"/>
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup v-if="supportsIcon" class="form-field mt-lg">
+                        <template #title>
+                            <label for="icon">{{ $t("genie.field_icon") }}</label>
+                        </template>
+
+                        <div class="w-full sm:w-80">
+                            <IconPicker
+                                v-model="form.icon"
+                                v-model:path="form.icon_path"
+                                id="icon"
+                                :error="form.errors.icon !== undefined || form.errors.icon_path !== undefined"
+                            />
+                        </div>
+
+                        <template #footer>
+                            <div class="text-sm text-gray-500">
+                                {{ $t("genie.field_icon_help") }}
+                            </div>
+                            <Error :message="form.errors.icon ?? form.errors.icon_path"/>
                         </template>
                     </VerticalGroup>
 

@@ -1,5 +1,6 @@
 <script setup>
 import {computed} from "vue";
+import MdiIcon from "@/Components/DataDisplay/Genie/MdiIcon.vue";
 
 const props = defineProps({
     title: {
@@ -7,6 +8,13 @@ const props = defineProps({
         required: true,
     },
     description: {
+        type: String,
+        default: '',
+    },
+    /**
+     * The SVG path of the field's icon, drawn beside the title when the field has one.
+     */
+    icon: {
         type: String,
         default: '',
     },
@@ -40,11 +48,20 @@ const accentClass = computed(() => accents[props.accent % accents.length]);
 <template>
     <section class="scroll-mt-24 overflow-hidden rounded-2xl border border-stone-600 bg-white shadow-mix">
         <header :class="['flex items-center justify-between gap-sm bg-linear-to-r px-lg py-md', accentClass]">
-            <div class="min-w-0">
-                <p class="text-[11px] font-bold uppercase tracking-wider text-white/70">
-                    {{ String(index + 1).padStart(2, '0') }}
-                </p>
-                <h2 class="truncate font-title text-lg font-bold text-white">{{ title }}</h2>
+            <div class="flex min-w-0 items-center gap-sm">
+                <span
+                    v-if="icon"
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/15 text-white"
+                >
+                    <MdiIcon :path="icon" class="h-6! w-6!"/>
+                </span>
+
+                <div class="min-w-0">
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-white/70">
+                        {{ String(index + 1).padStart(2, '0') }}
+                    </p>
+                    <h2 class="truncate font-title text-lg font-bold text-white">{{ title }}</h2>
+                </div>
             </div>
 
             <span

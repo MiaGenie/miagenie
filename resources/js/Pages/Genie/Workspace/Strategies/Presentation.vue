@@ -172,6 +172,7 @@ const approve = () => {
                         :key="field.code_name"
                         :title="field.name"
                         :description="field.description"
+                        :icon="field.icon_path ?? ''"
                         :index="index"
                         :accent="index"
                         :edited="isEdited(field.code_name)"
