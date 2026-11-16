@@ -26,7 +26,7 @@ const props = defineProps({
         type: Object,
         require: true
     },
-    genieSyncStatus: {
+    genieSyncActions: {
         type: Object,
         require: true
     },

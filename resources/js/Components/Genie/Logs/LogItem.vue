@@ -16,7 +16,7 @@ const props = defineProps({
 })
 
 const genieTypes = usePage().props.genieTypes;
-const genieSyncStatus = usePage().props.genieSyncStatus;
+const genieSyncActions = usePage().props.genieSyncActions;
 
 </script>
 <template>
@@ -31,7 +31,7 @@ const genieSyncStatus = usePage().props.genieSyncStatus;
         </TableCell>
 
         <TableCell>
-            {{ find(genieSyncStatus, ['value', item.action]).name }}
+            {{ find(genieSyncActions, ['value', item.action]).name }}
         </TableCell>
 
         <TableCell>
