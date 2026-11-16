@@ -6,7 +6,6 @@ use App\Enums\Modality;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Inovector\Mixpost\Concerns\OwnedByWorkspace;
-use Laravel\Ai\Enums\Lab;
 use Laravel\Ai\Responses\Data\Usage;
 
 /**
@@ -39,19 +38,18 @@ class TokenUsage extends Model
     /**
      * Reduce the SDK's usage to what the call cost on each side.
      *
-     * Every gateway subtracts cached input from `promptTokens`, so it is added back. Reasoning is
-     * already part of `completionTokens` everywhere except Gemini, which reports its thinking
-     * tokens next to the answer's.
+     * Since laravel/ai 1.0 the totals are the provider's complete counts on every gateway:
+     * `inputTokens` includes cached and cache-written input, `outputTokens` includes reasoning
+     * (Gemini's thinking tokens too), so they are taken as they are. The breakdown a TextUsage
+     * carries (cache read / write, reasoning) is already inside them and is not added again.
      *
      * @return array{input_tokens: int, output_tokens: int}
      */
-    public static function countsFrom(Usage $usage, ?string $provider): array
+    public static function countsFrom(Usage $usage): array
     {
-        $reasoningIsSeparate = $provider === Lab::Gemini->value;
-
         return [
-            'input_tokens' => $usage->promptTokens + $usage->cacheReadInputTokens + $usage->cacheWriteInputTokens,
-            'output_tokens' => $usage->completionTokens + ($reasoningIsSeparate ? $usage->reasoningTokens : 0),
+            'input_tokens' => $usage->inputTokens,
+            'output_tokens' => $usage->outputTokens,
         ];
     }
 

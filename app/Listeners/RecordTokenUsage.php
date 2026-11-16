@@ -57,7 +57,7 @@ class RecordTokenUsage
                 'modality' => $modality,
                 'provider' => $provider,
                 'model' => $model,
-                ...TokenUsage::countsFrom($usage, $provider),
+                ...TokenUsage::countsFrom($usage),
             ]);
         } catch (Throwable $exception) {
             report($exception);

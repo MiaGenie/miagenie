@@ -22,8 +22,8 @@ use Laravel\Ai\Enums\Lab;
 use Laravel\Ai\Image;
 use Laravel\Ai\Prompts\ImagePrompt as SdkImagePrompt;
 use Laravel\Ai\Responses\Data\GeneratedImage;
+use Laravel\Ai\Responses\Data\ImageUsage;
 use Laravel\Ai\Responses\Data\Meta;
-use Laravel\Ai\Responses\Data\Usage;
 use Laravel\Ai\Responses\ImageResponse;
 use RuntimeException;
 use Tests\TestCase;
@@ -184,7 +184,7 @@ class ImageStepTest extends TestCase
 
     public function test_a_failed_call_is_logged_with_its_error_before_the_step_fails(): void
     {
-        Image::fake([new ImageResponse(new Collection, new Usage, new Meta('openai', 'gpt-image-2'))]);
+        Image::fake([new ImageResponse(new Collection, new ImageUsage, new Meta('openai', 'gpt-image-2'))]);
 
         $log = $this->callLog();
 

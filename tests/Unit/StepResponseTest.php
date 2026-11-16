@@ -11,8 +11,8 @@ use Laravel\Ai\Exceptions\ProviderOverloadedException;
 use Laravel\Ai\Exceptions\RateLimitedException;
 use Laravel\Ai\Responses\AgentResponse;
 use Laravel\Ai\Responses\Data\Meta;
+use Laravel\Ai\Responses\Data\TextUsage;
 use Laravel\Ai\Responses\Data\UrlCitation;
-use Laravel\Ai\Responses\Data\Usage;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -78,7 +78,7 @@ class StepResponseTest extends TestCase
 
     public function test_citations_are_listed_once_per_url_without_their_offsets(): void
     {
-        $response = new AgentResponse('inv', '{}', new Usage, new Meta('openai', 'gpt', collect([
+        $response = new AgentResponse('inv', '{}', new TextUsage, new Meta('openai', 'gpt', collect([
             new UrlCitation('https://statista.com/a', 'Market size', 0, 10),
             new UrlCitation('https://example.org/b', null, 11, 20),
             new UrlCitation('https://statista.com/a', 'Market size', 21, 30),
@@ -93,6 +93,6 @@ class StepResponseTest extends TestCase
 
     public function test_a_response_without_citations_lists_none(): void
     {
-        $this->assertSame([], StepResponse::citations(new AgentResponse('inv', 'text', new Usage, new Meta)));
+        $this->assertSame([], StepResponse::citations(new AgentResponse('inv', 'text', new TextUsage, new Meta)));
     }
 }

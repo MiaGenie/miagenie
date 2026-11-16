@@ -17,7 +17,6 @@ use App\Models\AiRunStep;
 use App\Models\Log as RunLog;
 use App\Models\RuleStep;
 use Illuminate\Support\Facades\Log;
-use Laravel\Ai\Contracts\ConversationStore;
 use Laravel\Ai\Responses\StructuredAgentResponse;
 use Throwable;
 
@@ -307,7 +306,7 @@ abstract class Runner
 
             $runStep->update([
                 'invocation_id' => $response->invocationId,
-                'message_id' => $this->lastMessageId(),
+                'message_id' => $response->assistantMessageId,
                 'output' => $structured,
                 'duration' => (int) round(microtime(true) - $started),
             ]);
@@ -452,18 +451,6 @@ abstract class Runner
         }
 
         $run->update(['conversation_id' => $conversationId]);
-    }
-
-    /**
-     * The transcript row this turn wrote, when the recording store is bound.
-     */
-    protected function lastMessageId(): ?string
-    {
-        $store = resolve(ConversationStore::class);
-
-        return property_exists($store, 'lastAssistantMessageId')
-            ? $store->lastAssistantMessageId
-            : null;
     }
 
     /**

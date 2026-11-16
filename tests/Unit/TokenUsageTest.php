@@ -7,6 +7,8 @@ use App\Models\TokenUsage;
 use App\Models\Workspace;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Laravel\Ai\Responses\Data\ImageUsage;
+use Laravel\Ai\Responses\Data\TextUsage;
 use Laravel\Ai\Responses\Data\Usage;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -46,29 +48,25 @@ class TokenUsageTest extends TestCase
     }
 
     /**
-     * @return array<string, array{Usage, ?string, array{input_tokens: int, output_tokens: int}}>
+     * @return array<string, array{Usage, array{input_tokens: int, output_tokens: int}}>
      */
     public static function usages(): array
     {
         return [
-            'cached input is added back' => [
-                new Usage(promptTokens: 100, completionTokens: 50, cacheWriteInputTokens: 10, cacheReadInputTokens: 20, reasoningTokens: 30),
-                'openai',
+            'a text call costs its totals, whose cache and reasoning are already inside them' => [
+                new TextUsage(inputTokens: 130, outputTokens: 50, cacheReadInputTokens: 20, cacheWriteInputTokens: 10, reasoningTokens: 30),
                 ['input_tokens' => 130, 'output_tokens' => 50],
             ],
-            'gemini reports reasoning apart from the answer' => [
-                new Usage(promptTokens: 100, completionTokens: 50, cacheReadInputTokens: 20, reasoningTokens: 30),
-                'gemini',
-                ['input_tokens' => 120, 'output_tokens' => 80],
+            'an image call costs its totals, image tokens included' => [
+                new ImageUsage(inputTokens: 120, outputTokens: 4000, imageInputTokens: 100, imageOutputTokens: 4000),
+                ['input_tokens' => 120, 'output_tokens' => 4000],
             ],
-            'an unknown provider counts completion only' => [
-                new Usage(promptTokens: 7, completionTokens: 3, reasoningTokens: 30),
-                null,
+            'a usage without a breakdown costs its totals' => [
+                new Usage(inputTokens: 7, outputTokens: 3),
                 ['input_tokens' => 7, 'output_tokens' => 3],
             ],
             'an empty usage costs nothing' => [
-                new Usage,
-                'anthropic',
+                new TextUsage,
                 ['input_tokens' => 0, 'output_tokens' => 0],
             ],
         ];
@@ -78,9 +76,9 @@ class TokenUsageTest extends TestCase
      * @param  array{input_tokens: int, output_tokens: int}  $expected
      */
     #[DataProvider('usages')]
-    public function test_a_call_costs_its_input_with_cache_and_its_output_with_reasoning(Usage $usage, ?string $provider, array $expected): void
+    public function test_a_call_costs_the_totals_the_sdk_reports(Usage $usage, array $expected): void
     {
-        $this->assertSame($expected, TokenUsage::countsFrom($usage, $provider));
+        $this->assertSame($expected, TokenUsage::countsFrom($usage));
     }
 
     public function test_the_counters_follow_the_calendar_week_and_month(): void

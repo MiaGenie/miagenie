@@ -25,8 +25,8 @@ use Laravel\Ai\Files\StoredImage;
 use Laravel\Ai\Image;
 use Laravel\Ai\Prompts\ImagePrompt as SdkImagePrompt;
 use Laravel\Ai\Responses\Data\GeneratedImage;
+use Laravel\Ai\Responses\Data\ImageUsage;
 use Laravel\Ai\Responses\Data\Meta;
-use Laravel\Ai\Responses\Data\Usage;
 use Laravel\Ai\Responses\ImageResponse;
 use RuntimeException;
 use Tests\TestCase;
@@ -256,7 +256,7 @@ class ImageRevisionTest extends TestCase
 
     public function test_a_failed_generation_records_the_error_on_the_slot_and_rethrows(): void
     {
-        Image::fake([new ImageResponse(new Collection, new Usage, new Meta('openai', 'gpt-image-2'))]);
+        Image::fake([new ImageResponse(new Collection, new ImageUsage, new Meta('openai', 'gpt-image-2'))]);
 
         $store = $this->store();
 
@@ -275,7 +275,7 @@ class ImageRevisionTest extends TestCase
 
     public function test_a_failed_revision_is_logged_with_its_error(): void
     {
-        Image::fake([new ImageResponse(new Collection, new Usage, new Meta('openai', 'gpt-image-2'))]);
+        Image::fake([new ImageResponse(new Collection, new ImageUsage, new Meta('openai', 'gpt-image-2'))]);
 
         $log = $this->callLog();
 

@@ -33,8 +33,9 @@ class StepAgentFactory
 
     /**
      * Providers whose text models can search the web, as `ModelProfile::$provider` values: the SDK
-     * providers implementing SupportsWebSearch. prepare() refuses a searching step on any other
-     * provider, because the SDK (from laravel/ai 1.1) would silently drop the tool.
+     * providers implementing SupportsWebSearch, except Groq, which searches only with its compound
+     * models. prepare() refuses a searching step on any other provider, because the SDK (from
+     * laravel/ai 1.1) would silently drop the tool.
      *
      * @var list<string>
      */

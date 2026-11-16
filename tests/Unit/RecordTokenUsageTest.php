@@ -17,8 +17,9 @@ use Laravel\Ai\Events\AgentPrompted;
 use Laravel\Ai\Image;
 use Laravel\Ai\Prompts\AgentPrompt;
 use Laravel\Ai\Responses\AgentResponse;
+use Laravel\Ai\Responses\Data\ImageUsage;
 use Laravel\Ai\Responses\Data\Meta;
-use Laravel\Ai\Responses\Data\Usage;
+use Laravel\Ai\Responses\Data\TextUsage;
 use Laravel\Ai\Responses\ImageResponse;
 use Tests\TestCase;
 
@@ -67,7 +68,7 @@ class RecordTokenUsageTest extends TestCase
     public function test_an_image_call_is_recorded_for_the_current_workspace(): void
     {
         Image::fake([
-            new ImageResponse(new Collection, new Usage(promptTokens: 120, completionTokens: 4000), new Meta('openai', 'gpt-image-2')),
+            new ImageResponse(new Collection, new ImageUsage(inputTokens: 120, outputTokens: 4000), new Meta('openai', 'gpt-image-2')),
         ]);
 
         Image::of('A red chair')->generate(Lab::OpenAI, 'gpt-image-2');
@@ -84,7 +85,7 @@ class RecordTokenUsageTest extends TestCase
     public function test_a_text_call_is_recorded_with_the_provider_and_model_of_the_answer(): void
     {
         event($this->agentPrompted(
-            new Usage(promptTokens: 300, completionTokens: 40, cacheWriteInputTokens: 5, cacheReadInputTokens: 60, reasoningTokens: 25),
+            new TextUsage(inputTokens: 365, outputTokens: 65, cacheReadInputTokens: 60, cacheWriteInputTokens: 5, reasoningTokens: 25),
             new Meta('gemini', 'gemini-3-pro'),
         ));
 
@@ -113,7 +114,7 @@ class RecordTokenUsageTest extends TestCase
         Image::fake();
         Image::of('A red chair')->generate(Lab::OpenAI, 'gpt-image-2');
 
-        event($this->agentPrompted(new Usage(promptTokens: 10, completionTokens: 10), new Meta('openai', 'gpt-5')));
+        event($this->agentPrompted(new TextUsage(inputTokens: 10, outputTokens: 10), new Meta('openai', 'gpt-5')));
 
         $this->assertSame(0, TokenUsage::withoutWorkspace()->count());
     }
@@ -123,12 +124,12 @@ class RecordTokenUsageTest extends TestCase
         Exceptions::fake();
         Schema::drop('genie_token_usages');
 
-        event($this->agentPrompted(new Usage(promptTokens: 10, completionTokens: 10), new Meta('openai', 'gpt-5')));
+        event($this->agentPrompted(new TextUsage(inputTokens: 10, outputTokens: 10), new Meta('openai', 'gpt-5')));
 
         Exceptions::assertReported(QueryException::class);
     }
 
-    protected function agentPrompted(Usage $usage, Meta $meta): AgentPrompted
+    protected function agentPrompted(TextUsage $usage, Meta $meta): AgentPrompted
     {
         return new AgentPrompted(
             'invocation',

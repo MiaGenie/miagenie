@@ -1,13 +1,11 @@
 <?php
 
 use App\Enums\Modality;
-use App\Models\TokenUsage;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Laravel\Ai\Responses\Data\Usage;
 
 return new class extends Migration
 {
@@ -18,7 +16,9 @@ return new class extends Migration
      * sum; the workspace counters (week / month / total) add them up.
      *
      * Text steps called before this table existed are backfilled from the SDK's conversation
-     * messages, which kept their usage; image calls were never kept and stay uncounted.
+     * messages, which kept their usage; image calls were never kept and stay uncounted. The
+     * stored usage is read directly rather than through the SDK's Usage class, whose shape
+     * changed in laravel/ai 1.0 (see countsFromStoredUsage()).
      */
     public function up(): void
     {
@@ -89,15 +89,48 @@ return new class extends Migration
             'modality' => Modality::TEXT->value,
             'provider' => $provider,
             'model' => $meta['model'] ?? null,
-            ...TokenUsage::countsFrom(new Usage(
-                (int) ($usage['prompt_tokens'] ?? 0),
-                (int) ($usage['completion_tokens'] ?? 0),
-                (int) ($usage['cache_write_input_tokens'] ?? 0),
-                (int) ($usage['cache_read_input_tokens'] ?? 0),
-                (int) ($usage['reasoning_tokens'] ?? 0),
-            ), $provider),
+            ...$this->countsFromStoredUsage($usage, $provider),
             'created_at' => $message->created_at,
             'updated_at' => $message->updated_at,
+        ];
+    }
+
+    /**
+     * What a stored message's usage cost on each side, in whichever format the SDK wrote it.
+     *
+     * laravel/ai 1.0 stores `input_tokens` / `output_tokens`, the provider's complete counts. Rows
+     * written by 0.11.0, the only 0.x version this application ran, keep `prompt_tokens` /
+     * `completion_tokens`, which that version filled differently per gateway:
+     *
+     * - OpenRouter, Groq and openai-compatible drivers stored the provider's inclusive prompt count,
+     *   so their cache counters are already inside it; every other gateway subtracted cached and
+     *   cache-written input, which is added back.
+     * - Gemini and xAI reported reasoning apart from the answer, so it is added to the output;
+     *   elsewhere it is already part of the completion count.
+     *
+     * @param  array<string, mixed>  $usage
+     * @return array{input_tokens: int, output_tokens: int}
+     */
+    protected function countsFromStoredUsage(array $usage, ?string $provider): array
+    {
+        if (array_key_exists('input_tokens', $usage) || array_key_exists('output_tokens', $usage)) {
+            return [
+                'input_tokens' => (int) ($usage['input_tokens'] ?? 0),
+                'output_tokens' => (int) ($usage['output_tokens'] ?? 0),
+            ];
+        }
+
+        $promptIncludesCache = in_array($provider, ['openrouter', 'groq'], true)
+            || ($provider !== null && config("ai.providers.{$provider}.driver") === 'openai-compatible');
+
+        $reasoningIsSeparate = in_array($provider, ['gemini', 'xai'], true);
+
+        $cachedInput = (int) ($usage['cache_read_input_tokens'] ?? 0) + (int) ($usage['cache_write_input_tokens'] ?? 0);
+
+        return [
+            'input_tokens' => (int) ($usage['prompt_tokens'] ?? 0) + ($promptIncludesCache ? 0 : $cachedInput),
+            'output_tokens' => (int) ($usage['completion_tokens'] ?? 0)
+                + ($reasoningIsSeparate ? (int) ($usage['reasoning_tokens'] ?? 0) : 0),
         ];
     }
 };
