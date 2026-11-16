@@ -98,12 +98,17 @@ class StepResponse
      * This replaces `RunResponseError::fromName($response['error']['code'])`, which used
      * `constant()` and therefore threw an uncatchable `\Error` on any code outside its 18
      * OpenAI-specific cases. Anything unrecognised now degrades to SERVER_ERROR.
+     *
+     * What the SDK reports as InsufficientCreditsException (an exhausted credit balance, quota or
+     * spend limit) gets its own case because waiting does not clear it: AiRunJob does not retry a
+     * run that failed on one. Which provider errors the SDK puts there is its call; from
+     * laravel/ai 1.4 it includes OpenAI's quota and spend-limit 429s, earlier ones were rate limits.
      */
     public static function errorCode(Throwable $exception): RunResponseError
     {
         return match (true) {
             $exception instanceof RateLimitedException => RunResponseError::RATE_LIMIT_EXCEEDED,
-            $exception instanceof InsufficientCreditsException,
+            $exception instanceof InsufficientCreditsException => RunResponseError::INSUFFICIENT_CREDITS,
             $exception instanceof ProviderOverloadedException,
             $exception instanceof ProviderConnectionException => RunResponseError::SERVER_ERROR,
             default => RunResponseError::SERVER_ERROR,

@@ -24,7 +24,7 @@ class AiRunStepResource extends JsonResource
             'modality' => $this->modality,
             'status' => $this->status,
             'output' => $this->output,
-            'error' => $this->error,
+            'error' => $this->error?->title(),
             'error_details' => $this->error_details,
             'invocation_id' => $this->invocation_id,
             'message_id' => $this->message_id,

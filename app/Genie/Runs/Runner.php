@@ -390,7 +390,7 @@ abstract class Runner
             'exception' => $exception->getMessage(),
         ]);
 
-        $runStep->update(['error' => StepResponse::error(null)]);
+        $runStep->update(['error' => StepResponse::errorCode($exception)]);
 
         $this->log($prompt, $runStep, ['error' => $exception->getMessage()], $request);
 

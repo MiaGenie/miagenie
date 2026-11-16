@@ -5,6 +5,9 @@ namespace Tests\Unit;
 use App\Ai\StepResponse;
 use App\Enums\RunResponseError;
 use App\Enums\RunResponseStatus;
+use Laravel\Ai\Exceptions\InsufficientCreditsException;
+use Laravel\Ai\Exceptions\ProviderConnectionException;
+use Laravel\Ai\Exceptions\ProviderOverloadedException;
 use Laravel\Ai\Exceptions\RateLimitedException;
 use Laravel\Ai\Responses\AgentResponse;
 use Laravel\Ai\Responses\Data\Meta;
@@ -49,6 +52,20 @@ class StepResponseTest extends TestCase
         $this->assertSame('rate_limit_exceeded', $response['error']['code']);
         $this->assertNull($response['id']);
         $this->assertNull($response['structured']);
+    }
+
+    public function test_an_exhausted_credit_balance_maps_to_its_own_case(): void
+    {
+        $response = StepResponse::fromThrowable(InsufficientCreditsException::forProvider('openai', 429));
+
+        $this->assertSame('insufficient_credits', $response['error']['code']);
+        $this->assertSame(RunResponseError::INSUFFICIENT_CREDITS, StepResponse::error('insufficient_credits'));
+    }
+
+    public function test_an_overloaded_or_unreachable_provider_maps_to_server_error(): void
+    {
+        $this->assertSame(RunResponseError::SERVER_ERROR, StepResponse::errorCode(ProviderOverloadedException::forProvider('anthropic', 529)));
+        $this->assertSame(RunResponseError::SERVER_ERROR, StepResponse::errorCode(ProviderConnectionException::forProvider('openai')));
     }
 
     public function test_an_unrecognised_exception_maps_to_server_error(): void

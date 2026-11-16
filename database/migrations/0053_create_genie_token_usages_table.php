@@ -47,15 +47,24 @@ return new class extends Migration
      * Copy the usage of every assistant message written in a run's conversation. The workspace
      * comes from the run, not from the message's participant columns, so it does not depend on
      * the morph class they stored.
+     *
+     * On a fresh database this runs before the SDK's published 2026_08_21 migration has created
+     * the messages table, and there is nothing to copy.
      */
     protected function backfillTextSteps(): void
     {
+        $messagesTable = config('ai.conversations.tables.messages', 'agent_conversation_messages');
+
+        if (! Schema::hasTable($messagesTable)) {
+            return;
+        }
+
         $workspaceByConversation = DB::table('genie_ai_runs')
             ->whereNotNull('conversation_id')
             ->groupBy('conversation_id')
             ->select('conversation_id', DB::raw('min(workspace_id) as workspace_id'));
 
-        DB::table(config('ai.conversations.tables.messages', 'agent_conversation_messages').' as m')
+        DB::table($messagesTable.' as m')
             ->joinSub($workspaceByConversation, 'r', 'r.conversation_id', '=', 'm.conversation_id')
             ->where('m.role', 'assistant')
             ->select('m.id', 'm.usage', 'm.meta', 'm.created_at', 'm.updated_at', 'r.workspace_id')

@@ -147,7 +147,7 @@ return [
     'step_instructions' => 'Instruções',
     'step_model' => 'Modelo',
     'step_modality_image_help' => 'A mensagem é o prompt da imagem. Além dos marcadores do briefing e da estratégia pode usar :brief (o briefing de produção desta imagem), :feedback (a correção do revisor quando a imagem é refeita), :position ou :number (o número da imagem) e :total (quantas imagens a ideia pede). Formato de resposta e saída não se aplicam: os ficheiros gerados são o resultado.',
-    'step_modality_image_provider' => 'O fornecedor do perfil de modelo selecionado não gera imagens. Escolha um perfil em OpenAI, Azure, Gemini, xAI, OpenRouter ou Bedrock.',
+    'step_modality_image_provider' => 'O fornecedor do perfil de modelo selecionado não gera imagens. Escolha um perfil em OpenAI, Azure, Gemini, xAI ou OpenRouter.',
     'step_web_search' => 'Pesquisa na Web',
     'step_web_search_help' => 'Permite ao modelo pesquisar na web enquanto responde, por exemplo para estudos de mercado ou da concorrência. É o modelo que decide quando pesquisa, por isso peça-o na mensagem. Só a resposta chega aos passos seguintes: se precisarem das fontes, inclua um campo para elas na saída.',
     'step_web_search_max' => 'Máximo de Pesquisas',

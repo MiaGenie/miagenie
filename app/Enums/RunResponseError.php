@@ -7,9 +7,8 @@ use App\Concerns\Enum\WithTitle;
 
 enum RunResponseError: int
 {
-    use WithTitle;
     use FromName;
-
+    use WithTitle;
 
     case SERVER_ERROR = 1;
     case RATE_LIMIT_EXCEEDED = 2;
@@ -29,10 +28,8 @@ enum RunResponseError: int
     case EMPTY_IMAGE_FILE = 16;
     case FAILED_TO_DOWNLOAD_IMAGE = 17;
     case IMAGE_FILE_NOT_FOUND = 18;
+    case INSUFFICIENT_CREDITS = 19;
 
-    /**
-     * @return string
-     */
     public function title(): string
     {
         return match ($this) {
@@ -54,6 +51,7 @@ enum RunResponseError: int
             self::EMPTY_IMAGE_FILE => 'empty_image_file',
             self::FAILED_TO_DOWNLOAD_IMAGE => 'failed_to_download_image',
             self::IMAGE_FILE_NOT_FOUND => 'image_file_not_found',
+            self::INSUFFICIENT_CREDITS => 'insufficient_credits',
         };
     }
 }

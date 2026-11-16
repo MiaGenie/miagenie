@@ -7,6 +7,7 @@ use App\Enums\ModelTier;
 use App\Models\ModelProfile;
 use App\Models\RuleStep;
 use Laravel\Ai\Contracts\Providers\SupportsWebSearch;
+use Laravel\Ai\Enums\Lab;
 use Laravel\Ai\Providers\AnthropicProvider;
 use Laravel\Ai\Providers\AzureOpenAiProvider;
 use Laravel\Ai\Providers\DeepSeekProvider;
@@ -14,6 +15,7 @@ use Laravel\Ai\Providers\GeminiProvider;
 use Laravel\Ai\Providers\OpenAiProvider;
 use Laravel\Ai\Providers\OpenRouterProvider;
 use Laravel\Ai\Providers\XaiProvider;
+use RuntimeException;
 use Tests\TestCase;
 
 class StepAgentFactoryTest extends TestCase
@@ -61,6 +63,43 @@ class StepAgentFactoryTest extends TestCase
         $this->assertTrue(StepAgentFactory::supportsWebSearch($this->step(['provider' => 'anthropic'])));
         $this->assertFalse(StepAgentFactory::supportsWebSearch(new ModelProfile(['provider' => 'deepseek'])));
         $this->assertFalse(StepAgentFactory::supportsWebSearch(new RuleStep(['name' => 'Bare'])));
+    }
+
+    public function test_bedrock_cannot_generate_images(): void
+    {
+        $this->assertNotContains('bedrock', StepAgentFactory::IMAGE_PROVIDERS);
+        $this->assertFalse(StepAgentFactory::supportsImages(new ModelProfile(['provider' => 'bedrock'])));
+    }
+
+    /**
+     * The SDK drops a WebSearch tool the provider cannot run instead of failing, so a step whose
+     * profile was moved to such a provider after it was saved must be stopped before the call.
+     */
+    public function test_a_searching_step_whose_provider_cannot_search_is_refused(): void
+    {
+        $step = $this->step(['provider' => 'deepseek', 'model_tier' => ModelTier::DEFAULT]);
+        $step->forceFill(['id' => 12, 'web_search' => true]);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Step [12] searches the web, but its profile\'s provider [deepseek] cannot.');
+
+        (new StepAgentFactory)->prepare($step);
+    }
+
+    public function test_a_searching_step_on_a_provider_that_can_search_is_prepared(): void
+    {
+        $step = $this->step(['provider' => 'xai', 'model_tier' => ModelTier::DEFAULT]);
+        $step->forceFill(['web_search' => true]);
+
+        $this->assertSame(Lab::xAI, (new StepAgentFactory)->prepare($step));
+    }
+
+    public function test_a_step_that_does_not_search_is_prepared_on_any_provider(): void
+    {
+        $step = $this->step(['provider' => 'mistral', 'model_tier' => ModelTier::DEFAULT]);
+        $step->forceFill(['web_search' => false]);
+
+        $this->assertSame(Lab::Mistral, (new StepAgentFactory)->prepare($step));
     }
 
     /**

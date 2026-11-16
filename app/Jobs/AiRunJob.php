@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\RunResponseError;
 use App\Enums\RunStatus;
 use App\Genie\Runs\Runners;
 use App\Models\AiRun;
@@ -97,15 +98,35 @@ class AiRunJob implements ShouldQueue
      */
     protected function releaseIfRetryable(): void
     {
-        if ($this->run->fresh()->status !== RunStatus::ERROR) {
-            return;
-        }
-
-        if ($this->attempts() >= $this->tries) {
+        if (! $this->isRetryable()) {
             return;
         }
 
         $this->release($this->backoff[$this->attempts() - 1] ?? 180);
+    }
+
+    /**
+     * Whether the run stopped on a failure that another attempt could get past.
+     *
+     * An exhausted credit balance, quota or spend limit does not clear within the backoff, so a
+     * step the SDK failed with InsufficientCreditsException (recorded by Runner::fail() as
+     * RunResponseError::INSUFFICIENT_CREDITS) ends the run rather than failing the same way on
+     * every remaining attempt. A manual resume (Runner::retryFailed()) clears the error first.
+     */
+    protected function isRetryable(): bool
+    {
+        if ($this->run->fresh()->status !== RunStatus::ERROR) {
+            return false;
+        }
+
+        if ($this->attempts() >= $this->tries) {
+            return false;
+        }
+
+        return $this->run->steps()
+            ->where('status', RunStatus::ERROR)
+            ->where('error', RunResponseError::INSUFFICIENT_CREDITS)
+            ->doesntExist();
     }
 
     public function failed(?Throwable $exception): void

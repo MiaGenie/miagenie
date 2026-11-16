@@ -148,7 +148,7 @@ return [
     'step_instructions' => 'Instructions',
     'step_model' => 'Model',
     'step_modality_image_help' => 'The message is the image prompt. Besides the briefing and strategy placeholders it can use :brief (the production brief for this image), :feedback (a reviewer\'s correction when the image is redone), :position or :number (the image number) and :total (how many images the idea asks for). Response format and output do not apply: the generated files are the result.',
-    'step_modality_image_provider' => 'The selected model profile\'s provider cannot generate images. Pick a profile on OpenAI, Azure, Gemini, xAI, OpenRouter or Bedrock.',
+    'step_modality_image_provider' => 'The selected model profile\'s provider cannot generate images. Pick a profile on OpenAI, Azure, Gemini, xAI or OpenRouter.',
     'step_web_search' => 'Web Search',
     'step_web_search_help' => 'Lets the model search the web while it answers, e.g. for market or competitor research. It decides when to search, so ask for it in the message. Only the answer reaches later steps: if they need the sources, include a field for them in the output.',
     'step_web_search_max' => 'Max Searches',

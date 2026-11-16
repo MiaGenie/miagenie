@@ -24,16 +24,17 @@ class StepAgentFactory
     public const DEFAULT_TIMEOUT = 300;
 
     /**
-     * Providers the SDK can generate images with, as `ModelProfile::$provider` values.
+     * Providers the SDK can generate images with, as `ModelProfile::$provider` values. Bedrock is
+     * left out on purpose: it needs aws/aws-sdk-php, which the application does not install.
      *
      * @var list<string>
      */
-    public const IMAGE_PROVIDERS = ['openai', 'azure', 'gemini', 'xai', 'openrouter', 'bedrock'];
+    public const IMAGE_PROVIDERS = ['openai', 'azure', 'gemini', 'xai', 'openrouter'];
 
     /**
      * Providers whose text models can search the web, as `ModelProfile::$provider` values: the SDK
-     * providers implementing SupportsWebSearch. Any other provider refuses the WebSearch tool when
-     * the call is made.
+     * providers implementing SupportsWebSearch. prepare() refuses a searching step on any other
+     * provider, because the SDK (from laravel/ai 1.1) would silently drop the tool.
      *
      * @var list<string>
      */
@@ -99,9 +100,31 @@ class StepAgentFactory
     {
         $provider = $this->provider($step);
 
+        $this->ensureCanSearch($step);
+
         $this->configureAiProvider($provider);
 
         return $provider;
+    }
+
+    /**
+     * Refuse a step that searches the web on a provider that cannot.
+     *
+     * ValidatesStepWebSearch checks this when the step is saved, but the step's profile can be
+     * switched to another provider afterwards. Since laravel/ai 1.1 the SDK does not object: it
+     * drops a WebSearch tool the provider cannot run, and the step answers from the model alone as
+     * though it had searched.
+     */
+    protected function ensureCanSearch(RuleStep $step): void
+    {
+        if (! $step->web_search || self::supportsWebSearch($step)) {
+            return;
+        }
+
+        throw new RuntimeException(
+            "Step [{$step->id}] searches the web, but its profile's provider [{$step->modelProfile?->provider}] cannot. "
+            .'Pick a profile whose provider can search, or turn web search off.'
+        );
     }
 
     /**
