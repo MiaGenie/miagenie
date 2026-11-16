@@ -1,7 +1,7 @@
 <script setup>
 import { computed, inject, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { Head, router, useForm } from "@inertiajs/vue3";
+import { Head, useForm } from "@inertiajs/vue3";
 import { cloneDeep, random } from "lodash";
 import { ACCESS_STATUS_SUBSCRIPTION } from "@meJs/Constants/Workspace";
 import usePageMode from "@meJs/Composables/usePageMode";
@@ -22,7 +22,6 @@ import Actions from "@/MixpostEnterprise/Components/Workspace/Actions.vue";
 import Select from "@meJs/Components/Form/Select.vue";
 import Alert from "@meJs/Components/Util/Alert.vue";
 import EnterpriseLayout from "@/Layouts/MixpostEnterprise/Panel.vue";
-import Refresh from "@/Icons/Refresh.vue";
 
 defineOptions({ layout: EnterpriseLayout });
 
@@ -43,10 +42,6 @@ const props = defineProps({
         type: Array,
         required: true,
     },
-    strategy: {
-        type: Object,
-        default: null,
-    },
 });
 
 const { t: $t } = useI18n()
@@ -54,8 +49,6 @@ const { t: $t } = useI18n()
 const { notify } = useNotifications()
 
 const routePrefix = inject('routeEntPrefix')
-
-const confirmation = inject('confirmation')
 
 const pageTitle = computed(() => {
     if (isCreate.value) {
@@ -138,46 +131,6 @@ const update = () => {
       }
     }
   )
-}
-
-/**
- * Regeneration never generates anything itself: it leaves the customer's strategy page offering
- * "Create strategy" again, after a new or cloned briefing when the mode asks for one.
- */
-const regenerationModes = [
-  { mode: 'strategy', label: 'genie.regenerate_strategy', confirm: 'genie.regenerate_strategy_confirm' },
-  { mode: 'new_briefing', label: 'genie.regenerate_strategy_new_briefing', confirm: 'genie.regenerate_strategy_new_briefing_confirm' },
-  { mode: 'cloned_briefing', label: 'genie.regenerate_strategy_cloned_briefing', confirm: 'genie.regenerate_strategy_cloned_briefing_confirm' },
-]
-
-const isRegenerationAvailable = (mode) => {
-  if (!props.strategy || props.strategy.state === 'generating') {
-    return false
-  }
-
-  return mode !== 'cloned_briefing' || props.strategy.has_briefing
-}
-
-const regenerateStrategy = ({ mode, label, confirm }) => {
-  confirmation()
-    .title($t(label))
-    .description($t(confirm) + '<br><br>' + $t('genie.regenerate_strategy_desc'))
-    .btnConfirmName($t(label))
-    .onConfirm((dialog) => {
-      dialog.isLoading(true)
-
-      router.post(
-        route(`${routePrefix}.workspaces.regenerate_strategy`, { workspace: props.workspace.uuid }),
-        { mode },
-        {
-          preserveScroll: true,
-          onFinish() {
-            dialog.reset()
-          }
-        }
-      )
-    })
-    .show()
 }
 
 const submit = () => {
@@ -322,28 +275,6 @@ const submit = () => {
           {{ isCreate ? $t('general.create') : $t('enterprise-workspace.update') }}
         </PrimaryButton>
       </form>
-
-      <Panel v-if="isEdit && strategy" class="mt-lg">
-        <template #title>{{ $t('genie.strategy') }}</template>
-        <template #description>
-          {{ $t(`genie.strategy_state_${strategy.state}`) }}
-          {{ $t('genie.regenerate_strategy_desc') }}
-        </template>
-
-        <div class="flex flex-wrap gap-xs">
-          <SecondaryButton
-            v-for="option in regenerationModes"
-            :key="option.mode"
-            :disabled="!isRegenerationAvailable(option.mode)"
-            @click="regenerateStrategy(option)"
-          >
-            <template #icon>
-              <Refresh />
-            </template>
-            {{ $t(option.label) }}
-          </SecondaryButton>
-        </div>
-      </Panel>
     </div>
   </div>
 

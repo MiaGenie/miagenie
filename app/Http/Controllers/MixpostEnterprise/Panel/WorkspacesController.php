@@ -43,7 +43,7 @@ class WorkspacesController extends Controller
             ->route('mixpost_e.workspaces.view', ['workspace' => $workspace->uuid]);
     }
 
-    public function view(Request $request): Response
+    public function view(Request $request, StrategyRegeneration $strategyRegeneration): Response
     {
         $workspace = Workspace::firstOrFailByUuid($request->route('workspace'))
             ->load(['owner', 'users', 'genericSubscriptionPlan']);
@@ -64,6 +64,7 @@ class WorkspacesController extends Controller
             'subscription' => $subscription ? new SubscriptionResource($subscription) : null,
             'billingConfigs' => (new BillingConfig)->all(),
             'plans' => PlanResource::collection(Plan::get())->resolve(),
+            'strategy' => $strategyRegeneration->state($workspace),
         ]);
     }
 
@@ -76,7 +77,7 @@ class WorkspacesController extends Controller
             ->with('success', __('mixpost-enterprise::workspace.workspace_updated'));
     }
 
-    public function edit(Request $request, StrategyRegeneration $strategyRegeneration): Response
+    public function edit(Request $request): Response
     {
         $workspace = Workspace::firstOrFailByUuid($request->route('workspace'))
             ->load('owner');
@@ -88,7 +89,6 @@ class WorkspacesController extends Controller
             'workspace' => new WorkspaceResource($workspace),
             'locales' => Util::config('locales'),
             'versions' => $versions,
-            'strategy' => $strategyRegeneration->state($workspace),
         ]);
     }
 
