@@ -36,6 +36,14 @@ use Throwable;
  */
 abstract class Runner
 {
+    /**
+     * Seconds after which a RUNNING step is taken to belong to a worker that is gone: no job
+     * outlives AiRunJob's 600-second timeout or the genie-ai supervisor's 660. The row is not
+     * touched while its step runs (image calls write slot and log rows), so this must outlast the
+     * longest step, and the queue's retry_after must outlast this.
+     */
+    public const CLAIM_EXPIRES_AFTER = 660;
+
     protected ImageStep $images;
 
     public function __construct(
@@ -139,7 +147,17 @@ abstract class Runner
             return false;
         }
 
-        $runStep = $this->open($run, $step);
+        $runStep = $this->claim($run, $step);
+
+        // Another worker holds the step; it carries the run on, so this job stops without dispatching.
+        if (! $runStep) {
+            Log::info('Genie run step already running on another worker', [
+                'run_id' => $run->id,
+                'step_id' => $step->id,
+            ]);
+
+            return false;
+        }
 
         $this->state->starting($runStep);
 
@@ -211,31 +229,42 @@ abstract class Runner
     }
 
     /**
-     * Reserve the row before prompting, so a crashed call still leaves a trace of the attempt.
+     * Take the step's row for this worker, reserving it before prompting so a crashed call still
+     * leaves a trace of the attempt. A retry reuses the row left behind.
      *
-     * A retry reuses the row left behind;
+     * Returns null while another worker is running the step: the claim is one conditional update,
+     * so of two jobs racing for the same step exactly one gets it. A RUNNING row older than
+     * CLAIM_EXPIRES_AFTER is taken over, because the worker that held it is gone.
      */
-    protected function open(AiRun $run, RuleStep $step): AiRunStep
+    protected function claim(AiRun $run, RuleStep $step): ?AiRunStep
     {
+        $modality = $step->modality ?? Modality::TEXT;
+
         $existing = $run->steps()->reorder()->where('step_id', $step->id)->first();
 
-        if ($existing) {
-            $existing->update([
-                'status' => RunStatus::OPEN,
-                'error' => null,
-                'error_details' => null,
-                'modality' => $step->modality ?? Modality::TEXT,
+        if (! $existing) {
+            return $run->steps()->create([
+                'step_id' => $step->id,
+                'position' => $step->position,
+                'modality' => $modality,
+                'status' => RunStatus::RUNNING,
             ]);
-
-            return $existing;
         }
 
-        return $run->steps()->create([
-            'step_id' => $step->id,
-            'position' => $step->position,
-            'modality' => $step->modality ?? Modality::TEXT,
-            'status' => RunStatus::OPEN,
-        ]);
+        $claimed = AiRunStep::query()
+            ->whereKey($existing->id)
+            ->where(fn ($query) => $query
+                ->where('status', '!=', RunStatus::RUNNING)
+                ->orWhere('updated_at', '<=', now()->subSeconds(self::CLAIM_EXPIRES_AFTER)))
+            ->update([
+                'status' => RunStatus::RUNNING,
+                'error' => null,
+                'error_details' => null,
+                'modality' => $modality,
+                'updated_at' => now(),
+            ]);
+
+        return $claimed === 1 ? $existing->fresh() : null;
     }
 
     protected function run(AiRunStep $runStep): bool

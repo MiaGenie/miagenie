@@ -65,6 +65,7 @@ class RevisePostImageJob implements ShouldQueue
         $this->image = $image->withoutRelations();
         $this->template = $template->withoutRelations();
 
+        $this->onConnection(AiRunJob::CONNECTION);
         $this->onQueue(AiRunJob::QUEUE);
     }
 

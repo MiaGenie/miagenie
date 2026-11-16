@@ -32,9 +32,10 @@ class AiRunJob implements ShouldQueue
     public int $tries = 3;
 
     /**
-     * The model call is the long pole; this, the SDK per-call timeout and the Horizon supervisor
-     * timeout all cap each other, so they are kept in step: the `genie-ai` supervisor allows 660
-     * seconds, this job 600, and the step's profile timeout stays below both.
+     * The model call is the long pole; this, the SDK per-call timeout, the Horizon supervisor
+     * timeout, the step claim and the queue's retry_after all cap each other, so they are kept in
+     * step: the connection's retry_after is 720 seconds, Runner::CLAIM_EXPIRES_AFTER and the
+     * `genie-ai` supervisor 660, this job 600, and the step's profile timeout stays below all.
      */
     public int $timeout = 600;
 
@@ -43,6 +44,12 @@ class AiRunJob implements ShouldQueue
      * image generation, which takes minutes — survives.
      */
     public const QUEUE = 'genie-ai';
+
+    /**
+     * The `redis` connection's 90-second retry_after would hand a job that is still drawing images
+     * to a second worker; this connection's outlasts every job on the queue.
+     */
+    public const CONNECTION = 'genie-redis';
 
     /**
      * Wait progressively longer between retries, so a rate limit has time to clear.
@@ -57,6 +64,7 @@ class AiRunJob implements ShouldQueue
         // before handle() has set the current workspace.
         $this->run = $run->withoutRelations();
 
+        $this->onConnection(self::CONNECTION);
         $this->onQueue(self::QUEUE);
     }
 

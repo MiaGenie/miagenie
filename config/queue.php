@@ -72,11 +72,23 @@ return [
             'after_commit' => false,
         ],
 
+        // Genie's model and image calls run for minutes. retry_after must outlast the genie-ai
+        // supervisor timeout (660 s, config/horizon.php) and Runner::CLAIM_EXPIRES_AFTER, or Redis
+        // hands a job that is still running to a second worker.
+        'genie-redis' => [
+            'driver' => 'redis',
+            'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
+            'queue' => 'genie-ai',
+            'retry_after' => (int) env('GENIE_QUEUE_RETRY_AFTER', 12 * 60),
+            'block_for' => null,
+            'after_commit' => false,
+        ],
+
         'mixpost-redis' => [
             'driver' => 'redis',
             'connection' => env('REDIS_QUEUE_CONNECTION', 'default'),
             'queue' => env('REDIS_QUEUE', 'default'),
-            'retry_after' => (int) env('REDIS_QUEUE_RETRY_AFTER',  11 * 60),
+            'retry_after' => (int) env('REDIS_QUEUE_RETRY_AFTER', 11 * 60),
             'block_for' => null,
             'after_commit' => false,
         ],
