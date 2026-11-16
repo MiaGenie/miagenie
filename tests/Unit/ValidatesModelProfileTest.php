@@ -9,26 +9,31 @@ use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
 
 /**
- * Bedrock needs aws/aws-sdk-php, which the application does not install, so a profile cannot be
- * put on it, while a provider configured by name in config/ai.php still can.
+ * A profile can only be put on a provider config/ai.php configures, which is what the SDK resolves
+ * it against: not Bedrock (its aws/aws-sdk-php is not installed) nor TypeSafe (classification only),
+ * but an openai-compatible instance configured under its own name, yes.
  */
 class ValidatesModelProfileTest extends TestCase
 {
-    public function test_bedrock_is_not_offered_as_a_profile_provider(): void
+    public function test_only_configured_providers_are_offered(): void
     {
         $providers = array_column(ValidatesModelProfile::providerOptions(), 'value');
 
         $this->assertNotContains('bedrock', $providers);
+        $this->assertNotContains('typesafe', $providers);
         $this->assertContains('openai', $providers);
         $this->assertContains('deepseek', $providers);
+        $this->assertContains('openai-compatible', $providers);
     }
 
-    public function test_a_profile_on_bedrock_is_refused(): void
+    public function test_a_profile_on_a_provider_that_is_not_configured_is_refused(): void
     {
-        $validator = $this->validate(['provider' => 'bedrock']);
+        foreach (['bedrock', 'typesafe', 'not-configured-llm'] as $provider) {
+            $validator = $this->validate(['provider' => $provider]);
 
-        $this->assertTrue($validator->fails());
-        $this->assertArrayHasKey('provider', $validator->errors()->toArray());
+            $this->assertTrue($validator->fails(), $provider);
+            $this->assertArrayHasKey('provider', $validator->errors()->toArray(), $provider);
+        }
     }
 
     public function test_a_profile_on_an_sdk_provider_is_accepted(): void
@@ -38,6 +43,8 @@ class ValidatesModelProfileTest extends TestCase
 
     public function test_a_profile_on_a_provider_named_in_config_is_accepted(): void
     {
+        config()->set('ai.providers.my-local-llm', ['driver' => 'openai-compatible', 'url' => 'http://localhost:1234/v1']);
+
         $this->assertFalse($this->validate(['provider' => 'my-local-llm'])->fails());
     }
 

@@ -22,9 +22,9 @@ use Stringable;
  * to the provider default, so there is nothing else to map.
  *
  * Conversational + RemembersConversations is what carries a run's earlier steps into the prompt.
- * GeneratesText::gatherMiddlewareFor() looks for the trait with class_uses_recursive() and appends
- * the RememberConversation middleware itself, so no registration is needed; the caller only has to
- * say which conversation the step belongs to.
+ * GeneratesText::gatherMiddlewareFor() appends the RememberConversation middleware itself when
+ * RememberConversation::appliesTo() finds the trait, so no registration is needed; the caller only
+ * has to say which conversation the step belongs to.
  *
  * HasTools carries the step's web search, when it asks for one (see tools()).
  */

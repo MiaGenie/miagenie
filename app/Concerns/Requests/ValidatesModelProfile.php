@@ -9,8 +9,9 @@ use Laravel\Ai\Enums\Lab;
 trait ValidatesModelProfile
 {
     /**
-     * The provider is free text, so an openai-compatible provider named in config/ai.php can be
-     * used; only Bedrock is refused, for the reason providerOptions() leaves it out.
+     * The provider must be a key of config/ai.php's `providers`, which is what the SDK resolves a
+     * profile's provider against: an openai-compatible instance configured there under its own
+     * name is accepted, and an SDK provider that is not configured (Bedrock, TypeSafe) is not.
      *
      * @return array<string, mixed>
      */
@@ -18,7 +19,7 @@ trait ValidatesModelProfile
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'provider' => ['required', 'string', 'max:255', Rule::notIn([Lab::Bedrock->value])],
+            'provider' => ['required', 'string', 'max:255', Rule::in(array_keys(config('ai.providers', [])))],
             'model_tier' => ['required', Rule::enum(ModelTier::class)],
             'model' => ['nullable', 'required_if:model_tier,'.ModelTier::OTHER->value, 'string', 'max:255'],
             'timeout' => ['nullable', 'integer', 'min:1', 'max:3600'],
@@ -45,17 +46,18 @@ trait ValidatesModelProfile
     }
 
     /**
-     * The providers the SDK ships with, for the admin form's provider select.
+     * The providers the SDK ships with that config/ai.php configures, for the admin form's
+     * provider select.
      *
-     * Bedrock is left out: it needs aws/aws-sdk-php, which the application does not install, and
-     * config/ai.php does not configure it.
+     * Bedrock is not configured (it needs aws/aws-sdk-php, which the application does not
+     * install), nor is TypeSafe (classification only), so neither is offered.
      *
      * @return array<int, array<string, string>>
      */
     public static function providerOptions(): array
     {
         return collect(Lab::cases())
-            ->reject(fn (Lab $lab) => $lab === Lab::Bedrock)
+            ->filter(fn (Lab $lab) => config("ai.providers.{$lab->value}") !== null)
             ->map(fn (Lab $lab) => ['value' => $lab->value, 'title' => $lab->name])
             ->sortBy('title')
             ->values()
