@@ -29,6 +29,9 @@ const summary = (log) => {
     if (log.request?.position) parts.push($t("genie.idea_image", { n: log.request.position }));
     if (log.request?.mode) parts.push(log.request.mode);
     if (log.response?.file) parts.push(log.response.file);
+    // A web-searching call lists the pages it cited; the entry itself (LogItemAction) has the URLs.
+    if (log.response?.citations?.length)
+        parts.push($t("genie.run_step_sources", { n: log.response.citations.length }));
 
     return parts.join(" · ") || blank;
 };

@@ -21,6 +21,9 @@ class RuleStep extends Model
         'rule_id',
         'rule_sub_type',
         'modality',
+        'web_search',
+        'web_search_max',
+        'web_search_domains',
         'post_format',
         'link_upstream',
         'name',
@@ -44,6 +47,9 @@ class RuleStep extends Model
     protected $casts = [
         'rule_sub_type' => RuleSubType::class,
         'modality' => Modality::class,
+        'web_search' => 'boolean',
+        'web_search_max' => 'integer',
+        'web_search_domains' => 'array',
         'post_format' => PostFormat::class,
         'output' => 'array',
     ];

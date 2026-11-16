@@ -320,11 +320,15 @@ abstract class Runner
                 $this->output->write($runStep, $structured);
             }
 
+            // The sources a web search cited live only here: the conversation keeps the answer alone.
+            $citations = StepResponse::citations($response);
+
             $this->log($prompt, $runStep, [
                 'invocation_id' => $response->invocationId,
                 'conversation_id' => $run->conversation_id,
                 'message_id' => $runStep->message_id,
                 'structured' => $structured,
+                ...($citations ? ['citations' => $citations] : []),
             ]);
 
             $this->state->completed($runStep);

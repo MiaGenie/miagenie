@@ -30,6 +30,15 @@ class StepAgentFactory
      */
     public const IMAGE_PROVIDERS = ['openai', 'azure', 'gemini', 'xai', 'openrouter', 'bedrock'];
 
+    /**
+     * Providers whose text models can search the web, as `ModelProfile::$provider` values: the SDK
+     * providers implementing SupportsWebSearch. Any other provider refuses the WebSearch tool when
+     * the call is made.
+     *
+     * @var list<string>
+     */
+    public const WEB_SEARCH_PROVIDERS = ['openai', 'azure', 'anthropic', 'gemini', 'xai', 'openrouter'];
+
     public function __construct(protected StepSchemaBuilder $schemas = new StepSchemaBuilder) {}
 
     /**
@@ -114,6 +123,16 @@ class StepAgentFactory
         $profile = $subject instanceof RuleStep ? $subject->modelProfile : $subject;
 
         return $profile !== null && in_array($profile->provider, self::IMAGE_PROVIDERS, true);
+    }
+
+    /**
+     * Whether the profile's provider can search the web.
+     */
+    public static function supportsWebSearch(ModelProfile|RuleStep $subject): bool
+    {
+        $profile = $subject instanceof RuleStep ? $subject->modelProfile : $subject;
+
+        return $profile !== null && in_array($profile->provider, self::WEB_SEARCH_PROVIDERS, true);
     }
 
     public function provider(RuleStep $step): Lab|string

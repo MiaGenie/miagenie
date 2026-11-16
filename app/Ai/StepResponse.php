@@ -9,6 +9,8 @@ use Laravel\Ai\Exceptions\ProviderConnectionException;
 use Laravel\Ai\Exceptions\ProviderOverloadedException;
 use Laravel\Ai\Exceptions\RateLimitedException;
 use Laravel\Ai\Responses\AgentResponse;
+use Laravel\Ai\Responses\Data\Citation;
+use Laravel\Ai\Responses\Data\UrlCitation;
 use Laravel\Ai\Responses\StructuredAgentResponse;
 use Throwable;
 
@@ -50,6 +52,25 @@ class StepResponse
             'usage' => $response->usage?->toArray() ?? [],
             'meta' => $response->meta?->toArray() ?? [],
         ];
+    }
+
+    /**
+     * The pages a web-searching call cited, one entry per URL.
+     *
+     * A provider repeats a citation for every span of the answer that draws on the page, and the
+     * spans' offsets mean nothing once the answer is structured output, so only URL and title are
+     * kept.
+     *
+     * @return list<array{url: string, title: string|null}>
+     */
+    public static function citations(AgentResponse $response): array
+    {
+        return $response->meta->citations
+            ->filter(fn (Citation $citation) => $citation instanceof UrlCitation && filled($citation->url))
+            ->unique(fn (UrlCitation $citation) => $citation->url)
+            ->map(fn (UrlCitation $citation) => ['url' => $citation->url, 'title' => $citation->title])
+            ->values()
+            ->all();
     }
 
     /**
