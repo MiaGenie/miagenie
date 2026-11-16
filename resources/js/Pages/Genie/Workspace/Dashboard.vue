@@ -25,6 +25,7 @@ import BlueskyReports from "@/Components/Report/BlueskyReports.vue"
 import useWorkspace from "@/Composables/useWorkspace.js";
 import DashboardButtons from "@/Components/Genie/Dashboard/DashboardButtons.vue";
 import DashboardPosts from "@/Components/Genie/Dashboard/DashboardPosts.vue";
+import TokenUsage from "@/Components/Genie/Usage/TokenUsage.vue";
 import Flex from "@/Components/Layout/Flex.vue";
 
 const {t: $t} = useI18n()
@@ -41,7 +42,11 @@ const props = defineProps({
     posts_pending_review : {
         type: Object,
         required: true,
-    }
+    },
+    token_usage: {
+        type: Object,
+        required: true,
+    },
 })
 
 const workspaceCtx = inject('workspaceCtx');
@@ -136,6 +141,10 @@ watch(workspaceCtx.dashboard_filter, () => {
         <PageHeader :title="$t('dashboard.dashboard')" />
 
         <DashboardButtons />
+
+        <div class="row-px mt-2xl">
+            <TokenUsage :usage="token_usage" />
+        </div>
 
         <div class="row-px my-2xl">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-sm">

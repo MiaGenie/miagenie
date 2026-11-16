@@ -568,4 +568,7 @@ return [
     'strategy_state_approved' => 'A estratégia mais recente está aprovada.',
     'strategy_state_error' => 'A geração da estratégia mais recente falhou.',
     'strategy_state_other' => 'A estratégia mais recente não foi concluída.',
+    'token_usage_weekly' => 'Semana',
+    'token_usage_monthly' => 'Mês',
+    'token_usage_total' => 'Total',
 ];

@@ -620,4 +620,7 @@ return [
     'strategy_state_approved' => 'The latest strategy is approved.',
     'strategy_state_error' => 'The latest strategy generation failed.',
     'strategy_state_other' => 'The latest strategy has not been finished.',
+    'token_usage_weekly' => 'Week',
+    'token_usage_monthly' => 'Month',
+    'token_usage_total' => 'Total',
 ];

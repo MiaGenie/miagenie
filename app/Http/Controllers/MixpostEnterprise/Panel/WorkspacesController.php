@@ -9,6 +9,7 @@ use App\Http\Requests\MixpostEnterprise\Panel\Workspace\RegenerateStrategy;
 use App\Http\Requests\MixpostEnterprise\Panel\Workspace\StoreWorkspace;
 use App\Http\Requests\MixpostEnterprise\Panel\Workspace\UpdateWorkspace;
 use App\Http\Resources\MixpostEnterprise\WorkspaceResource;
+use App\Models\TokenUsage;
 use App\Models\Version;
 use App\Models\Workspace;
 use Illuminate\Http\RedirectResponse;
@@ -65,6 +66,7 @@ class WorkspacesController extends Controller
             'billingConfigs' => (new BillingConfig)->all(),
             'plans' => PlanResource::collection(Plan::get())->resolve(),
             'strategy' => $strategyRegeneration->state($workspace),
+            'token_usage' => TokenUsage::totalsFor($workspace),
         ]);
     }
 

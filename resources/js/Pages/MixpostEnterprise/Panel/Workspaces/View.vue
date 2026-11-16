@@ -21,6 +21,7 @@ import PaymentDetails from "@/MixpostEnterprise/Components/Subscription/PaymentD
 import ClipboardCard from "@/Components/Util/ClipboardCard.vue";
 import EnterpriseLayout from "@/Layouts/MixpostEnterprise/Panel.vue";
 import Refresh from "@/Icons/Refresh.vue";
+import TokenUsage from "@/Components/Genie/Usage/TokenUsage.vue";
 
 defineOptions({ layout: EnterpriseLayout });
 
@@ -46,6 +47,10 @@ const props = defineProps({
         required: true,
     },
     strategy: {
+        type: Object,
+        default: null,
+    },
+    token_usage: {
         type: Object,
         default: null,
     },
@@ -118,6 +123,8 @@ const redirectToPortal = () => {
         </PageHeader>
 
         <div class="row-px">
+            <TokenUsage v-if="token_usage" :usage="token_usage" class="mb-lg" />
+
             <Panel>
                 <template #title>{{ $t("general.details") }}</template>
 
