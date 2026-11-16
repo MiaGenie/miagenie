@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\MixpostEnterprise\Panel;
 
 use App\Enums\VersionStatus;
+use App\Genie\Strategy\StrategyRegeneration;
+use App\Genie\Strategy\StrategyRegenerationException;
+use App\Http\Requests\MixpostEnterprise\Panel\Workspace\RegenerateStrategy;
 use App\Http\Requests\MixpostEnterprise\Panel\Workspace\StoreWorkspace;
 use App\Http\Requests\MixpostEnterprise\Panel\Workspace\UpdateWorkspace;
 use App\Http\Resources\MixpostEnterprise\WorkspaceResource;
@@ -59,7 +62,7 @@ class WorkspacesController extends Controller
                 ],
             ]),
             'subscription' => $subscription ? new SubscriptionResource($subscription) : null,
-            'billingConfigs' => (new BillingConfig())->all(),
+            'billingConfigs' => (new BillingConfig)->all(),
             'plans' => PlanResource::collection(Plan::get())->resolve(),
         ]);
     }
@@ -73,7 +76,7 @@ class WorkspacesController extends Controller
             ->with('success', __('mixpost-enterprise::workspace.workspace_updated'));
     }
 
-    public function edit(Request $request): Response
+    public function edit(Request $request, StrategyRegeneration $strategyRegeneration): Response
     {
         $workspace = Workspace::firstOrFailByUuid($request->route('workspace'))
             ->load('owner');
@@ -85,6 +88,24 @@ class WorkspacesController extends Controller
             'workspace' => new WorkspaceResource($workspace),
             'locales' => Util::config('locales'),
             'versions' => $versions,
+            'strategy' => $strategyRegeneration->state($workspace),
         ]);
+    }
+
+    /**
+     * Let the customer generate a new strategy, optionally from a new or cloned briefing. The
+     * previous strategy is kept; see StrategyRegeneration.
+     */
+    public function regenerateStrategy(RegenerateStrategy $regenerateStrategy): RedirectResponse
+    {
+        try {
+            $regenerateStrategy->handle();
+        } catch (StrategyRegenerationException $exception) {
+            return redirect()->back()->with('error', $exception->getMessage());
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', __($regenerateStrategy->mode()->successKey()));
     }
 }

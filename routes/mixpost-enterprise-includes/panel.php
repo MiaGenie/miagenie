@@ -4,7 +4,6 @@ use App\Http\Controllers\MixpostEnterprise\Panel\WorkspacesController;
 use Illuminate\Support\Facades\Route;
 use Inovector\Mixpost\Http\Base\Middleware\Admin;
 
-
 Route::middleware([Admin::class])->group(function () {
 
     Route::prefix('workspaces')->name('workspaces.')->group(function () {
@@ -13,6 +12,7 @@ Route::middleware([Admin::class])->group(function () {
         Route::get('{workspace}', [WorkspacesController::class, 'view'])->name('view');
         Route::get('{workspace}/edit', [WorkspacesController::class, 'edit'])->name('edit');
         Route::put('{workspace}', [WorkspacesController::class, 'update'])->name('update');
+        Route::post('{workspace}/regenerate-strategy', [WorkspacesController::class, 'regenerateStrategy'])->name('regenerate_strategy');
     });
 
 });

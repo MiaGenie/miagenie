@@ -8,7 +8,6 @@ use App\Enums\IdeaStatus;
 use App\Enums\PostFormat;
 use App\Enums\RuleType;
 use App\Enums\RunStatus;
-use App\Enums\StrategyStatus;
 use App\Genie\Ideas\ContentPillars;
 use App\Genie\Ideas\IdeasRequest;
 use App\Genie\Runs\PostFormatGate;
@@ -42,7 +41,7 @@ class IdeasController
             ->onEachSide(1)
             ->withQueryString();
 
-        $strategy = Strategy::latest()->first();
+        $strategy = Strategy::approved()->latest('id')->first();
 
         $hasPending = $records->where('status', IdeaStatus::PENDING_REVIEW)->count() > 0;
 
@@ -57,7 +56,7 @@ class IdeasController
             ],
             'records' => IdeaResource::collection($records),
             'strategy' => $strategy ? new StrategyResource($strategy) : null,
-            'canGenerate' => $strategy?->status === StrategyStatus::APPROVED,
+            'canGenerate' => (bool) $strategy,
             'ideaStatusTypes' => IdeaStatus::withTitle(),
             'funnelStages' => FunnelStage::withTitle(),
             'postFormats' => PostFormat::withTitle(),
@@ -78,7 +77,7 @@ class IdeasController
             'postFormats' => PostFormat::withTitle(),
             'postFormatImages' => PostFormat::imageRanges(),
             'funnelStage' => $request->input('funnel_stage'),
-            'contentPillars' => ContentPillars::titles(Strategy::latest()->first()),
+            'contentPillars' => ContentPillars::titles(Strategy::approved()->latest('id')->first()),
             'publishTargets' => $this->publishTargets(),
             'record' => null,
         ]);
@@ -108,7 +107,7 @@ class IdeasController
             'postFormats' => PostFormat::withTitle(),
             'postFormatImages' => PostFormat::imageRanges(),
             'funnelStage' => $request->input('funnel_stage'),
-            'contentPillars' => ContentPillars::titles(Strategy::latest()->first()),
+            'contentPillars' => ContentPillars::titles(Strategy::approved()->latest('id')->first()),
             'publishTargets' => $this->publishTargets(),
             'record' => IdeaResource::make($record),
         ]);

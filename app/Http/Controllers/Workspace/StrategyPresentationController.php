@@ -37,15 +37,26 @@ class StrategyPresentationController extends Controller
     use HasWorkspaceLocale;
     use StrategySchemas;
 
-    public function index(): Response
+    /**
+     * Only a finished strategy is presented. Anything earlier — including the empty strategy an
+     * admin's regeneration leaves waiting — belongs to the overview, and must never be offered for
+     * approval.
+     */
+    public function index(): Response|RedirectResponse
     {
-        $record = Strategy::latest()->first();
+        $record = $this->latestStrategy();
+
+        if (! $this->isPresentable($record)) {
+            return redirect()->route('genie.strategies.overview', [
+                'workspace' => WorkspaceManager::current()->uuid,
+            ]);
+        }
 
         return Inertia::render('Genie/Workspace/Strategies/Presentation', [
-            'record' => $record ? new StrategyResource($record) : null,
+            'record' => new StrategyResource($record),
             'fieldList' => $this->fieldList(),
-            'schemas' => $record ? $this->getStrategySchemas($record) : (object) [],
-            'meta' => $record ? $this->getStrategyMeta($record) : (object) [],
+            'schemas' => $this->getStrategySchemas($record),
+            'meta' => $this->getStrategyMeta($record),
             'strategyStatusTypes' => StrategyStatus::withState('', true),
         ]);
     }
@@ -53,14 +64,16 @@ class StrategyPresentationController extends Controller
     /**
      * The entry point for the strategy: it resolves which stage the workspace is at and shows
      * only what that stage needs. A finished strategy goes straight to the presentation.
+     *
+     * The stage follows the newest strategy and its own run. The newest run of any kind would not
+     * do: ideas and posts runs are newer than the strategy run and carry its strategy too.
      */
     public function overview(): Response|RedirectResponse
     {
-        $run = AiRun::latest('id')->first();
-        $record = $run?->strategy ?? Strategy::latest()->first();
-        $status = $record?->status;
+        $record = $this->latestStrategy();
+        $run = $record?->aiRun;
 
-        if ($status === StrategyStatus::PENDING_APPROVAL || $status === StrategyStatus::APPROVED) {
+        if ($this->isPresentable($record)) {
             return redirect()->route('genie.strategies.presentation', [
                 'workspace' => WorkspaceManager::current()->uuid,
             ]);
@@ -75,6 +88,9 @@ class StrategyPresentationController extends Controller
     }
 
     /**
+     * A strategy an admin asked to regenerate is OPEN without a run, which reads as "generate" just
+     * like a workspace that never had one.
+     *
      * @return 'briefing'|'generate'|'running'|'review'|'error'
      */
     private function stage(?AiRun $run, ?Strategy $record): string
@@ -83,7 +99,7 @@ class StrategyPresentationController extends Controller
             return 'briefing';
         }
 
-        if (! $run && ! $record) {
+        if (! $record || $record->awaitsGeneration()) {
             return 'generate';
         }
 
@@ -171,15 +187,28 @@ class StrategyPresentationController extends Controller
      *
      * The run owns its briefing and strategy directly, so the two pivot tables the old path wrote
      * are not involved, and the conversation is opened by the first step.
+     *
+     * A workspace generates once: again only after an admin asked for it, in which case the run is
+     * attached to the empty strategy that request left waiting rather than to a new one.
      */
     public function generate(): RedirectResponse
     {
         $workspace = WorkspaceManager::current();
 
+        $latest = $this->latestStrategy();
+
+        if ($latest && ! $latest->awaitsGeneration()) {
+            return redirect()->back()->with('error', __('genie.strategy_already_generated'));
+        }
+
         $briefing = Briefing::latest()->first();
 
         if (! $briefing) {
             return redirect()->back()->with('error', __('genie.briefing_not_found'));
+        }
+
+        if (! $this->briefingState()['complete']) {
+            return redirect()->back()->with('error', __('genie.briefing_incomplete'));
         }
 
         $version = WorkspaceVersion::where('workspace_id', $workspace->id)->firstOrFail();
@@ -188,14 +217,16 @@ class StrategyPresentationController extends Controller
             ->where('rule_type', RuleType::STRATEGY)
             ->firstOrFail();
 
+        $strategy = $latest ?? Strategy::create([
+            'workspace_id' => $workspace->id,
+            'status' => StrategyStatus::OPEN,
+        ]);
+
         $run = AiRun::create([
             'workspace_id' => $workspace->id,
             'rule_id' => $rule->id,
             'briefing_id' => $briefing->id,
-            'strategy_id' => Strategy::create([
-                'workspace_id' => $workspace->id,
-                'status' => StrategyStatus::OPEN,
-            ])->id,
+            'strategy_id' => $strategy->id,
             'status' => RunStatus::OPEN,
         ]);
 
@@ -215,7 +246,7 @@ class StrategyPresentationController extends Controller
      */
     public function review(): Response|RedirectResponse
     {
-        $run = AiRun::latest('id')->first();
+        $run = $this->latestStrategy()?->aiRun;
         $runStep = $run?->steps()->reorder()->where('status', RunStatus::PENDING_REVIEW)->oldest('position')->first();
 
         if (! $runStep) {
@@ -330,6 +361,21 @@ class StrategyPresentationController extends Controller
         $request->handle();
 
         return redirect()->back()->with('success', __('genie.strategy_updated'));
+    }
+
+    /**
+     * The strategy the strategy pages are about: the newest, whatever its status. Earlier ones are
+     * kept when an admin regenerates, but only ideas still read them (the newest approved one).
+     */
+    private function latestStrategy(): ?Strategy
+    {
+        return Strategy::latest('id')->first();
+    }
+
+    private function isPresentable(?Strategy $record): bool
+    {
+        return $record?->status === StrategyStatus::PENDING_APPROVAL
+            || $record?->status === StrategyStatus::APPROVED;
     }
 
     /**
