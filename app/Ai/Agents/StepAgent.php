@@ -58,9 +58,10 @@ class StepAgent implements Agent, Conversational, HasTools
      * A web search when the step asks for one, otherwise nothing.
      *
      * WebSearch is a provider tool: the provider runs the searches inside the one call and only
-     * the answer comes back, so the run loop has nothing to execute. Only the answer is written
-     * to the conversation, not what was searched or read. A later step therefore sees the
-     * findings only as far as this step put them in its output.
+     * the answer comes back, so the run loop has nothing to execute. The conversation row keeps
+     * the provider's raw search calls and results (`steps[].provider_tool_calls`, since
+     * laravel/ai 1.0), but they are not replayed into later turns: a later step sees the findings
+     * only as far as this step put them in its output.
      *
      * @return list<WebSearch>
      */
