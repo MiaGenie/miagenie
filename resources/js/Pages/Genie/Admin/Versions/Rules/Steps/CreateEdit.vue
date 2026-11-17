@@ -57,14 +57,6 @@ const props = defineProps({
         type: Object,
         required: true,
     },
-    imageProviders: {
-        type: Array,
-        required: true,
-    },
-    webSearchProviders: {
-        type: Array,
-        required: true,
-    },
     version: {
         type: Object,
         required: true,
@@ -169,11 +161,10 @@ const formatRequired = computed(() => Boolean(ruleSubType.value?.format_required
 const isImage = computed(() => Boolean(ruleSubType.value?.image));
 
 /**
- * Whether a provider can generate images; a profile on any other provider cannot be picked for
- * an image step.
+ * Whether a profile's provider can generate images, as the server judged it from the provider's
+ * driver; any other profile cannot be picked for an image step.
  */
-const profileSupportsImages = (profile) =>
-    props.imageProviders.includes(profile.provider);
+const profileSupportsImages = (profile) => Boolean(profile.supports_images);
 
 /**
  * Only the strategy sub types may search the web, and only on a provider that can.
@@ -181,7 +172,7 @@ const profileSupportsImages = (profile) =>
 const supportsWebSearch = computed(() => Boolean(ruleSubType.value?.web_search));
 
 const profileSupportsWebSearch = (profile) =>
-    props.webSearchProviders.includes(profile.provider);
+    Boolean(profile.supports_web_search);
 
 // Each domain is validated as web_search_domains.N; show the first failure under the field.
 const webSearchDomainsError = computed(

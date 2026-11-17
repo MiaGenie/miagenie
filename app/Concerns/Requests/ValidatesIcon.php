@@ -2,6 +2,8 @@
 
 namespace App\Concerns\Requests;
 
+use App\Support\MdiIcon;
+
 /**
  * An icon picked from Material Design Icons: its name (`mdi:rocket-launch`) and the SVG path the
  * picker sends with it. The path is stored so the pages that show the icon draw it without loading
@@ -13,10 +15,7 @@ namespace App\Concerns\Requests;
  */
 trait ValidatesIcon
 {
-    /**
-     * Comfortably above the longest MDI path (about 4,600 characters).
-     */
-    public const MAX_ICON_PATH_LENGTH = 20000;
+    public const MAX_ICON_PATH_LENGTH = MdiIcon::MAX_PATH_LENGTH;
 
     abstract protected function acceptsIcon(): bool;
 
@@ -26,13 +25,13 @@ trait ValidatesIcon
     protected function iconRules(): array
     {
         return [
-            'icon' => ['nullable', 'string', 'max:255', 'regex:/^mdi:[a-z0-9]+(?:-[a-z0-9]+)*$/'],
+            'icon' => ['nullable', 'string', 'max:'.MdiIcon::MAX_NAME_LENGTH, 'regex:'.MdiIcon::NAME_PATTERN],
             'icon_path' => [
                 'nullable',
                 'required_with:icon',
                 'string',
                 'max:'.self::MAX_ICON_PATH_LENGTH,
-                'regex:/^[MmLlHhVvCcSsQqTtAaZz0-9.,\s+-]+$/',
+                'regex:'.MdiIcon::PATH_PATTERN,
             ],
         ];
     }

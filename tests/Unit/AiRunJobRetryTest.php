@@ -3,11 +3,14 @@
 namespace Tests\Unit;
 
 use App\Enums\Modality;
+use App\Enums\RuleType;
 use App\Enums\RunResponseError;
 use App\Enums\RunStatus;
+use App\Genie\Strategy\StrategyRunner;
 use App\Jobs\AiRunJob;
 use App\Models\AiRun;
 use App\Models\AiRunStep;
+use App\Models\Rule;
 use App\Models\Workspace;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Queue\Jobs\FakeJob;
@@ -134,7 +137,47 @@ class AiRunJobRetryTest extends TestCase
         $job->assertNotReleased();
     }
 
-    protected function job(int $attempts = 1): AiRunJob
+    /**
+     * A failed strategy run can be replaced by an admin's regeneration before its retry comes
+     * back; the retry then leaves it as it stopped rather than finishing a strategy nobody reads.
+     */
+    public function test_a_superseded_run_is_neither_retried_nor_carried_on(): void
+    {
+        $this->failedStep(RunResponseError::SERVER_ERROR);
+
+        $runner = $this->createMock(StrategyRunner::class);
+        $runner->method('isSuperseded')->willReturn(true);
+        $runner->expects($this->never())->method('retryFailed');
+        $runner->expects($this->never())->method('advance');
+        $this->app->instance(StrategyRunner::class, $runner);
+
+        $job = $this->job(attempts: 2);
+        $job->handle();
+
+        $job->assertNotReleased();
+        $this->assertSame(RunStatus::ERROR, $this->run->fresh()->status);
+    }
+
+    /**
+     * The job's uuid survives its own retries, which is what lets a job that threw after claiming
+     * a step take that step back instead of being refused until the claim expires.
+     */
+    public function test_the_job_claims_its_steps_with_its_queue_uuid(): void
+    {
+        $this->run->update(['status' => RunStatus::RUNNING]);
+
+        $runner = $this->createMock(StrategyRunner::class);
+        $runner->method('isSuperseded')->willReturn(false);
+        $runner->expects($this->once())
+            ->method('advance')
+            ->with($this->isInstanceOf(AiRun::class), 'the-job-uuid')
+            ->willReturn(false);
+        $this->app->instance(StrategyRunner::class, $runner);
+
+        $this->job(attempts: 2, uuid: 'the-job-uuid')->handle();
+    }
+
+    protected function job(int $attempts = 1, ?string $uuid = null): AiRunJob
     {
         $job = new class($this->run) extends AiRunJob
         {
@@ -144,7 +187,19 @@ class AiRunJobRetryTest extends TestCase
             }
         };
 
-        $fake = new FakeJob;
+        $job->run
+            ->setRelation('workspace', (new Workspace)->forceFill(['id' => 7]))
+            ->setRelation('rule', (new Rule)->forceFill(['rule_type' => RuleType::STRATEGY]));
+
+        $fake = new class($uuid) extends FakeJob
+        {
+            public function __construct(protected ?string $uuid) {}
+
+            public function getRawBody()
+            {
+                return (string) json_encode(['uuid' => $this->uuid]);
+            }
+        };
         $fake->attempts = $attempts;
 
         return $job->setJob($fake);

@@ -42,7 +42,7 @@ class SaveBriefingWizard extends FormRequest
      */
     public function handle(): Briefing
     {
-        $record = Briefing::latest()->first();
+        $record = Briefing::latest('id')->first();
 
         $draft = $this->boolean('draft');
 

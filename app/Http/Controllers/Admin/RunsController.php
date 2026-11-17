@@ -60,7 +60,13 @@ class RunsController extends Controller
             return redirect()->back()->with('error', __('genie.run_not_resumable'));
         }
 
-        Runners::for($type)->retryFailed($run);
+        $runner = Runners::for($type);
+
+        if ($runner->isSuperseded($run)) {
+            return redirect()->back()->with('error', __('genie.run_superseded'));
+        }
+
+        $runner->retryFailed($run);
 
         AiRunJob::dispatch($run->fresh());
 

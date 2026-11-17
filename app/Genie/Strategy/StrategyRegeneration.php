@@ -25,29 +25,34 @@ use Illuminate\Support\Facades\DB;
 class StrategyRegeneration
 {
     /**
+     * The checks and writes run under a lock on the workspace's version row, so two requests
+     * arriving together cannot both pass the checks and stack strategies or briefings. Asking again
+     * while a strategy is already waiting reuses that one.
+     *
      * @throws StrategyRegenerationException when a run is still producing the latest strategy, or
-     *                                       when a briefing is to be cloned and there is none
+     *                                       when a briefing is to be cloned and none was finished
      */
     public function request(Workspace $workspace, StrategyRegenerationMode $mode): Strategy
     {
-        $latest = $this->latestStrategy($workspace);
+        return DB::transaction(function () use ($workspace, $mode): Strategy {
+            WorkspaceVersion::where('workspace_id', $workspace->id)->lockForUpdate()->first();
 
-        if ($latest?->isGenerating()) {
-            throw StrategyRegenerationException::generating();
-        }
+            $latest = $this->latestStrategy($workspace);
 
-        $briefing = $this->latestBriefing($workspace);
-
-        if ($mode->clonesBriefing() && ! $briefing) {
-            throw StrategyRegenerationException::noBriefing();
-        }
-
-        return DB::transaction(function () use ($workspace, $mode, $latest, $briefing): Strategy {
-            if ($mode->createsBriefing()) {
-                $this->createBriefing($workspace, $mode->clonesBriefing() ? $briefing->content : null);
+            if ($latest?->isGenerating()) {
+                throw StrategyRegenerationException::generating();
             }
 
-            // Asking twice must not stack empty strategies: the one already waiting is reused.
+            $briefing = $mode->clonesBriefing() ? $this->clonableBriefing($workspace) : null;
+
+            if ($mode->clonesBriefing() && ! $briefing) {
+                throw StrategyRegenerationException::noBriefing();
+            }
+
+            if ($mode->createsBriefing()) {
+                $this->createBriefing($workspace, $briefing?->content);
+            }
+
             if ($latest?->awaitsGeneration()) {
                 return $latest;
             }
@@ -78,7 +83,7 @@ class StrategyRegeneration
                 $latest->status === StrategyStatus::ERROR => 'error',
                 default => 'other',
             },
-            'has_briefing' => (bool) $this->latestBriefing($workspace),
+            'has_briefing' => (bool) $this->clonableBriefing($workspace),
         ];
     }
 
@@ -108,8 +113,15 @@ class StrategyRegeneration
         return Strategy::byWorkspace($workspace)->latest('id')->first();
     }
 
-    protected function latestBriefing(Workspace $workspace): ?Briefing
+    /**
+     * The briefing a clone copies: the newest one the customer finished. A newer draft may be the
+     * empty one an earlier "new briefing" request left, or answers the customer never submitted.
+     */
+    protected function clonableBriefing(Workspace $workspace): ?Briefing
     {
-        return Briefing::byWorkspace($workspace)->latest('id')->first();
+        return Briefing::byWorkspace($workspace)
+            ->where('status', BriefingStatus::COMPLETE)
+            ->latest('id')
+            ->first();
     }
 }

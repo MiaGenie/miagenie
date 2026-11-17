@@ -122,7 +122,7 @@ class StrategyPresentationController extends Controller
      */
     private function briefingState(): array
     {
-        $briefing = Briefing::latest()->first();
+        $briefing = Briefing::latest('id')->first();
 
         $required = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
             ->with(['version' => ['briefings']])
@@ -201,7 +201,7 @@ class StrategyPresentationController extends Controller
             return redirect()->back()->with('error', __('genie.strategy_already_generated'));
         }
 
-        $briefing = Briefing::latest()->first();
+        $briefing = Briefing::latest('id')->first();
 
         if (! $briefing) {
             return redirect()->back()->with('error', __('genie.briefing_not_found'));

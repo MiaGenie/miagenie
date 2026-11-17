@@ -2,12 +2,14 @@
 
 namespace Tests\Unit;
 
+use App\Enums\RuleSubType;
 use App\Enums\SubFieldType;
 use App\Enums\VersionGroupType;
 use App\Genie\Versions\VersionImporter;
 use App\Models\RuleStep;
 use App\Models\VersionField;
 use App\Models\VersionFieldSubField;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class VersionImporterTest extends TestCase
@@ -143,13 +145,101 @@ class VersionImporterTest extends TestCase
     public function test_a_fields_styling_keeps_only_the_vocabulary(): void
     {
         $importer = new VersionImporter;
+        $strategy = ['group_type' => VersionGroupType::STRATEGIES->value];
 
         $this->assertSame(
             ['block' => 'feature', 'class' => 'strategy-tone-orange'],
-            $importer->fieldStyling(['block' => 'feature', 'class' => 'strategy-tone-orange font-bold']),
+            $importer->fieldStyling([...$strategy, 'block' => 'feature', 'class' => 'strategy-tone-orange font-bold']),
         );
-        $this->assertSame(['block' => null, 'class' => null], $importer->fieldStyling(['block' => 'group', 'class' => 'font-bold']));
-        $this->assertSame(['block' => null, 'class' => null], $importer->fieldStyling([]));
+        $this->assertSame(['block' => null, 'class' => null], $importer->fieldStyling([...$strategy, 'block' => 'group', 'class' => 'font-bold']));
+        $this->assertSame(['block' => null, 'class' => null], $importer->fieldStyling($strategy));
+    }
+
+    public function test_a_field_outside_the_strategy_group_is_imported_without_styling(): void
+    {
+        $importer = new VersionImporter;
+        $styled = ['block' => 'feature', 'class' => 'strategy-tone-orange'];
+
+        $this->assertSame(
+            ['block' => null, 'class' => null],
+            $importer->fieldStyling([...$styled, 'group_type' => VersionGroupType::BRIEFINGS->value]),
+        );
+        $this->assertSame(['block' => null, 'class' => null], $importer->fieldStyling($styled));
+    }
+
+    public function test_a_strategy_fields_icon_is_kept_with_its_path(): void
+    {
+        $icon = $this->importer()->fieldIcon([
+            'group_type' => VersionGroupType::STRATEGIES->value,
+            'icon' => 'mdi:rocket-launch',
+            'icon_path' => 'M13.13 22.19L11.5 18.36C13.07 17.78 14.54 17 15.9 16.09Z',
+        ]);
+
+        $this->assertSame(['icon' => 'mdi:rocket-launch', 'icon_path' => 'M13.13 22.19L11.5 18.36C13.07 17.78 14.54 17 15.9 16.09Z'], $icon);
+    }
+
+    public function test_a_field_outside_the_strategy_group_is_imported_without_an_icon(): void
+    {
+        $icon = $this->importer()->fieldIcon([
+            'group_type' => VersionGroupType::BRIEFINGS->value,
+            'icon' => 'mdi:rocket-launch',
+            'icon_path' => 'M0 0L1 1Z',
+        ]);
+
+        $this->assertSame(['icon' => null, 'icon_path' => null], $icon);
+    }
+
+    /**
+     * The path is bound to a `<path d>`; a hand-edited file must not get markup or other text
+     * into it, and an icon without a usable path is dropped whole, as the form would refuse it.
+     *
+     * @return array<string, array{0: mixed, 1: mixed}>
+     */
+    public static function unusableIcons(): array
+    {
+        return [
+            'markup in the path' => ['mdi:rocket', 'M0 0"/><script>alert(1)</script>'],
+            'text in the path' => ['mdi:rocket', 'hello world'],
+            'path too long' => ['mdi:rocket', str_pad('M0 0', 20001, ' 0')],
+            'no path' => ['mdi:rocket', null],
+            'not an mdi name' => ['fa:rocket', 'M0 0Z'],
+            'name not a string' => [['mdi:rocket'], 'M0 0Z'],
+            'no icon' => [null, 'M0 0Z'],
+        ];
+    }
+
+    #[DataProvider('unusableIcons')]
+    public function test_an_icon_the_form_would_refuse_is_dropped_whole(mixed $name, mixed $path): void
+    {
+        $icon = $this->importer()->fieldIcon([
+            'group_type' => VersionGroupType::STRATEGIES->value,
+            'icon' => $name,
+            'icon_path' => $path,
+        ]);
+
+        $this->assertSame(['icon' => null, 'icon_path' => null], $icon);
+    }
+
+    public function test_a_step_whose_sub_type_may_search_keeps_its_web_search(): void
+    {
+        $this->assertSame([], $this->importer()->stepWebSearch([
+            'rule_sub_type' => RuleSubType::BRIEFINGS->value,
+            'web_search' => true,
+            'web_search_max' => 4,
+        ]));
+    }
+
+    public function test_a_step_whose_sub_type_may_not_search_is_imported_with_web_search_off(): void
+    {
+        $off = ['web_search' => false, 'web_search_max' => null, 'web_search_domains' => null];
+
+        $this->assertSame($off, $this->importer()->stepWebSearch([
+            'rule_sub_type' => RuleSubType::IDEAS_FORMAT->value,
+            'web_search' => true,
+            'web_search_max' => 4,
+            'web_search_domains' => ['example.org'],
+        ]));
+        $this->assertSame($off, $this->importer()->stepWebSearch(['web_search' => true]));
     }
 
     public function test_a_sub_fields_block_is_kept_only_when_it_fits_the_exported_shape(): void

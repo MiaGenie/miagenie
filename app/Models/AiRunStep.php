@@ -34,6 +34,7 @@ class AiRunStep extends Model
         'position',
         'modality',
         'status',
+        'claimed_by',
         'invocation_id',
         'message_id',
         'output',

@@ -8,6 +8,7 @@ use App\Enums\StrategyRegenerationMode;
 use App\Enums\StrategyStatus;
 use App\Genie\Strategy\StrategyRegeneration;
 use App\Genie\Strategy\StrategyRegenerationException;
+use App\Genie\Strategy\StrategyRunner;
 use App\Models\AiRun;
 use App\Models\Briefing;
 use App\Models\Strategy;
@@ -209,6 +210,82 @@ class StrategyRegenerationTest extends TestCase
         $this->assertSame(BriefingStatus::COMPLETE, $previous->refresh()->status);
     }
 
+    /**
+     * A newer draft may be the empty one an earlier "new briefing" request left, or answers the
+     * customer never submitted; the clone copies what the customer last finished.
+     */
+    public function test_a_cloned_briefing_copies_the_newest_finished_briefing_past_a_newer_draft(): void
+    {
+        $this->briefing(['company' => 'Old'], versionId: 9);
+        $finished = $this->briefing(['company' => 'Acme'], versionId: 9);
+        $this->regeneration->request($this->workspace, StrategyRegenerationMode::NEW_BRIEFING);
+        $this->briefing(['company' => 'Half done'], versionId: 9, status: BriefingStatus::DRAFT);
+
+        $this->regeneration->request($this->workspace, StrategyRegenerationMode::CLONED_BRIEFING);
+
+        $latest = $this->latestBriefing();
+
+        $this->assertNotSame($finished->id, $latest->id);
+        $this->assertSame(['company' => 'Acme'], $latest->content);
+        $this->assertSame(BriefingStatus::DRAFT, $latest->status);
+    }
+
+    public function test_cloning_with_only_unfinished_briefings_is_refused(): void
+    {
+        $this->briefing(['company' => 'Half done'], versionId: 9, status: BriefingStatus::DRAFT);
+
+        $this->assertFalse($this->regeneration->state($this->workspace)['has_briefing']);
+
+        try {
+            $this->regeneration->request($this->workspace, StrategyRegenerationMode::CLONED_BRIEFING);
+            $this->fail('An unfinished briefing was cloned.');
+        } catch (StrategyRegenerationException $exception) {
+            $this->assertSame('strategy_regeneration_no_briefing', $exception->key);
+        }
+
+        $this->assertSame(1, Briefing::withoutWorkspace()->count());
+        $this->assertSame(0, Strategy::withoutWorkspace()->count());
+    }
+
+    /**
+     * A failed run is released for an automatic retry, and the admin may regenerate before it
+     * comes back; the retry must not bring the replaced strategy back to life.
+     */
+    public function test_a_strategy_run_is_superseded_once_a_newer_strategy_was_asked_for(): void
+    {
+        $failed = $this->strategy(StrategyStatus::ERROR, withRun: true);
+        $run = AiRun::withoutWorkspace()->where('strategy_id', $failed->id)->sole();
+        $run->update(['status' => RunStatus::ERROR]);
+        $runner = new StrategyRunner;
+
+        $this->assertFalse($runner->isSuperseded($run));
+
+        $this->regeneration->request($this->workspace, StrategyRegenerationMode::STRATEGY);
+
+        $this->assertTrue($runner->isSuperseded($run));
+        $this->assertFalse($runner->retryFailed($run));
+        $this->assertSame(RunStatus::ERROR, $run->fresh()->status);
+        $this->assertSame(StrategyStatus::ERROR, $failed->refresh()->status);
+    }
+
+    public function test_another_workspace_newer_strategy_does_not_supersede_a_run(): void
+    {
+        $strategy = $this->strategy(StrategyStatus::ERROR, withRun: true);
+        $run = AiRun::withoutWorkspace()->where('strategy_id', $strategy->id)->sole();
+
+        $this->strategy(StrategyStatus::OPEN, workspace: $this->workspace(2, versionId: 5));
+
+        $this->assertFalse((new StrategyRunner)->isSuperseded($run));
+    }
+
+    public function test_a_run_without_a_strategy_is_never_superseded(): void
+    {
+        $run = AiRun::create(['workspace_id' => $this->workspace->id, 'status' => RunStatus::ERROR]);
+        $this->strategy(StrategyStatus::OPEN);
+
+        $this->assertFalse((new StrategyRunner)->isSuperseded($run));
+    }
+
     public function test_cloning_without_a_briefing_is_refused(): void
     {
         try {
@@ -365,12 +442,16 @@ class StrategyRegenerationTest extends TestCase
     /**
      * @param  array<string, mixed>  $content
      */
-    protected function briefing(array $content, int $versionId, ?Workspace $workspace = null): Briefing
-    {
+    protected function briefing(
+        array $content,
+        int $versionId,
+        ?Workspace $workspace = null,
+        BriefingStatus $status = BriefingStatus::COMPLETE,
+    ): Briefing {
         $briefing = new Briefing([
             'content' => $content,
             'version_id' => $versionId,
-            'status' => BriefingStatus::COMPLETE,
+            'status' => $status,
         ]);
 
         $briefing->workspace_id = ($workspace ?? $this->workspace)->id;

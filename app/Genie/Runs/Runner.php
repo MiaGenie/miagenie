@@ -17,6 +17,7 @@ use App\Models\AiRunStep;
 use App\Models\Log as RunLog;
 use App\Models\RuleStep;
 use App\Models\TokenUsage;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Log;
 use Laravel\Ai\Responses\Data\Usage;
 use Laravel\Ai\Responses\StructuredAgentResponse;
@@ -127,14 +128,30 @@ abstract class Runner
     protected function imagesWritten(AiRunStep $runStep, array $output): void {}
 
     /**
+     * Whether what the run produces has been replaced, so carrying it on would only spend tokens on
+     * a result nobody reads. A run type whose result can be superseded — a strategy, by an admin's
+     * regeneration — says so here; the job and retryFailed() then leave the run where it stopped.
+     */
+    public function isSuperseded(AiRun $run): bool
+    {
+        return false;
+    }
+
+    /**
      * Advance the run by one step. Returns false when it cannot continue — finished, gated or
      * failed — so the caller knows not to dispatch again.
      *
      * A failed run stops here rather than carrying on: continuing would leave the failed step
      * behind for good, because nextStep() would count it as visited and pick the one after it.
      * Getting past a failure is a deliberate act — see retryFailed().
+     *
+     * Another worker holding the step stops this one without dispatching: that worker carries the
+     * run on.
+     *
+     * @param  string|null  $claimant  The queue job's uuid, which survives the job's own retries, so
+     *                                 a job that threw after claiming can take its step back.
      */
-    public function advance(AiRun $run): bool
+    public function advance(AiRun $run, ?string $claimant = null): bool
     {
         if (in_array($run->status, [RunStatus::PENDING_REVIEW, RunStatus::ERROR], true)) {
             return false;
@@ -148,9 +165,8 @@ abstract class Runner
             return false;
         }
 
-        $runStep = $this->claim($run, $step);
+        $runStep = $this->claim($run, $step, $claimant);
 
-        // Another worker holds the step; it carries the run on, so this job stops without dispatching.
         if (! $runStep) {
             Log::info('Genie run step already running on another worker', [
                 'run_id' => $run->id,
@@ -204,10 +220,15 @@ abstract class Runner
     /**
      * Put a failed run back into a state where advance() will retry the step that failed.
      *
-     * Returns false when there is nothing to retry, so a caller cannot loop on a healthy run.
+     * Returns false when there is nothing to retry, so a caller cannot loop on a healthy run, and
+     * when the run has been superseded, whose result would no longer be read.
      */
     public function retryFailed(AiRun $run): bool
     {
+        if ($this->isSuperseded($run)) {
+            return false;
+        }
+
         $failed = $run->steps()
             ->reorder()
             ->where('status', RunStatus::ERROR)
@@ -234,31 +255,41 @@ abstract class Runner
      * leaves a trace of the attempt. A retry reuses the row left behind.
      *
      * Returns null while another worker is running the step: the claim is one conditional update,
-     * so of two jobs racing for the same step exactly one gets it. A RUNNING row older than
-     * CLAIM_EXPIRES_AFTER is taken over, because the worker that held it is gone.
+     * so of two jobs racing for the same step exactly one gets it, and the first claim's insert is
+     * held to one row per rule step by the `(run_id, step_id)` unique index. A RUNNING row is taken
+     * over once it is older than CLAIM_EXPIRES_AFTER, because the worker that held it is gone, or at
+     * once by the job that claimed it: an exception that escaped the step released that job for a
+     * retry, and nobody else would ever pick the step up.
      */
-    protected function claim(AiRun $run, RuleStep $step): ?AiRunStep
+    protected function claim(AiRun $run, RuleStep $step, ?string $claimant = null): ?AiRunStep
     {
         $modality = $step->modality ?? Modality::TEXT;
 
         $existing = $run->steps()->reorder()->where('step_id', $step->id)->first();
 
         if (! $existing) {
-            return $run->steps()->create([
-                'step_id' => $step->id,
-                'position' => $step->position,
-                'modality' => $modality,
-                'status' => RunStatus::RUNNING,
-            ]);
+            try {
+                return $run->steps()->create([
+                    'step_id' => $step->id,
+                    'position' => $step->position,
+                    'modality' => $modality,
+                    'status' => RunStatus::RUNNING,
+                    'claimed_by' => $claimant,
+                ]);
+            } catch (UniqueConstraintViolationException) {
+                return null;
+            }
         }
 
         $claimed = AiRunStep::query()
             ->whereKey($existing->id)
             ->where(fn ($query) => $query
                 ->where('status', '!=', RunStatus::RUNNING)
-                ->orWhere('updated_at', '<=', now()->subSeconds(self::CLAIM_EXPIRES_AFTER)))
+                ->orWhere('updated_at', '<=', now()->subSeconds(self::CLAIM_EXPIRES_AFTER))
+                ->when($claimant, fn ($query) => $query->orWhere('claimed_by', $claimant)))
             ->update([
                 'status' => RunStatus::RUNNING,
+                'claimed_by' => $claimant,
                 'error' => null,
                 'error_details' => null,
                 'modality' => $modality,

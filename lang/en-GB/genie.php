@@ -267,6 +267,7 @@ return [
     'run_resume' => 'Resume Run',
     'run_resumed' => 'Run has been resumed',
     'run_not_resumable' => 'Only a strategy run can be resumed',
+    'run_superseded' => 'This run\'s strategy has been replaced by a newer one, so it is not resumed',
     'run_invocation_id' => 'Invocation ID',
     'run_message_id' => 'Message ID',
     'run_conversation_id' => 'Conversation ID',

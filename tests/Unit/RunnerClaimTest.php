@@ -13,11 +13,13 @@ use App\Models\RuleStep;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
- * Runner::claim() is what keeps a second worker off a step another worker is running. The suite
- * has no migrated database, so the run steps table is built in memory for these tests.
+ * Runner::claim() is what keeps a second worker off a step another worker is running, while letting
+ * the job that holds it take it back on its own retry. The suite has no migrated database, so the
+ * run steps table is built in memory for these tests, with the unique index of migration 0057.
  */
 class RunnerClaimTest extends TestCase
 {
@@ -44,6 +46,7 @@ class RunnerClaimTest extends TestCase
             $table->unsignedInteger('position')->default(0);
             $table->tinyInteger('modality')->nullable();
             $table->tinyInteger('status');
+            $table->char('claimed_by', 36)->nullable();
             $table->string('invocation_id')->nullable();
             $table->uuid('message_id')->nullable();
             $table->json('output')->nullable();
@@ -51,6 +54,8 @@ class RunnerClaimTest extends TestCase
             $table->string('error_details')->nullable();
             $table->unsignedInteger('duration')->nullable();
             $table->timestamps();
+
+            $table->unique(['run_id', 'step_id']);
         });
 
         $this->freezeSecond();
@@ -138,17 +143,94 @@ class RunnerClaimTest extends TestCase
         $this->assertSame(1, AiRunStep::count());
     }
 
-    protected function claim(): ?AiRunStep
+    public function test_a_claim_records_the_job_that_holds_the_step(): void
+    {
+        $this->row(RunStatus::OPEN);
+
+        $this->assertSame('job-a', $this->claim('job-a')?->claimed_by);
+    }
+
+    public function test_a_first_claim_records_the_job_that_holds_the_step(): void
+    {
+        $this->assertSame('job-a', $this->claim('job-a')?->claimed_by);
+    }
+
+    /**
+     * A job that threw after claiming is released for a retry with the same uuid. Nothing else
+     * would pick its RUNNING step up before the claim expires, so it takes the step back at once.
+     */
+    public function test_the_job_that_claimed_a_running_step_takes_it_back_on_its_retry(): void
+    {
+        $row = $this->row(RunStatus::RUNNING, now()->subSeconds(15), ['claimed_by' => 'job-a']);
+
+        $claimed = $this->claim('job-a');
+
+        $this->assertNotNull($claimed);
+        $this->assertSame($row->id, $claimed->id);
+        $this->assertSame(RunStatus::RUNNING, $claimed->status);
+        $this->assertTrue($claimed->updated_at->equalTo(now()));
+    }
+
+    public function test_another_job_is_refused_a_step_claimed_by_a_job_still_running_it(): void
+    {
+        $row = $this->row(RunStatus::RUNNING, now()->subSeconds(15), ['claimed_by' => 'job-a']);
+
+        $this->assertNull($this->claim('job-b'));
+        $this->assertNull($this->claim());
+
+        $fresh = $row->fresh();
+        $this->assertSame('job-a', $fresh->claimed_by);
+        $this->assertTrue($fresh->updated_at->equalTo($row->updated_at));
+    }
+
+    public function test_a_step_left_running_by_a_job_that_is_gone_passes_to_the_next(): void
+    {
+        $this->row(RunStatus::RUNNING, now()->subSeconds(Runner::CLAIM_EXPIRES_AFTER), ['claimed_by' => 'job-a']);
+
+        $this->assertSame('job-b', $this->claim('job-b')?->claimed_by);
+    }
+
+    /**
+     * Two jobs that both found no row race to create it; the unique index lets one insert land
+     * and the other job stops, rather than both running the step.
+     */
+    public function test_of_two_jobs_creating_the_first_row_the_one_that_loses_is_refused(): void
+    {
+        AiRunStep::creating(function (AiRunStep $runStep): void {
+            if ($runStep->claimed_by !== 'job-b') {
+                return;
+            }
+
+            AiRunStep::query()->toBase()->insert([
+                'uuid' => (string) Str::uuid(),
+                'run_id' => $this->run->id,
+                'step_id' => $this->step->id,
+                'position' => $this->step->position,
+                'status' => RunStatus::RUNNING->value,
+                'claimed_by' => 'job-a',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
+
+        $this->assertNull($this->claim('job-b'));
+
+        $row = AiRunStep::sole();
+        $this->assertSame('job-a', $row->claimed_by);
+        $this->assertSame(RunStatus::RUNNING, $row->status);
+    }
+
+    protected function claim(?string $claimant = null): ?AiRunStep
     {
         $runner = new class extends PostsRunner
         {
-            public function claimFor(AiRun $run, RuleStep $step): ?AiRunStep
+            public function claimFor(AiRun $run, RuleStep $step, ?string $claimant): ?AiRunStep
             {
-                return $this->claim($run, $step);
+                return $this->claim($run, $step, $claimant);
             }
         };
 
-        return $runner->claimFor($this->run, $this->step);
+        return $runner->claimFor($this->run, $this->step, $claimant);
     }
 
     /**

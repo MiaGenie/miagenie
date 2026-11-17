@@ -67,7 +67,7 @@ class StepAgent implements Agent, Conversational, HasTools
      */
     public function tools(): iterable
     {
-        if (! $this->step->web_search) {
+        if (! $this->step->searchesWeb()) {
             return [];
         }
 

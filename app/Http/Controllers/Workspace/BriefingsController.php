@@ -28,7 +28,7 @@ class BriefingsController extends Controller
      */
     public function wizard(): Response
     {
-        $record = Briefing::latest()->first();
+        $record = Briefing::latest('id')->first();
 
         $version = WorkspaceVersion::where('workspace_id', WorkspaceManager::current()->id)
             ->with(['version' => ['briefings' => ['options']]])

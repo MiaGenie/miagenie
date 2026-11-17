@@ -24,7 +24,7 @@ class StepAgentFactory
     public const DEFAULT_TIMEOUT = 300;
 
     /**
-     * Providers the SDK can generate images with, as `ModelProfile::$provider` values. Bedrock is
+     * Drivers the SDK can generate images with, matched against `ModelProfile::driver()`. Bedrock is
      * left out on purpose: it needs aws/aws-sdk-php, which the application does not install.
      *
      * @var list<string>
@@ -32,9 +32,9 @@ class StepAgentFactory
     public const IMAGE_PROVIDERS = ['openai', 'azure', 'gemini', 'xai', 'openrouter'];
 
     /**
-     * Providers whose text models can search the web, as `ModelProfile::$provider` values: the SDK
-     * providers implementing SupportsWebSearch, except Groq, which searches only with its compound
-     * models. prepare() refuses a searching step on any other provider, because the SDK (from
+     * Drivers whose text models can search the web, matched against `ModelProfile::driver()`: the
+     * SDK providers implementing SupportsWebSearch, except Groq, which searches only with its
+     * compound models. prepare() refuses a searching step on any other provider, because the SDK (from
      * laravel/ai 1.1) would silently drop the tool.
      *
      * @var list<string>
@@ -118,7 +118,7 @@ class StepAgentFactory
      */
     protected function ensureCanSearch(RuleStep $step): void
     {
-        if (! $step->web_search || self::supportsWebSearch($step)) {
+        if (! $step->searchesWeb() || self::supportsWebSearch($step)) {
             return;
         }
 
@@ -140,23 +140,23 @@ class StepAgentFactory
     }
 
     /**
-     * Whether the profile's provider can generate images at all.
+     * Whether the profile's provider can generate images at all, judged by its driver.
      */
     public static function supportsImages(ModelProfile|RuleStep $subject): bool
     {
         $profile = $subject instanceof RuleStep ? $subject->modelProfile : $subject;
 
-        return $profile !== null && in_array($profile->provider, self::IMAGE_PROVIDERS, true);
+        return $profile !== null && in_array($profile->driver(), self::IMAGE_PROVIDERS, true);
     }
 
     /**
-     * Whether the profile's provider can search the web.
+     * Whether the profile's provider can search the web, judged by its driver.
      */
     public static function supportsWebSearch(ModelProfile|RuleStep $subject): bool
     {
         $profile = $subject instanceof RuleStep ? $subject->modelProfile : $subject;
 
-        return $profile !== null && in_array($profile->provider, self::WEB_SEARCH_PROVIDERS, true);
+        return $profile !== null && in_array($profile->driver(), self::WEB_SEARCH_PROVIDERS, true);
     }
 
     public function provider(RuleStep $step): Lab|string

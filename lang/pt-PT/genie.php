@@ -241,6 +241,7 @@ return [
     'run_resume' => 'Retomar execução',
     'run_resumed' => 'A execução foi retomada',
     'run_not_resumable' => 'Apenas uma execução de estratégia pode ser retomada',
+    'run_superseded' => 'A estratégia desta execução foi substituída por uma mais recente, por isso não é retomada',
     'run_invocation_id' => 'ID da invocação',
     'run_message_id' => 'ID da mensagem',
     'run_conversation_id' => 'ID da conversa',

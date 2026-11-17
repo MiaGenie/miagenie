@@ -64,6 +64,16 @@ class RuleStep extends Model
         'review_message_system',
     ];
 
+    /**
+     * Whether this step searches the web when it runs: its switch is on and its sub type is one
+     * that may search. The step form refuses the switch on any other sub type, but a version import
+     * copies the column as exported, so the runtime holds the sub type rule too.
+     */
+    public function searchesWeb(): bool
+    {
+        return $this->web_search && ($this->rule_sub_type?->supportsWebSearch() ?? false);
+    }
+
     public function rule(): BelongsTo
     {
         return $this->belongsTo(Rule::class, 'rule_id');

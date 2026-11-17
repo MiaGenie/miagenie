@@ -75,12 +75,18 @@ class AiRunJob implements ShouldQueue
 
         $runner = Runners::for($this->run->rule->rule_type);
 
+        if ($runner->isSuperseded($this->run)) {
+            Log::info('Genie run superseded, not carried on', ['run_id' => $this->run->id]);
+
+            return;
+        }
+
         // A released job comes back here; pick the failed step up again rather than stepping over it.
         if ($this->attempts() > 1) {
             $runner->retryFailed($this->run);
         }
 
-        if ($runner->advance($this->run)) {
+        if ($runner->advance($this->run, $this->job?->uuid())) {
             self::dispatch($this->run->fresh());
 
             return;

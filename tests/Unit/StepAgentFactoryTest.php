@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Ai\StepAgentFactory;
 use App\Enums\ModelTier;
+use App\Enums\RuleSubType;
 use App\Models\ModelProfile;
 use App\Models\RuleStep;
 use Laravel\Ai\Contracts\Providers\SupportsWebSearch;
@@ -65,6 +66,35 @@ class StepAgentFactoryTest extends TestCase
         $this->assertFalse(StepAgentFactory::supportsWebSearch(new RuleStep(['name' => 'Bare'])));
     }
 
+    /**
+     * A profile's provider is a config/ai.php key, and a key may run on another driver: what the
+     * provider can do is the driver's.
+     */
+    public function test_capabilities_follow_the_driver_behind_the_provider_key(): void
+    {
+        config()->set('ai.providers.openai-eu', ['driver' => 'openai', 'key' => 'test']);
+        config()->set('ai.providers.local', ['driver' => 'openai-compatible', 'key' => 'test']);
+
+        $this->assertSame('openai', (new ModelProfile(['provider' => 'openai-eu']))->driver());
+        $this->assertTrue(StepAgentFactory::supportsWebSearch(new ModelProfile(['provider' => 'openai-eu'])));
+        $this->assertTrue(StepAgentFactory::supportsImages(new ModelProfile(['provider' => 'openai-eu'])));
+
+        $this->assertFalse(StepAgentFactory::supportsWebSearch(new ModelProfile(['provider' => 'local'])));
+        $this->assertFalse(StepAgentFactory::supportsImages(new ModelProfile(['provider' => 'local'])));
+
+        config()->set('ai.providers.openai.driver', 'openai-compatible');
+
+        $this->assertFalse(StepAgentFactory::supportsWebSearch(new ModelProfile(['provider' => 'openai'])));
+        $this->assertFalse(StepAgentFactory::supportsImages(new ModelProfile(['provider' => 'openai'])));
+    }
+
+    public function test_a_provider_missing_from_the_config_is_its_own_driver(): void
+    {
+        $this->assertSame('xai', (new ModelProfile(['provider' => 'xai']))->driver());
+        $this->assertSame('unlisted', (new ModelProfile(['provider' => 'unlisted']))->driver());
+        $this->assertNull((new ModelProfile)->driver());
+    }
+
     public function test_bedrock_cannot_generate_images(): void
     {
         $this->assertNotContains('bedrock', StepAgentFactory::IMAGE_PROVIDERS);
@@ -78,7 +108,7 @@ class StepAgentFactoryTest extends TestCase
     public function test_a_searching_step_whose_provider_cannot_search_is_refused(): void
     {
         $step = $this->step(['provider' => 'deepseek', 'model_tier' => ModelTier::DEFAULT]);
-        $step->forceFill(['id' => 12, 'web_search' => true]);
+        $step->forceFill(['id' => 12, 'rule_sub_type' => RuleSubType::BRIEFINGS, 'web_search' => true]);
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Step [12] searches the web, but its profile\'s provider [deepseek] cannot.');
@@ -89,9 +119,17 @@ class StepAgentFactoryTest extends TestCase
     public function test_a_searching_step_on_a_provider_that_can_search_is_prepared(): void
     {
         $step = $this->step(['provider' => 'xai', 'model_tier' => ModelTier::DEFAULT]);
-        $step->forceFill(['web_search' => true]);
+        $step->forceFill(['rule_sub_type' => RuleSubType::CHANNELS, 'web_search' => true]);
 
         $this->assertSame(Lab::xAI, (new StepAgentFactory)->prepare($step));
+    }
+
+    public function test_a_switch_left_on_for_a_sub_type_that_may_not_search_is_prepared_on_any_provider(): void
+    {
+        $step = $this->step(['provider' => 'mistral', 'model_tier' => ModelTier::DEFAULT]);
+        $step->forceFill(['rule_sub_type' => RuleSubType::IDEAS_FORMAT, 'web_search' => true]);
+
+        $this->assertSame(Lab::Mistral, (new StepAgentFactory)->prepare($step));
     }
 
     public function test_a_step_that_does_not_search_is_prepared_on_any_provider(): void
