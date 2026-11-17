@@ -5,7 +5,6 @@ namespace App\Genie\Posts;
 use App\Ai\StepAgentFactory;
 use App\Enums\Modality;
 use App\Genie\Images\ImageContext;
-use App\Genie\Images\ImageOptions;
 use App\Genie\Images\ImageStep;
 use App\Genie\Runs\Runner;
 use App\Genie\Runs\RunPrompt;
@@ -87,14 +86,6 @@ class PostsRunner extends Runner
         ));
 
         return $briefs === [] ? [null] : $briefs;
-    }
-
-    /**
-     * Square is the one ratio every provider in PostFormats accepts.
-     */
-    protected function imageOptions(AiRunStep $runStep): ImageOptions
-    {
-        return new ImageOptions('1:1', 'medium');
     }
 
     protected function imageContext(AiRunStep $runStep, ?string $brief, int $position): ImageContext

@@ -9,12 +9,20 @@ use Tests\TestCase;
 
 class ImageOptionsTest extends TestCase
 {
-    public function test_the_default_is_a_square_medium_image(): void
+    public function test_the_default_leaves_the_size_to_the_prompt_at_medium_quality(): void
     {
         $options = ImageOptions::default();
 
-        $this->assertSame('1:1', $options->size);
+        $this->assertNull($options->size);
         $this->assertSame('medium', $options->quality);
+    }
+
+    public function test_apply_without_a_size_sends_none_so_the_prompt_decides_the_ratio(): void
+    {
+        $generation = ImageOptions::default()->apply(new PendingImageGeneration('A tall 9:16 poster of a chair'));
+
+        $this->assertNull($generation->size);
+        $this->assertSame('medium', $generation->quality);
     }
 
     public function test_an_unknown_size_is_refused(): void
