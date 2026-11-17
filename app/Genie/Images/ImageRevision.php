@@ -69,6 +69,8 @@ class ImageRevision
 
         $started = microtime(true);
 
+        $response = null;
+
         try {
             $response = $this->generator->generate($prompt, $options);
 
@@ -84,12 +86,12 @@ class ImageRevision
         } catch (Throwable $exception) {
             $this->store->markRevisionFailed($image, $exception->getMessage());
 
-            $this->log->record($recordOn, $prompt, null, (int) round(microtime(true) - $started), $exception->getMessage(), $mode->value, $image);
+            $this->log->record($recordOn, $prompt, null, (int) round(microtime(true) - $started), $exception->getMessage(), $mode->value, $image, $response?->usage);
 
             throw $exception;
         }
 
-        $this->log->record($recordOn, $prompt, $revised, (int) round(microtime(true) - $started), null, $mode->value, $image);
+        $this->log->record($recordOn, $prompt, $revised, (int) round(microtime(true) - $started), null, $mode->value, $image, $response->usage);
 
         return $revised;
     }

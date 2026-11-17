@@ -273,6 +273,7 @@ return [
     'run_prompt' => 'Prompt',
     'run_answer' => 'Answer',
     'run_token_usage' => 'Token Usage',
+    'run_tokens' => 'Tokens (in / out)',
     'rule_run_type_analysis' => 'Analysis',
     'rule_run_type_channels' => 'Channels',
     'rule_run_type_schedule' => 'Schedule',

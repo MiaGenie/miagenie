@@ -43,6 +43,8 @@ class LogsControllerTest extends TestCase
             $table->json('request')->nullable();
             $table->json('response')->nullable();
             $table->smallInteger('duration')->nullable();
+            $table->unsignedInteger('input_tokens')->nullable();
+            $table->unsignedInteger('output_tokens')->nullable();
             $table->timestamps();
         });
 
@@ -100,6 +102,18 @@ class LogsControllerTest extends TestCase
         $this->assertSame('2026-11-16 10:00:00', $record['created_at']);
     }
 
+    public function test_the_list_carries_the_tokens_of_each_call(): void
+    {
+        $this->log(1, inputTokens: 2280, outputTokens: 829);
+        $this->log(2);
+
+        $props = $this->props($this->controller->index($this->request('/genie/admin/logs')), 'Genie/Admin/Logs/Index');
+
+        [$uncounted, $counted] = $props['records']['data'];
+        $this->assertSame([2280, 829], [$counted['input_tokens'], $counted['output_tokens']]);
+        $this->assertSame([null, null], [$uncounted['input_tokens'], $uncounted['output_tokens']]);
+    }
+
     public function test_the_list_names_actions_from_the_sync_actions_not_the_sync_statuses(): void
     {
         $this->log(1);
@@ -144,7 +158,7 @@ class LogsControllerTest extends TestCase
     public function test_the_detail_page_shows_the_requested_entry_with_its_payloads(): void
     {
         $this->log(1);
-        $this->log(2, request: ['prompt' => 'Draw a cat'], response: ['file' => 'abc'], duration: 42);
+        $this->log(2, request: ['prompt' => 'Draw a cat'], response: ['file' => 'abc'], duration: 42, inputTokens: 120, outputTokens: 4000);
 
         $props = $this->props($this->controller->view($this->request('/genie/admin/logs/2', log: 2)), 'Genie/Admin/Logs/View');
 
@@ -152,6 +166,8 @@ class LogsControllerTest extends TestCase
         $this->assertSame(['prompt' => 'Draw a cat'], $props['log']['request']);
         $this->assertSame(['file' => 'abc'], $props['log']['response']);
         $this->assertSame(42, $props['log']['duration']);
+        $this->assertSame(120, $props['log']['input_tokens']);
+        $this->assertSame(4000, $props['log']['output_tokens']);
         $this->assertSame('RUN_RESPONSE', $props['logType']);
         $this->assertSame('CREATE', $props['logAction']);
     }
@@ -176,6 +192,8 @@ class LogsControllerTest extends TestCase
         ?array $response = null,
         int $duration = 10,
         string $createdAt = '2026-11-16 10:00:00',
+        ?int $inputTokens = null,
+        ?int $outputTokens = null,
     ): void {
         DB::table('genie_logs')->insert([
             'id' => $id,
@@ -186,6 +204,8 @@ class LogsControllerTest extends TestCase
             'request' => $request === null ? null : json_encode($request),
             'response' => $response === null ? null : json_encode($response),
             'duration' => $duration,
+            'input_tokens' => $inputTokens,
+            'output_tokens' => $outputTokens,
             'created_at' => $createdAt,
             'updated_at' => $createdAt,
         ]);

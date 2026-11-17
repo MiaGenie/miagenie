@@ -19,6 +19,7 @@ use Inovector\Mixpost\Facades\WorkspaceManager;
 use Laravel\Ai\Exceptions\InsufficientCreditsException;
 use Laravel\Ai\Exceptions\ProviderOverloadedException;
 use Laravel\Ai\Exceptions\RateLimitedException;
+use Laravel\Ai\Responses\Data\Usage;
 use RuntimeException;
 use Tests\TestCase;
 use Throwable;
@@ -118,7 +119,7 @@ class RunnerFailureTest extends TestCase
                 return $this->fail($runStep, $run, null, $exception);
             }
 
-            protected function log(?RunPrompt $prompt, AiRunStep $runStep, array $response, ?array $request = null): void {}
+            protected function log(?RunPrompt $prompt, AiRunStep $runStep, array $response, ?array $request = null, ?Usage $usage = null): void {}
         };
 
         $runStep = AiRunStep::create([

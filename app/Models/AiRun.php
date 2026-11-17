@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Enums\RunStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Inovector\Mixpost\Concerns\Model\HasUuid;
 use Inovector\Mixpost\Concerns\OwnedByWorkspace;
 
@@ -40,6 +42,8 @@ class AiRun extends Model
         'parameters' => 'array',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
+        'input_tokens' => 'integer',
+        'output_tokens' => 'integer',
     ];
 
     public function rule(): BelongsTo
@@ -60,6 +64,26 @@ class AiRun extends Model
     public function steps(): HasMany
     {
         return $this->hasMany(AiRunStep::class, 'run_id')->oldest('position');
+    }
+
+    /**
+     * Every model call made for the run, through the steps it was logged on.
+     */
+    public function logs(): HasManyThrough
+    {
+        return $this->hasManyThrough(Log::class, AiRunStep::class, 'run_id', 'run_step_id');
+    }
+
+    /**
+     * Add the tokens every call of the run consumed, as `input_tokens` and `output_tokens`:
+     * retries, caption regenerations and image fixes / rethinks included, since each is logged on
+     * one of the run's steps. Null when no entry of the run knows its counts.
+     */
+    public function scopeWithTokenCounts(Builder $query): Builder
+    {
+        return $query
+            ->withSum('logs as input_tokens', 'input_tokens')
+            ->withSum('logs as output_tokens', 'output_tokens');
     }
 
     /**

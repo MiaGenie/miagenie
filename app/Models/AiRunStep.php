@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\Modality;
 use App\Enums\RunResponseError;
 use App\Enums\RunStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -15,9 +16,10 @@ use Inovector\Mixpost\Concerns\Model\HasUuid;
 /**
  * One turn of a run.
  *
- * The transcript, token usage and provider meta are not duplicated here — they belong to the
- * conversation message this step points at. What is kept is the domain result: the structured
- * `output` that gets mapped onto strategy fields, and how the turn ended.
+ * The transcript and provider meta are not duplicated here — they belong to the conversation
+ * message this step points at — and neither are token counts, which live on the step's log
+ * entries, one per model call (see withTokenCounts()). What is kept is the domain result: the
+ * structured `output` that gets mapped onto strategy fields, and how the turn ended.
  */
 class AiRunStep extends Model
 {
@@ -45,6 +47,8 @@ class AiRunStep extends Model
         'status' => RunStatus::class,
         'error' => RunResponseError::class,
         'output' => 'array',
+        'input_tokens' => 'integer',
+        'output_tokens' => 'integer',
     ];
 
     public function run(): BelongsTo
@@ -72,6 +76,18 @@ class AiRunStep extends Model
     public function logs(): HasMany
     {
         return $this->hasMany(Log::class, 'run_step_id')->latest('id');
+    }
+
+    /**
+     * Add the tokens every call of the step consumed, as `input_tokens` and `output_tokens`:
+     * retries, regenerations and slot revisions logged on the step included. Null when no entry
+     * of the step knows its counts.
+     */
+    public function scopeWithTokenCounts(Builder $query): Builder
+    {
+        return $query
+            ->withSum('logs as input_tokens', 'input_tokens')
+            ->withSum('logs as output_tokens', 'output_tokens');
     }
 
     public function review(): HasOne

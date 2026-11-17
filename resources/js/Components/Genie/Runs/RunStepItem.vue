@@ -5,6 +5,7 @@ import {usePage} from "@inertiajs/vue3";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import RunStepItemAction from "@/Components/Genie/Runs/RunStepItemAction.vue";
+import TokenCount from "@/Components/Genie/Usage/TokenCount.vue";
 
 const {t: $t} = useI18n();
 
@@ -59,6 +60,10 @@ const itemStatus = () => {
 
         <TableCell>
             {{ item.duration !== null ? `${item.duration}s` : '—' }}
+        </TableCell>
+
+        <TableCell>
+            <TokenCount :input="item.input_tokens" :output="item.output_tokens"/>
         </TableCell>
 
         <TableCell>

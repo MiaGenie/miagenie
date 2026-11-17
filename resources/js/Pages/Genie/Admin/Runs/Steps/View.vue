@@ -14,6 +14,7 @@ import X from "@/Icons/X.vue";
 import Trash from "@/Icons/Trash.vue";
 import RunStepImages from "@/Components/Genie/Runs/RunStepImages.vue";
 import RunStepLogs from "@/Components/Genie/Runs/RunStepLogs.vue";
+import TokenCount from "@/Components/Genie/Usage/TokenCount.vue";
 
 defineOptions({layout: AdminLayout});
 
@@ -183,6 +184,13 @@ const deleteStep = () => {
                 </div>
                 <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
                     {{ runStep.duration !== null ? `${runStep.duration}s` : blank }}
+                </div>
+
+                <div class="pb-2 pl-2 pt-5">
+                    {{ $t('genie.run_tokens') }}
+                </div>
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
+                    <TokenCount :input="runStep.input_tokens" :output="runStep.output_tokens" :blank="blank"/>
                 </div>
 
                 <div class="pb-2 pl-2 pt-5">

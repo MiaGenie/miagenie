@@ -24,6 +24,7 @@ class RunsController extends Controller
     public function index(Request $request): AnonymousResourceCollection|Response
     {
         $runsRecords = AiRunQuery::apply($request)
+            ->withTokenCounts()
             ->latest()
             ->paginate(100)
             ->onEachSide(1)

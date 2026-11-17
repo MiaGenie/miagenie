@@ -5,6 +5,7 @@ import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import Badge from "@/Components/DataDisplay/Badge.vue";
 import LogItemAction from "@/Components/Genie/Logs/LogItemAction.vue";
+import TokenCount from "@/Components/Genie/Usage/TokenCount.vue";
 
 const { t: $t } = useI18n();
 
@@ -44,6 +45,7 @@ const summary = (log) => {
                 <TableCell component="th" scope="col">{{ $t("general.created_at") }}</TableCell>
                 <TableCell component="th" scope="col">{{ $t("genie.step_model") }}</TableCell>
                 <TableCell component="th" scope="col">{{ $t("genie.run_step_duration") }}</TableCell>
+                <TableCell component="th" scope="col">{{ $t("genie.run_tokens") }}</TableCell>
                 <TableCell component="th" scope="col">{{ $t("genie.run_step_call") }}</TableCell>
                 <TableCell component="th" scope="col" class="w-10" />
             </TableRow>
@@ -57,6 +59,9 @@ const summary = (log) => {
                     <span v-if="log.request?.provider" class="text-gray-500">({{ log.request.provider }})</span>
                 </TableCell>
                 <TableCell class="text-sm">{{ log.duration ?? blank }}s</TableCell>
+                <TableCell class="text-sm">
+                    <TokenCount :input="log.input_tokens" :output="log.output_tokens" :blank="blank" />
+                </TableCell>
                 <TableCell class="text-sm break-all">
                     <Badge v-if="log.response?.error" variant="error" class="mr-xs">{{ $t("genie.run_step_error") }}</Badge>
                     {{ log.response?.error ?? summary(log) }}

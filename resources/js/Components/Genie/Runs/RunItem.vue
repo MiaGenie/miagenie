@@ -5,6 +5,7 @@ import {usePage} from "@inertiajs/vue3";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import RunItemAction from "@/Components/Genie/Runs/RunItemAction.vue";
+import TokenCount from "@/Components/Genie/Usage/TokenCount.vue";
 
 const {t: $t} = useI18n();
 
@@ -55,6 +56,10 @@ const status = () => find(runStatus, ['value', Number(props.item.status)])?.name
 
         <TableCell>
             {{ item.created_at }}
+        </TableCell>
+
+        <TableCell>
+            <TokenCount :input="item.input_tokens" :output="item.output_tokens"/>
         </TableCell>
 
         <TableCell>

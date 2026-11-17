@@ -24,6 +24,7 @@ use Laravel\Ai\Prompts\ImagePrompt as SdkImagePrompt;
 use Laravel\Ai\Responses\Data\GeneratedImage;
 use Laravel\Ai\Responses\Data\ImageUsage;
 use Laravel\Ai\Responses\Data\Meta;
+use Laravel\Ai\Responses\Data\Usage;
 use Laravel\Ai\Responses\ImageResponse;
 use RuntimeException;
 use Tests\TestCase;
@@ -67,7 +68,7 @@ class ImageStepTest extends TestCase
         {
             public array $records = [];
 
-            public function record(AiRunStep $runStep, ImagePrompt $prompt, ?AiRunStepFile $file, int $duration, ?string $error = null, ?string $mode = null, ?AiRunStepFile $parent = null): void
+            public function record(AiRunStep $runStep, ImagePrompt $prompt, ?AiRunStepFile $file, int $duration, ?string $error = null, ?string $mode = null, ?AiRunStepFile $parent = null, ?Usage $usage = null): void
             {
                 $this->records[] = [
                     'run_step' => $runStep->id,
@@ -76,6 +77,7 @@ class ImageStepTest extends TestCase
                     'error' => $error,
                     'mode' => $mode,
                     'parent' => $parent?->id,
+                    'tokens' => $usage ? [$usage->inputTokens, $usage->outputTokens] : null,
                 ];
             }
         };
@@ -200,6 +202,73 @@ class ImageStepTest extends TestCase
         $this->assertStringContainsString('returned no image', $log->records[0]['error']);
     }
 
+    public function test_every_call_is_logged_with_the_tokens_it_consumed(): void
+    {
+        Image::fake([
+            $this->imageResponse(new ImageUsage(inputTokens: 120, outputTokens: 4000)),
+            $this->imageResponse(new ImageUsage(inputTokens: 90, outputTokens: 3000)),
+        ]);
+
+        $log = $this->callLog();
+
+        $this->imageStep($this->store(), $log)->run($this->runStep(), new AiRun, ['Cover', 'Closing'], 'en-GB', ImageOptions::default(),
+            fn (?string $brief, int $position) => new ImageContext($brief, null, $position));
+
+        $this->assertSame([[120, 4000], [90, 3000]], array_column($log->records, 'tokens'));
+    }
+
+    public function test_an_image_that_could_not_be_stored_is_logged_with_the_tokens_already_paid(): void
+    {
+        Image::fake([$this->imageResponse(new ImageUsage(inputTokens: 120, outputTokens: 4000))]);
+
+        $store = new class([]) extends ImageStore
+        {
+            public function __construct(public array $slots) {}
+
+            public function current(AiRunStep $runStep, int $position): ?AiRunStepFile
+            {
+                return null;
+            }
+
+            public function persist(AiRunStep $runStep, AiRun $run, int $position, ImagePrompt $prompt, GeneratedImage $image, ?AiRunStepFile $parent = null, ?string $mode = null): AiRunStepFile
+            {
+                throw new RuntimeException('Disk full.');
+            }
+        };
+
+        $log = $this->callLog();
+
+        try {
+            $this->imageStep($store, $log)->run($this->runStep(), new AiRun, ['Cover'], 'en-GB', ImageOptions::default(),
+                fn (?string $brief, int $position) => new ImageContext($brief, null, $position));
+            $this->fail('The failed write was swallowed.');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('Disk full.', $exception->getMessage());
+        }
+
+        $this->assertCount(1, $log->records);
+        $this->assertSame('Disk full.', $log->records[0]['error']);
+        $this->assertSame([120, 4000], $log->records[0]['tokens']);
+    }
+
+    public function test_a_call_that_never_answered_is_logged_without_tokens(): void
+    {
+        $log = $this->callLog();
+
+        $generator = $this->createMock(ImageGenerator::class);
+        $generator->method('generate')->willThrowException(new RuntimeException('Provider down.'));
+
+        try {
+            (new ImageStep($generator, $this->store(), $log))->run($this->runStep(), new AiRun, ['Cover'], 'en-GB', ImageOptions::default(),
+                fn (?string $brief, int $position) => new ImageContext($brief, null, $position));
+            $this->fail('The failed call was swallowed.');
+        } catch (RuntimeException) {
+        }
+
+        $this->assertSame('Provider down.', $log->records[0]['error']);
+        $this->assertNull($log->records[0]['tokens']);
+    }
+
     public function test_the_context_callable_decides_the_placeholders(): void
     {
         Image::fake();
@@ -232,5 +301,14 @@ class ImageStepTest extends TestCase
         $this->assertSame('image', $described['modality']);
         $this->assertSame('Slide 2: B', $described['prompt']);
         $this->assertSame(['fresh-1', 'fresh-2'], $described['files']);
+    }
+
+    protected function imageResponse(ImageUsage $usage): ImageResponse
+    {
+        return new ImageResponse(
+            new Collection([new GeneratedImage(base64_encode('png-bytes'), 'image/png')]),
+            $usage,
+            new Meta('openai', 'gpt-image-2'),
+        );
     }
 }

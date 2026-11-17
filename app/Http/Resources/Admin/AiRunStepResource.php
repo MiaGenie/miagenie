@@ -12,6 +12,9 @@ class AiRunStepResource extends JsonResource
     public static $wrap = null;
 
     /**
+     * The token counts are included only when the record was loaded through
+     * AiRunStep::withTokenCounts().
+     *
      * @return array<string, mixed>
      */
     public function toArray($request): array
@@ -29,6 +32,8 @@ class AiRunStepResource extends JsonResource
             'invocation_id' => $this->invocation_id,
             'message_id' => $this->message_id,
             'duration' => $this->duration,
+            'input_tokens' => $this->whenHas('input_tokens'),
+            'output_tokens' => $this->whenHas('output_tokens'),
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
         ];

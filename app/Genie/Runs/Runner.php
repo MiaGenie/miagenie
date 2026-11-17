@@ -16,7 +16,9 @@ use App\Models\AiRun;
 use App\Models\AiRunStep;
 use App\Models\Log as RunLog;
 use App\Models\RuleStep;
+use App\Models\TokenUsage;
 use Illuminate\Support\Facades\Log;
+use Laravel\Ai\Responses\Data\Usage;
 use Laravel\Ai\Responses\StructuredAgentResponse;
 use Throwable;
 
@@ -277,6 +279,10 @@ abstract class Runner
 
         $prompt = null;
 
+        // An answered call is paid for: its usage goes on the success entry, or on the failure
+        // entry when the step fails before that is written — never on both.
+        $unloggedUsage = null;
+
         try {
             $agent = $this->agent($runStep, $locale);
 
@@ -291,6 +297,8 @@ abstract class Runner
                 provider: $this->agents->provider($runStep->step),
                 timeout: $this->agents->timeout($runStep->step),
             );
+
+            $unloggedUsage = $response->usage;
 
             $this->pinConversation($run, $response->conversationId);
 
@@ -328,13 +336,15 @@ abstract class Runner
                 'message_id' => $runStep->message_id,
                 'structured' => $structured,
                 ...($citations ? ['citations' => $citations] : []),
-            ]);
+            ], usage: $unloggedUsage);
+
+            $unloggedUsage = null;
 
             $this->state->completed($runStep);
 
             return $runStep->fresh()->status === RunStatus::COMPLETE;
         } catch (Throwable $exception) {
-            return $this->fail($runStep, $run, $prompt, $exception);
+            return $this->fail($runStep, $run, $prompt, $exception, usage: $unloggedUsage);
         }
     }
 
@@ -379,8 +389,9 @@ abstract class Runner
      * Record a failed step and stop the run. Always returns false so a caller can return it.
      *
      * @param  array<string, mixed>|null  $request  What was sent, when there is no RunPrompt to describe it.
+     * @param  Usage|null  $usage  What the call cost, when it answered before the step failed.
      */
-    protected function fail(AiRunStep $runStep, AiRun $run, ?RunPrompt $prompt, Throwable $exception, ?array $request = null): bool
+    protected function fail(AiRunStep $runStep, AiRun $run, ?RunPrompt $prompt, Throwable $exception, ?array $request = null, ?Usage $usage = null): bool
     {
         Log::error('Genie '.$this->label().' step failed', [
             'run_id' => $run->id,
@@ -391,7 +402,7 @@ abstract class Runner
 
         $runStep->update(['error' => StepResponse::errorCode($exception)]);
 
-        $this->log($prompt, $runStep, ['error' => $exception->getMessage()], $request);
+        $this->log($prompt, $runStep, ['error' => $exception->getMessage()], $request, $usage);
 
         $this->state->failed($runStep, $exception->getMessage());
 
@@ -417,12 +428,15 @@ abstract class Runner
     }
 
     /**
-     * Record the turn in genie_logs.
+     * Record the turn in genie_logs, with the tokens the call consumed when it answered.
+     *
+     * The counts are the workspace ledger's (TokenUsage::countsFrom()), so a step's and a run's
+     * sums of their entries agree with what the workspace was charged for them.
      *
      * @param  array<string, mixed>  $response
      * @param  array<string, mixed>|null  $request  Overrides the prompt's own description, for a step without one.
      */
-    protected function log(?RunPrompt $prompt, AiRunStep $runStep, array $response, ?array $request = null): void
+    protected function log(?RunPrompt $prompt, AiRunStep $runStep, array $response, ?array $request = null, ?Usage $usage = null): void
     {
         RunLog::create([
             'type' => GenieType::RUN_RESPONSE,
@@ -431,6 +445,7 @@ abstract class Runner
             'request' => $request ?? $prompt?->describe() ?? ['step_id' => $runStep->step_id],
             'response' => $response,
             'duration' => $runStep->duration ?? 0,
+            ...($usage ? TokenUsage::countsFrom($usage) : []),
         ]);
     }
 

@@ -247,6 +247,7 @@ return [
     'run_prompt' => 'Pedido',
     'run_answer' => 'Resposta',
     'run_token_usage' => 'Consumo de tokens',
+    'run_tokens' => 'Tokens (entrada / saída)',
     'rule_run_type_analysis' => 'Análise',
     'rule_run_type_channels' => 'Canais',
     'rule_run_type_schedule' => 'Agendamento',

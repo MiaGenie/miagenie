@@ -29,7 +29,7 @@ class LogsController extends Controller
             : null;
 
         $logRecords = Log::query()
-            ->select(['id', 'uuid', 'type', 'action', 'run_step_id', 'duration', 'created_at', 'updated_at'])
+            ->select(['id', 'uuid', 'type', 'action', 'run_step_id', 'duration', 'input_tokens', 'output_tokens', 'created_at', 'updated_at'])
             ->when($runStep, fn ($query) => $query->where('run_step_id', $runStep->id))
             ->latest('id')
             ->paginate(100)

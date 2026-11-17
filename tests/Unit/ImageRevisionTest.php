@@ -27,6 +27,7 @@ use Laravel\Ai\Prompts\ImagePrompt as SdkImagePrompt;
 use Laravel\Ai\Responses\Data\GeneratedImage;
 use Laravel\Ai\Responses\Data\ImageUsage;
 use Laravel\Ai\Responses\Data\Meta;
+use Laravel\Ai\Responses\Data\Usage;
 use Laravel\Ai\Responses\ImageResponse;
 use RuntimeException;
 use Tests\TestCase;
@@ -86,7 +87,7 @@ class ImageRevisionTest extends TestCase
         {
             public array $records = [];
 
-            public function record(AiRunStep $runStep, ImagePrompt $prompt, ?AiRunStepFile $file, int $duration, ?string $error = null, ?string $mode = null, ?AiRunStepFile $parent = null): void
+            public function record(AiRunStep $runStep, ImagePrompt $prompt, ?AiRunStepFile $file, int $duration, ?string $error = null, ?string $mode = null, ?AiRunStepFile $parent = null, ?Usage $usage = null): void
             {
                 $this->records[] = [
                     'run_step' => $runStep->id,
@@ -95,6 +96,7 @@ class ImageRevisionTest extends TestCase
                     'error' => $error,
                     'mode' => $mode,
                     'parent' => $parent?->id,
+                    'tokens' => $usage ? [$usage->inputTokens, $usage->outputTokens] : null,
                 ];
             }
         };
@@ -184,6 +186,21 @@ class ImageRevisionTest extends TestCase
         $this->assertSame('fix', $log->records[0]['mode']);
         $this->assertSame(40, $log->records[0]['parent']);
         $this->assertNull($log->records[0]['error']);
+    }
+
+    public function test_a_revision_is_logged_with_the_tokens_it_consumed(): void
+    {
+        Image::fake([new ImageResponse(
+            new Collection([new GeneratedImage(base64_encode('png-bytes'), 'image/png')]),
+            new ImageUsage(inputTokens: 1500, outputTokens: 4000, imageInputTokens: 1400),
+            new Meta('openai', 'gpt-image-2'),
+        )]);
+
+        $log = $this->callLog();
+
+        $this->revision($this->store(), $log)->revise($this->image(), new AiRun, ImageRevisionMode::FIX, new ImageContext('a red chair', 'bluer', 2), 'en-GB');
+
+        $this->assertSame([1500, 4000], $log->records[0]['tokens']);
     }
 
     public function test_the_call_is_logged_on_the_step_it_is_told_to_while_the_file_stays_on_the_slot_step(): void

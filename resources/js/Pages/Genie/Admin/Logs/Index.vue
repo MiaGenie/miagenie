@@ -107,6 +107,13 @@ const props = defineProps({
                                 component="th"
                                 scope="col"
                             >
+                                {{ $t('genie.run_tokens') }}
+                            </TableCell>
+
+                            <TableCell
+                                component="th"
+                                scope="col"
+                            >
                                 {{ $t('genie.created_at') }}
                             </TableCell>
 
