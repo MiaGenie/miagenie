@@ -93,7 +93,7 @@ class RevisePostImageJob implements ShouldQueue
         $started = microtime(true);
 
         try {
-            $revised = $revision->revise($this->image, $run, $this->mode, $context, $locale, new ImageOptions('1:1', 'medium'), $this->template, $revisionStep);
+            $revised = $revision->revise($this->image, $run, $this->mode, $context, $locale, ImageOptions::default(), $this->template, $revisionStep);
         } catch (Throwable $exception) {
             $revisionStep->update([
                 'status' => RunStatus::ERROR,
