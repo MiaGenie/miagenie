@@ -20,9 +20,11 @@ class LogResource extends JsonResource
             'type' => $this->type,
             'action' => $this->action,
             'run_step_id' => $this->run_step_id,
-            'request' => $this->request,
-            'response' => $this->response,
+            'request' => $this->whenHas('request'),
+            'response' => $this->whenHas('response'),
             'duration' => $this->duration,
+            'input_tokens' => $this->input_tokens,
+            'output_tokens' => $this->output_tokens,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at,
         ];

@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\MixpostEnterprise;
 
 use App\Http\Resources\Mixpost\DashboardPostResource;
+use App\Models\TokenUsage;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Arr;
 use Inertia\Inertia;
 use Inertia\Response;
 use Inovector\Mixpost\Enums\PostStatus;
+use Inovector\Mixpost\Facades\WorkspaceManager;
 use Inovector\Mixpost\Http\Base\Resources\AccountResource;
 use Inovector\Mixpost\Models\Account;
 use Inovector\Mixpost\Models\Post;
@@ -39,14 +41,15 @@ class DashboardController extends Controller
             'accounts' => AccountResource::collection(Account::oldest()->get())->resolve(),
             'posts_pending_review' => DashboardPostResource::collection($postsPending)->additional([
                 'filter' => [
-                    'accounts' => Arr::map($request->query('accounts', []), 'intval')
-                ]
+                    'accounts' => Arr::map($request->query('accounts', []), 'intval'),
+                ],
             ]),
             'posts_scheduled' => DashboardPostResource::collection($postsScheduled)->additional([
                 'filter' => [
-                    'accounts' => Arr::map($request->query('accounts', []), 'intval')
-                ]
+                    'accounts' => Arr::map($request->query('accounts', []), 'intval'),
+                ],
             ]),
+            'token_usage' => TokenUsage::totalsFor(WorkspaceManager::current()),
         ]);
     }
 }

@@ -24,6 +24,7 @@ class RunsController extends Controller
     public function index(Request $request): AnonymousResourceCollection|Response
     {
         $runsRecords = AiRunQuery::apply($request)
+            ->withTokenCounts()
             ->latest()
             ->paginate(100)
             ->onEachSide(1)
@@ -59,7 +60,13 @@ class RunsController extends Controller
             return redirect()->back()->with('error', __('genie.run_not_resumable'));
         }
 
-        Runners::for($type)->retryFailed($run);
+        $runner = Runners::for($type);
+
+        if ($runner->isSuperseded($run)) {
+            return redirect()->back()->with('error', __('genie.run_superseded'));
+        }
+
+        $runner->retryFailed($run);
 
         AiRunJob::dispatch($run->fresh());
 

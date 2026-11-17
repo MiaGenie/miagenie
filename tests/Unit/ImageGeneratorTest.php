@@ -17,8 +17,8 @@ use Laravel\Ai\Enums\Lab;
 use Laravel\Ai\Files\StoredImage;
 use Laravel\Ai\Image;
 use Laravel\Ai\Prompts\ImagePrompt as SdkImagePrompt;
+use Laravel\Ai\Responses\Data\ImageUsage;
 use Laravel\Ai\Responses\Data\Meta;
-use Laravel\Ai\Responses\Data\Usage;
 use Laravel\Ai\Responses\ImageResponse;
 use RuntimeException;
 use Tests\TestCase;
@@ -92,7 +92,7 @@ class ImageGeneratorTest extends TestCase
 
     public function test_a_response_without_images_is_refused(): void
     {
-        Image::fake([new ImageResponse(new Collection, new Usage, new Meta('openai', 'gpt-image-2'))]);
+        Image::fake([new ImageResponse(new Collection, new ImageUsage, new Meta('openai', 'gpt-image-2'))]);
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('returned no image');

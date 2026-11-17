@@ -52,6 +52,20 @@ class ModelProfile extends Model
     }
 
     /**
+     * The SDK driver behind the provider. `provider` is a config/ai.php key, and a key may name
+     * another driver than itself (an `openai-eu` key on the `openai` driver), so what a provider
+     * can do is decided by this, never by the key.
+     */
+    public function driver(): ?string
+    {
+        if (blank($this->provider)) {
+            return null;
+        }
+
+        return config("ai.providers.{$this->provider}.driver") ?? $this->provider;
+    }
+
+    /**
      * The model this profile names outright, or null when the SDK resolves it from the tier.
      */
     public function explicitModel(): ?string

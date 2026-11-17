@@ -7,8 +7,10 @@ use App\Models\RuleStep;
 use Laravel\Ai\Concerns\RemembersConversations;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\Conversational;
+use Laravel\Ai\Contracts\HasTools;
 use Laravel\Ai\Contracts\Providers\TextProvider;
 use Laravel\Ai\Promptable;
+use Laravel\Ai\Providers\Tools\WebSearch;
 use Stringable;
 
 /**
@@ -20,11 +22,13 @@ use Stringable;
  * to the provider default, so there is nothing else to map.
  *
  * Conversational + RemembersConversations is what carries a run's earlier steps into the prompt.
- * GeneratesText::gatherMiddlewareFor() looks for the trait with class_uses_recursive() and appends
- * the RememberConversation middleware itself, so no registration is needed; the caller only has to
- * say which conversation the step belongs to.
+ * GeneratesText::gatherMiddlewareFor() appends the RememberConversation middleware itself when
+ * RememberConversation::appliesTo() finds the trait, so no registration is needed; the caller only
+ * has to say which conversation the step belongs to.
+ *
+ * HasTools carries the step's web search, when it asks for one (see tools()).
  */
-class StepAgent implements Agent, Conversational
+class StepAgent implements Agent, Conversational, HasTools
 {
     use Promptable;
     use RemembersConversations;
@@ -48,6 +52,26 @@ class StepAgent implements Agent, Conversational
     public function instructions(): Stringable|string
     {
         return (string) $this->step->getTranslation('instructions', $this->locale);
+    }
+
+    /**
+     * A web search when the step asks for one, otherwise nothing.
+     *
+     * WebSearch is a provider tool: the provider runs the searches inside the one call and only
+     * the answer comes back, so the run loop has nothing to execute. The conversation row keeps
+     * the provider's raw search calls and results (`steps[].provider_tool_calls`, since
+     * laravel/ai 1.0), but they are not replayed into later turns: a later step sees the findings
+     * only as far as this step put them in its output.
+     *
+     * @return list<WebSearch>
+     */
+    public function tools(): iterable
+    {
+        if (! $this->step->searchesWeb()) {
+            return [];
+        }
+
+        return [new WebSearch($this->step->web_search_max, $this->step->web_search_domains ?? [])];
     }
 
     public function profile(): ?ModelProfile

@@ -14,7 +14,9 @@ class StrategiesController extends Controller
 {
     public function approve(ApproveStrategy $approveStrategy): RedirectResponse
     {
-        $approveStrategy->handle();
+        if (! $approveStrategy->handle()) {
+            return redirect()->back()->with('error', __('genie.strategy_not_approvable'));
+        }
 
         return redirect()->back()->with('success', __('genie.strategy_approved'));
     }

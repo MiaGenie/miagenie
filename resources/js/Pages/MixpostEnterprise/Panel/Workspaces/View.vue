@@ -1,5 +1,6 @@
 <script setup>
 import { inject } from "vue";
+import { useI18n } from "vue-i18n";
 import { Head, router } from "@inertiajs/vue3";
 import {
     ACCESS_STATUS_SUBSCRIPTION,
@@ -15,9 +16,12 @@ import WorkspaceSubscription from "@/MixpostEnterprise/Components/Workspace/Work
 import Indicators from "@/MixpostEnterprise/Components/Workspace/Indicators.vue";
 import Actions from "@/MixpostEnterprise/Components/Workspace/Actions.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
+import SecondaryButton from "@/Components/Button/SecondaryButton.vue";
 import PaymentDetails from "@/MixpostEnterprise/Components/Subscription/PaymentDetails.vue";
 import ClipboardCard from "@/Components/Util/ClipboardCard.vue";
 import EnterpriseLayout from "@/Layouts/MixpostEnterprise/Panel.vue";
+import Refresh from "@/Icons/Refresh.vue";
+import TokenUsage from "@/Components/Genie/Usage/TokenUsage.vue";
 
 defineOptions({ layout: EnterpriseLayout });
 
@@ -42,7 +46,61 @@ const props = defineProps({
         type: Array,
         required: true,
     },
+    strategy: {
+        type: Object,
+        default: null,
+    },
+    token_usage: {
+        type: Object,
+        default: null,
+    },
 });
+
+const { t: $t } = useI18n();
+
+const confirmation = inject("confirmation");
+
+/**
+ * Regeneration never generates anything itself: it leaves the customer's strategy page offering
+ * "Create strategy" again, after a new or cloned briefing when the mode asks for one.
+ */
+const regenerationModes = [
+    { mode: "strategy", label: "genie.regenerate_strategy", confirm: "genie.regenerate_strategy_confirm" },
+    { mode: "new_briefing", label: "genie.regenerate_strategy_new_briefing", confirm: "genie.regenerate_strategy_new_briefing_confirm" },
+    { mode: "cloned_briefing", label: "genie.regenerate_strategy_cloned_briefing", confirm: "genie.regenerate_strategy_cloned_briefing_confirm" },
+];
+
+const isRegenerationAvailable = (mode) => {
+    if (!props.strategy || props.strategy.state === "generating") {
+        return false;
+    }
+
+    return mode !== "cloned_briefing" || props.strategy.has_briefing;
+};
+
+const regenerateStrategy = ({ mode, label, confirm }) => {
+    confirmation()
+        .title($t(label))
+        .description($t(confirm) + "<br><br>" + $t("genie.regenerate_strategy_desc"))
+        .btnConfirmName($t(label))
+        .onConfirm((dialog) => {
+            dialog.isLoading(true);
+
+            router.post(
+                route(`${routePrefix}.workspaces.regenerate_strategy`, {
+                    workspace: props.workspace.uuid,
+                }),
+                { mode },
+                {
+                    preserveScroll: true,
+                    onFinish() {
+                        dialog.reset();
+                    },
+                },
+            );
+        })
+        .show();
+};
 
 const redirectToPortal = () => {
     router.put(
@@ -65,6 +123,8 @@ const redirectToPortal = () => {
         </PageHeader>
 
         <div class="row-px">
+            <TokenUsage v-if="token_usage" :usage="token_usage" class="mb-lg" />
+
             <Panel>
                 <template #title>{{ $t("general.details") }}</template>
 
@@ -156,6 +216,28 @@ const redirectToPortal = () => {
                             class="w-xl h-xl rounded-md"
                         />
                     </HorizontalGroup>
+                </div>
+            </Panel>
+
+            <Panel v-if="strategy" class="mt-lg">
+                <template #title>{{ $t("genie.strategy") }}</template>
+                <template #description>
+                    {{ $t(`genie.strategy_state_${strategy.state}`) }}
+                    {{ $t("genie.regenerate_strategy_desc") }}
+                </template>
+
+                <div class="flex flex-wrap gap-xs">
+                    <SecondaryButton
+                        v-for="option in regenerationModes"
+                        :key="option.mode"
+                        :disabled="!isRegenerationAvailable(option.mode)"
+                        @click="regenerateStrategy(option)"
+                    >
+                        <template #icon>
+                            <Refresh />
+                        </template>
+                        {{ $t(option.label) }}
+                    </SecondaryButton>
                 </div>
             </Panel>
 

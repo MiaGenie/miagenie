@@ -12,6 +12,9 @@ class AiRunResource extends JsonResource
     public static $wrap = null;
 
     /**
+     * The token counts are included only when the record was loaded through
+     * AiRun::withTokenCounts().
+     *
      * @return array<string, mixed>
      */
     public function toArray($request): array
@@ -22,6 +25,8 @@ class AiRunResource extends JsonResource
             'rule_id' => $this->rule_id,
             'status' => $this->status,
             'conversation_id' => $this->conversation_id,
+            'input_tokens' => $this->whenHas('input_tokens'),
+            'output_tokens' => $this->whenHas('output_tokens'),
             'started_at' => $this->started_at?->format('Y-m-d H:i:s'),
             'completed_at' => $this->completed_at?->format('Y-m-d H:i:s'),
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),

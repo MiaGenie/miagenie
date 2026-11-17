@@ -1,0 +1,127 @@
+<?php
+
+namespace App\Genie\Strategy;
+
+use App\Enums\BriefingStatus;
+use App\Enums\StrategyRegenerationMode;
+use App\Enums\StrategyStatus;
+use App\Models\Briefing;
+use App\Models\Strategy;
+use App\Models\Workspace;
+use App\Models\WorkspaceVersion;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * An admin asking for a workspace's strategy to be generated again.
+ *
+ * Nothing is generated here, and nothing is overwritten: the previous strategy, its run and the
+ * ideas built from it stay as they are. What is created is an OPEN strategy with no run, which the
+ * strategy page reads as "ready to generate" and offers the customer the button for; the
+ * customer's generate then attaches the run to it. Ideas keep using the newest approved strategy
+ * until the new one is approved.
+ *
+ * Runs from the admin panel, where no workspace is current, so every query names its workspace.
+ */
+class StrategyRegeneration
+{
+    /**
+     * The checks and writes run under a lock on the workspace's version row, so two requests
+     * arriving together cannot both pass the checks and stack strategies or briefings. Asking again
+     * while a strategy is already waiting reuses that one.
+     *
+     * @throws StrategyRegenerationException when a run is still producing the latest strategy, or
+     *                                       when a briefing is to be cloned and none was finished
+     */
+    public function request(Workspace $workspace, StrategyRegenerationMode $mode): Strategy
+    {
+        return DB::transaction(function () use ($workspace, $mode): Strategy {
+            WorkspaceVersion::where('workspace_id', $workspace->id)->lockForUpdate()->first();
+
+            $latest = $this->latestStrategy($workspace);
+
+            if ($latest?->isGenerating()) {
+                throw StrategyRegenerationException::generating();
+            }
+
+            $briefing = $mode->clonesBriefing() ? $this->clonableBriefing($workspace) : null;
+
+            if ($mode->clonesBriefing() && ! $briefing) {
+                throw StrategyRegenerationException::noBriefing();
+            }
+
+            if ($mode->createsBriefing()) {
+                $this->createBriefing($workspace, $briefing?->content);
+            }
+
+            if ($latest?->awaitsGeneration()) {
+                return $latest;
+            }
+
+            return Strategy::create([
+                'workspace_id' => $workspace->id,
+                'status' => StrategyStatus::OPEN,
+            ]);
+        });
+    }
+
+    /**
+     * Where the workspace's strategy stands, for the admin's buttons.
+     *
+     * @return array{state: 'none'|'awaiting_generation'|'generating'|'pending_approval'|'approved'|'error'|'other', has_briefing: bool}
+     */
+    public function state(Workspace $workspace): array
+    {
+        $latest = $this->latestStrategy($workspace);
+
+        return [
+            'state' => match (true) {
+                ! $latest => 'none',
+                $latest->awaitsGeneration() => 'awaiting_generation',
+                $latest->isGenerating() => 'generating',
+                $latest->status === StrategyStatus::PENDING_APPROVAL => 'pending_approval',
+                $latest->status === StrategyStatus::APPROVED => 'approved',
+                $latest->status === StrategyStatus::ERROR => 'error',
+                default => 'other',
+            },
+            'has_briefing' => (bool) $this->clonableBriefing($workspace),
+        ];
+    }
+
+    /**
+     * A new briefing on the workspace's current version, left as a draft so the customer goes
+     * through the wizard and finishes it before generating; the previous briefing stays with the
+     * run that used it.
+     *
+     * @param  array<string, mixed>|null  $content
+     */
+    protected function createBriefing(Workspace $workspace, ?array $content): Briefing
+    {
+        $briefing = new Briefing([
+            'content' => $content,
+            'version_id' => WorkspaceVersion::where('workspace_id', $workspace->id)->firstOrFail()->version_id,
+            'status' => BriefingStatus::DRAFT,
+        ]);
+
+        $briefing->workspace_id = $workspace->id;
+        $briefing->save();
+
+        return $briefing;
+    }
+
+    protected function latestStrategy(Workspace $workspace): ?Strategy
+    {
+        return Strategy::byWorkspace($workspace)->latest('id')->first();
+    }
+
+    /**
+     * The briefing a clone copies: the newest one the customer finished. A newer draft may be the
+     * empty one an earlier "new briefing" request left, or answers the customer never submitted.
+     */
+    protected function clonableBriefing(Workspace $workspace): ?Briefing
+    {
+        return Briefing::byWorkspace($workspace)
+            ->where('status', BriefingStatus::COMPLETE)
+            ->latest('id')
+            ->first();
+    }
+}

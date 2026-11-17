@@ -7,6 +7,7 @@ import PageHeader from '@/Components/DataDisplay/PageHeader.vue';
 import Panel from "@/Components/Surface/Panel.vue";
 import X from "@/Icons/X.vue";
 import PrimaryButton from "@/Components/Button/PrimaryButton.vue";
+import TokenCount from "@/Components/Genie/Usage/TokenCount.vue";
 
 defineOptions({layout: AdminLayout});
 
@@ -86,6 +87,13 @@ const backToList = () => {
                 </div>
                 <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
                     {{ log.duration }}
+                </div>
+
+                <div class="pb-2 pl-2 pt-5">
+                    {{ $t('genie.run_tokens') }}
+                </div>
+                <div class="bg-primary-50 rounded-lg pb-1 pl-2 pt-1 pr-2 w-full break-words">
+                    <TokenCount :input="log.input_tokens" :output="log.output_tokens" blank="----------"/>
                 </div>
 
                 <div class="pb-2 pl-2 pt-5">

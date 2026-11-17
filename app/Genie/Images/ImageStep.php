@@ -61,17 +61,19 @@ class ImageStep
 
             $started = microtime(true);
 
+            $response = null;
+
             try {
                 $response = $this->generator->generate($prompt, $options);
 
                 $file = $this->store->persist($runStep, $run, $position, $prompt, $response->firstImage());
             } catch (Throwable $exception) {
-                $this->log->record($runStep, $prompt, null, $this->seconds($started), $exception->getMessage());
+                $this->log->record($runStep, $prompt, null, $this->seconds($started), $exception->getMessage(), usage: $response?->usage);
 
                 throw $exception;
             }
 
-            $this->log->record($runStep, $prompt, $file, $this->seconds($started));
+            $this->log->record($runStep, $prompt, $file, $this->seconds($started), usage: $response->usage);
 
             $this->written[] = $this->entry($file);
         }

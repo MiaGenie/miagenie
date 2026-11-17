@@ -24,6 +24,8 @@ class Log extends Model
         'request',
         'response',
         'duration',
+        'input_tokens',
+        'output_tokens',
         'created_at',
         'updated_at',
     ];
@@ -33,6 +35,8 @@ class Log extends Model
         'action' => GenieSyncAction::class,
         'request' => AsCollection::class,
         'response' => AsCollection::class,
+        'input_tokens' => 'integer',
+        'output_tokens' => 'integer',
     ];
 
     /**

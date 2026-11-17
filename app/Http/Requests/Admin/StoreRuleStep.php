@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Concerns\Requests\ValidatesStepModality;
+use App\Concerns\Requests\ValidatesStepWebSearch;
 use App\Enums\PostFormat;
 use App\Enums\RuleSubType;
 use App\Models\Rule;
@@ -13,6 +14,12 @@ use Illuminate\Validation\Rule as ValidationRule;
 class StoreRuleStep extends FormRequest
 {
     use ValidatesStepModality;
+    use ValidatesStepWebSearch;
+
+    protected function prepareForValidation(): void
+    {
+        $this->normaliseWebSearchDomains();
+    }
 
     public function rules(): array
     {
@@ -24,9 +31,10 @@ class StoreRuleStep extends FormRequest
                 ValidationRule::requiredIf(fn () => $this->subType()?->requiresPostFormat() ?? false),
             ],
             ...$this->modalityRules(),
+            ...$this->webSearchRules(),
             'name' => ['required', 'string', 'max:255'],
             'instructions' => ['nullable', 'string', 'max:10000'],
-            'model_profile_id' => ['required', 'exists:genie_model_profiles,id', $this->imageProviderRule()],
+            'model_profile_id' => ['required', 'exists:genie_model_profiles,id', $this->imageProviderRule(), $this->webSearchProviderRule()],
             'link_upstream' => ['nullable', 'boolean'],
             'message' => ['required', 'string', 'max:5000'],
             'output' => ['nullable'],
@@ -49,6 +57,11 @@ class StoreRuleStep extends FormRequest
     }
 
     protected function modalitySubType(): ?RuleSubType
+    {
+        return $this->subType();
+    }
+
+    protected function webSearchSubType(): ?RuleSubType
     {
         return $this->subType();
     }
@@ -77,6 +90,7 @@ class StoreRuleStep extends FormRequest
             'depends_on_option' => $this->input('depends_on_option'),
             'position' => $position,
             ...$this->modalityAttributes(),
+            ...$this->webSearchAttributes(),
         ]);
     }
 }

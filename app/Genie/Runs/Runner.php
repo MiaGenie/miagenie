@@ -16,8 +16,10 @@ use App\Models\AiRun;
 use App\Models\AiRunStep;
 use App\Models\Log as RunLog;
 use App\Models\RuleStep;
+use App\Models\TokenUsage;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Log;
-use Laravel\Ai\Contracts\ConversationStore;
+use Laravel\Ai\Responses\Data\Usage;
 use Laravel\Ai\Responses\StructuredAgentResponse;
 use Throwable;
 
@@ -36,6 +38,14 @@ use Throwable;
  */
 abstract class Runner
 {
+    /**
+     * Seconds after which a RUNNING step is taken to belong to a worker that is gone: no job
+     * outlives AiRunJob's 600-second timeout or the genie-ai supervisor's 660. The row is not
+     * touched while its step runs (image calls write slot and log rows), so this must outlast the
+     * longest step, and the queue's retry_after must outlast this.
+     */
+    public const CLAIM_EXPIRES_AFTER = 660;
+
     protected ImageStep $images;
 
     public function __construct(
@@ -118,14 +128,30 @@ abstract class Runner
     protected function imagesWritten(AiRunStep $runStep, array $output): void {}
 
     /**
+     * Whether what the run produces has been replaced, so carrying it on would only spend tokens on
+     * a result nobody reads. A run type whose result can be superseded — a strategy, by an admin's
+     * regeneration — says so here; the job and retryFailed() then leave the run where it stopped.
+     */
+    public function isSuperseded(AiRun $run): bool
+    {
+        return false;
+    }
+
+    /**
      * Advance the run by one step. Returns false when it cannot continue — finished, gated or
      * failed — so the caller knows not to dispatch again.
      *
      * A failed run stops here rather than carrying on: continuing would leave the failed step
      * behind for good, because nextStep() would count it as visited and pick the one after it.
      * Getting past a failure is a deliberate act — see retryFailed().
+     *
+     * Another worker holding the step stops this one without dispatching: that worker carries the
+     * run on.
+     *
+     * @param  string|null  $claimant  The queue job's uuid, which survives the job's own retries, so
+     *                                 a job that threw after claiming can take its step back.
      */
-    public function advance(AiRun $run): bool
+    public function advance(AiRun $run, ?string $claimant = null): bool
     {
         if (in_array($run->status, [RunStatus::PENDING_REVIEW, RunStatus::ERROR], true)) {
             return false;
@@ -139,7 +165,16 @@ abstract class Runner
             return false;
         }
 
-        $runStep = $this->open($run, $step);
+        $runStep = $this->claim($run, $step, $claimant);
+
+        if (! $runStep) {
+            Log::info('Genie run step already running on another worker', [
+                'run_id' => $run->id,
+                'step_id' => $step->id,
+            ]);
+
+            return false;
+        }
 
         $this->state->starting($runStep);
 
@@ -185,10 +220,15 @@ abstract class Runner
     /**
      * Put a failed run back into a state where advance() will retry the step that failed.
      *
-     * Returns false when there is nothing to retry, so a caller cannot loop on a healthy run.
+     * Returns false when there is nothing to retry, so a caller cannot loop on a healthy run, and
+     * when the run has been superseded, whose result would no longer be read.
      */
     public function retryFailed(AiRun $run): bool
     {
+        if ($this->isSuperseded($run)) {
+            return false;
+        }
+
         $failed = $run->steps()
             ->reorder()
             ->where('status', RunStatus::ERROR)
@@ -211,31 +251,52 @@ abstract class Runner
     }
 
     /**
-     * Reserve the row before prompting, so a crashed call still leaves a trace of the attempt.
+     * Take the step's row for this worker, reserving it before prompting so a crashed call still
+     * leaves a trace of the attempt. A retry reuses the row left behind.
      *
-     * A retry reuses the row left behind;
+     * Returns null while another worker is running the step: the claim is one conditional update,
+     * so of two jobs racing for the same step exactly one gets it, and the first claim's insert is
+     * held to one row per rule step by the `(run_id, step_id)` unique index. A RUNNING row is taken
+     * over once it is older than CLAIM_EXPIRES_AFTER, because the worker that held it is gone, or at
+     * once by the job that claimed it: an exception that escaped the step released that job for a
+     * retry, and nobody else would ever pick the step up.
      */
-    protected function open(AiRun $run, RuleStep $step): AiRunStep
+    protected function claim(AiRun $run, RuleStep $step, ?string $claimant = null): ?AiRunStep
     {
+        $modality = $step->modality ?? Modality::TEXT;
+
         $existing = $run->steps()->reorder()->where('step_id', $step->id)->first();
 
-        if ($existing) {
-            $existing->update([
-                'status' => RunStatus::OPEN,
-                'error' => null,
-                'error_details' => null,
-                'modality' => $step->modality ?? Modality::TEXT,
-            ]);
-
-            return $existing;
+        if (! $existing) {
+            try {
+                return $run->steps()->create([
+                    'step_id' => $step->id,
+                    'position' => $step->position,
+                    'modality' => $modality,
+                    'status' => RunStatus::RUNNING,
+                    'claimed_by' => $claimant,
+                ]);
+            } catch (UniqueConstraintViolationException) {
+                return null;
+            }
         }
 
-        return $run->steps()->create([
-            'step_id' => $step->id,
-            'position' => $step->position,
-            'modality' => $step->modality ?? Modality::TEXT,
-            'status' => RunStatus::OPEN,
-        ]);
+        $claimed = AiRunStep::query()
+            ->whereKey($existing->id)
+            ->where(fn ($query) => $query
+                ->where('status', '!=', RunStatus::RUNNING)
+                ->orWhere('updated_at', '<=', now()->subSeconds(self::CLAIM_EXPIRES_AFTER))
+                ->when($claimant, fn ($query) => $query->orWhere('claimed_by', $claimant)))
+            ->update([
+                'status' => RunStatus::RUNNING,
+                'claimed_by' => $claimant,
+                'error' => null,
+                'error_details' => null,
+                'modality' => $modality,
+                'updated_at' => now(),
+            ]);
+
+        return $claimed === 1 ? $existing->fresh() : null;
     }
 
     protected function run(AiRunStep $runStep): bool
@@ -248,6 +309,10 @@ abstract class Runner
         }
 
         $prompt = null;
+
+        // An answered call is paid for: its usage goes on the success entry, or on the failure
+        // entry when the step fails before that is written — never on both.
+        $unloggedUsage = null;
 
         try {
             $agent = $this->agent($runStep, $locale);
@@ -264,6 +329,8 @@ abstract class Runner
                 timeout: $this->agents->timeout($runStep->step),
             );
 
+            $unloggedUsage = $response->usage;
+
             $this->pinConversation($run, $response->conversationId);
 
             $structured = $response instanceof StructuredAgentResponse
@@ -278,7 +345,7 @@ abstract class Runner
 
             $runStep->update([
                 'invocation_id' => $response->invocationId,
-                'message_id' => $this->lastMessageId(),
+                'message_id' => $response->assistantMessageId,
                 'output' => $structured,
                 'duration' => (int) round(microtime(true) - $started),
             ]);
@@ -291,18 +358,24 @@ abstract class Runner
                 $this->output->write($runStep, $structured);
             }
 
+            // The sources a web search cited live only here: the conversation keeps the answer alone.
+            $citations = StepResponse::citations($response);
+
             $this->log($prompt, $runStep, [
                 'invocation_id' => $response->invocationId,
                 'conversation_id' => $run->conversation_id,
                 'message_id' => $runStep->message_id,
                 'structured' => $structured,
-            ]);
+                ...($citations ? ['citations' => $citations] : []),
+            ], usage: $unloggedUsage);
+
+            $unloggedUsage = null;
 
             $this->state->completed($runStep);
 
             return $runStep->fresh()->status === RunStatus::COMPLETE;
         } catch (Throwable $exception) {
-            return $this->fail($runStep, $run, $prompt, $exception);
+            return $this->fail($runStep, $run, $prompt, $exception, usage: $unloggedUsage);
         }
     }
 
@@ -347,8 +420,9 @@ abstract class Runner
      * Record a failed step and stop the run. Always returns false so a caller can return it.
      *
      * @param  array<string, mixed>|null  $request  What was sent, when there is no RunPrompt to describe it.
+     * @param  Usage|null  $usage  What the call cost, when it answered before the step failed.
      */
-    protected function fail(AiRunStep $runStep, AiRun $run, ?RunPrompt $prompt, Throwable $exception, ?array $request = null): bool
+    protected function fail(AiRunStep $runStep, AiRun $run, ?RunPrompt $prompt, Throwable $exception, ?array $request = null, ?Usage $usage = null): bool
     {
         Log::error('Genie '.$this->label().' step failed', [
             'run_id' => $run->id,
@@ -357,9 +431,9 @@ abstract class Runner
             'exception' => $exception->getMessage(),
         ]);
 
-        $runStep->update(['error' => StepResponse::error(null)]);
+        $runStep->update(['error' => StepResponse::errorCode($exception)]);
 
-        $this->log($prompt, $runStep, ['error' => $exception->getMessage()], $request);
+        $this->log($prompt, $runStep, ['error' => $exception->getMessage()], $request, $usage);
 
         $this->state->failed($runStep, $exception->getMessage());
 
@@ -385,12 +459,15 @@ abstract class Runner
     }
 
     /**
-     * Record the turn in genie_logs.
+     * Record the turn in genie_logs, with the tokens the call consumed when it answered.
+     *
+     * The counts are the workspace ledger's (TokenUsage::countsFrom()), so a step's and a run's
+     * sums of their entries agree with what the workspace was charged for them.
      *
      * @param  array<string, mixed>  $response
      * @param  array<string, mixed>|null  $request  Overrides the prompt's own description, for a step without one.
      */
-    protected function log(?RunPrompt $prompt, AiRunStep $runStep, array $response, ?array $request = null): void
+    protected function log(?RunPrompt $prompt, AiRunStep $runStep, array $response, ?array $request = null, ?Usage $usage = null): void
     {
         RunLog::create([
             'type' => GenieType::RUN_RESPONSE,
@@ -399,6 +476,7 @@ abstract class Runner
             'request' => $request ?? $prompt?->describe() ?? ['step_id' => $runStep->step_id],
             'response' => $response,
             'duration' => $runStep->duration ?? 0,
+            ...($usage ? TokenUsage::countsFrom($usage) : []),
         ]);
     }
 
@@ -419,18 +497,6 @@ abstract class Runner
         }
 
         $run->update(['conversation_id' => $conversationId]);
-    }
-
-    /**
-     * The transcript row this turn wrote, when the recording store is bound.
-     */
-    protected function lastMessageId(): ?string
-    {
-        $store = resolve(ConversationStore::class);
-
-        return property_exists($store, 'lastAssistantMessageId')
-            ? $store->lastAssistantMessageId
-            : null;
     }
 
     /**

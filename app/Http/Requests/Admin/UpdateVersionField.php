@@ -4,6 +4,8 @@ namespace App\Http\Requests\Admin;
 
 use App\Concerns\Requests\HandlesSubFields;
 use App\Concerns\Requests\IngestVersionFields;
+use App\Concerns\Requests\ValidatesIcon;
+use App\Concerns\Requests\ValidatesStrategyStyling;
 use App\Constants\FormTypeDefaults;
 use App\Enums\FormFieldFileType;
 use App\Enums\FormFieldType;
@@ -22,6 +24,8 @@ class UpdateVersionField extends FormRequest
 {
     use HandlesSubFields;
     use IngestVersionFields;
+    use ValidatesIcon;
+    use ValidatesStrategyStyling;
 
     private Version $version;
 
@@ -29,7 +33,7 @@ class UpdateVersionField extends FormRequest
     {
         $this->version ??= Version::firstOrFailByUuid($this->route('version'));
 
-        return array_merge($this->subFieldRules(), [
+        return array_merge($this->subFieldRules(), $this->iconRules(), $this->stylingRules(), [
             'group_type' => ['required', Rule::enum(VersionGroupType::class)],
             'field_type' => ['required', Rule::enum(FormFieldType::class)],
             'input_type' => ['nullable', Rule::enum(FormInputType::class)],
@@ -62,8 +66,6 @@ class UpdateVersionField extends FormRequest
             'display_item_title' => ['nullable', 'boolean'],
             'display_faq_title' => ['nullable', 'string', 'max:5000'],
             'display_faq_text' => ['nullable', 'string', 'max:5000'],
-            'class' => ['nullable', 'string', 'max:255'],
-            'block' => ['nullable', 'string', 'max:255'],
         ]);
     }
 
@@ -104,8 +106,8 @@ class UpdateVersionField extends FormRequest
                 'display_item_title' => $this->input('display_item_title'),
                 'display_faq_title' => $this->input('display_faq_title'),
                 'display_faq_text' => $this->input('display_faq_text'),
-                'class' => $this->input('class'),
-                'block' => $this->input('block'),
+                ...$this->stylingAttributes(),
+                ...$this->iconAttributes(),
             ]);
 
             $this->handleChildren($record);
@@ -150,6 +152,15 @@ class UpdateVersionField extends FormRequest
             );
 
         }
+    }
+
+    /**
+     * Only a strategy field carries an icon. The group is read from the form, since an admin may
+     * move a field between groups on the same save.
+     */
+    protected function acceptsIcon(): bool
+    {
+        return VersionGroupType::tryFrom((int) $this->input('group_type'))?->supportsIcon() ?? false;
     }
 
     protected function prepareForValidation(): void

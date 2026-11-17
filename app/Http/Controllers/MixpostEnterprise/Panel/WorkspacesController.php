@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\MixpostEnterprise\Panel;
 
 use App\Enums\VersionStatus;
+use App\Genie\Strategy\StrategyRegeneration;
+use App\Genie\Strategy\StrategyRegenerationException;
+use App\Http\Requests\MixpostEnterprise\Panel\Workspace\RegenerateStrategy;
 use App\Http\Requests\MixpostEnterprise\Panel\Workspace\StoreWorkspace;
 use App\Http\Requests\MixpostEnterprise\Panel\Workspace\UpdateWorkspace;
 use App\Http\Resources\MixpostEnterprise\WorkspaceResource;
+use App\Models\TokenUsage;
 use App\Models\Version;
 use App\Models\Workspace;
 use Illuminate\Http\RedirectResponse;
@@ -40,7 +44,7 @@ class WorkspacesController extends Controller
             ->route('mixpost_e.workspaces.view', ['workspace' => $workspace->uuid]);
     }
 
-    public function view(Request $request): Response
+    public function view(Request $request, StrategyRegeneration $strategyRegeneration): Response
     {
         $workspace = Workspace::firstOrFailByUuid($request->route('workspace'))
             ->load(['owner', 'users', 'genericSubscriptionPlan']);
@@ -59,8 +63,10 @@ class WorkspacesController extends Controller
                 ],
             ]),
             'subscription' => $subscription ? new SubscriptionResource($subscription) : null,
-            'billingConfigs' => (new BillingConfig())->all(),
+            'billingConfigs' => (new BillingConfig)->all(),
             'plans' => PlanResource::collection(Plan::get())->resolve(),
+            'strategy' => $strategyRegeneration->state($workspace),
+            'token_usage' => TokenUsage::totalsFor($workspace),
         ]);
     }
 
@@ -86,5 +92,22 @@ class WorkspacesController extends Controller
             'locales' => Util::config('locales'),
             'versions' => $versions,
         ]);
+    }
+
+    /**
+     * Let the customer generate a new strategy, optionally from a new or cloned briefing. The
+     * previous strategy is kept; see StrategyRegeneration.
+     */
+    public function regenerateStrategy(RegenerateStrategy $regenerateStrategy): RedirectResponse
+    {
+        try {
+            $regenerateStrategy->handle();
+        } catch (StrategyRegenerationException $exception) {
+            return redirect()->back()->with('error', $exception->getMessage());
+        }
+
+        return redirect()
+            ->back()
+            ->with('success', __($regenerateStrategy->mode()->successKey()));
     }
 }

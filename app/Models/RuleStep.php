@@ -21,6 +21,9 @@ class RuleStep extends Model
         'rule_id',
         'rule_sub_type',
         'modality',
+        'web_search',
+        'web_search_max',
+        'web_search_domains',
         'post_format',
         'link_upstream',
         'name',
@@ -44,6 +47,9 @@ class RuleStep extends Model
     protected $casts = [
         'rule_sub_type' => RuleSubType::class,
         'modality' => Modality::class,
+        'web_search' => 'boolean',
+        'web_search_max' => 'integer',
+        'web_search_domains' => 'array',
         'post_format' => PostFormat::class,
         'output' => 'array',
     ];
@@ -57,6 +63,16 @@ class RuleStep extends Model
         'review_message_user',
         'review_message_system',
     ];
+
+    /**
+     * Whether this step searches the web when it runs: its switch is on and its sub type is one
+     * that may search. The step form refuses the switch on any other sub type, but a version import
+     * copies the column as exported, so the runtime holds the sub type rule too.
+     */
+    public function searchesWeb(): bool
+    {
+        return $this->web_search && ($this->rule_sub_type?->supportsWebSearch() ?? false);
+    }
 
     public function rule(): BelongsTo
     {

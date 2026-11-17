@@ -38,7 +38,7 @@ class StoreIdea extends FormRequest
     public function handle(): Idea
     {
         return Idea::create([
-            'strategy_id' => Strategy::latest()->first()?->id,
+            'strategy_id' => Strategy::approved()->latest('id')->first()?->id,
             'title' => $this->input('title'),
             'goal' => $this->input('goal'),
             'suggested_content' => $this->input('suggested_content'),

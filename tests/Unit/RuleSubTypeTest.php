@@ -72,4 +72,23 @@ class RuleSubTypeTest extends TestCase
 
         $this->assertTrue($ideas['IDEAS_FORMAT']['format_required']);
     }
+
+    public function test_only_the_strategy_sub_types_may_search_the_web(): void
+    {
+        $searching = [RuleSubType::BRIEFINGS, RuleSubType::BRIEFINGS_MULTIPLE, RuleSubType::CHANNELS];
+
+        foreach (RuleSubType::cases() as $case) {
+            $this->assertSame(in_array($case, $searching, true), $case->supportsWebSearch(), $case->name);
+        }
+    }
+
+    public function test_the_editor_rows_say_whether_the_sub_type_may_search_the_web(): void
+    {
+        $strategy = RuleSubType::forEditor(1)->keyBy('value');
+        $posts = RuleSubType::forEditor(5)->keyBy('value');
+
+        $this->assertTrue($strategy[RuleSubType::BRIEFINGS->value]['web_search']);
+        $this->assertTrue($strategy[RuleSubType::CHANNELS->value]['web_search']);
+        $this->assertFalse($posts[RuleSubType::POSTS_CONTENT->value]['web_search']);
+    }
 }

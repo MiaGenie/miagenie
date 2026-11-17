@@ -54,6 +54,10 @@ class RunPrompt
             'prompt' => $this->text(),
             'response_format' => $this->step->response_format,
             'parameters' => $this->run->parameters,
+            ...($this->step->searchesWeb() ? ['web_search' => [
+                'max' => $this->step->web_search_max,
+                'domains' => $this->step->web_search_domains ?? [],
+            ]] : []),
         ];
     }
 

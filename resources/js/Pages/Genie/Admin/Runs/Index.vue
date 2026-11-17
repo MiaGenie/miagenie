@@ -155,6 +155,13 @@ watch(() => currentFilter.value.rule_type, throttle(() => {
                                 component="th"
                                 scope="col"
                             >
+                                {{ $t('genie.run_tokens') }}
+                            </TableCell>
+
+                            <TableCell
+                                component="th"
+                                scope="col"
+                            >
                                 {{ $t('genie.status') }}
                             </TableCell>
 

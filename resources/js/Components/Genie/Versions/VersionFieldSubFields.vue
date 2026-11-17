@@ -13,6 +13,7 @@ import Input from "@/Components/Form/Input.vue";
 import Label from "@/Components/Form/Label.vue";
 import LabelSuffix from "@/Components/Form/LabelSuffix.vue";
 import Select from "@/Components/Form/Select.vue";
+import StyleTokensPicker from "@/Components/Form/Genie/StyleTokensPicker.vue";
 import Switch from "@/Components/Form/Switch.vue";
 import Textarea from "@/Components/Form/Textarea.vue";
 import Flex from "@/Components/Layout/Flex.vue";
@@ -39,6 +40,7 @@ const {
     typeOf,
     setCodeName,
     resetForType,
+    blocksFor,
     canBeEditable,
     syncEditable,
     hasLengthFields,
@@ -144,9 +146,8 @@ const setEnumText = (subField, value) => {
                                             </label>
                                         </template>
 
-                                        <Input
+                                        <StyleTokensPicker
                                             v-model="element.class"
-                                            type="text"
                                             :id="fieldId('class', index)"
                                         />
                                     </VerticalGroup>
@@ -162,11 +163,22 @@ const setEnumText = (subField, value) => {
                                             </label>
                                         </template>
 
-                                        <Input
-                                            v-model="element.block"
-                                            type="text"
+                                        <Select
+                                            :model-value="element.block ?? ''"
                                             :id="fieldId('block', index)"
-                                        />
+                                            @update:model-value="element.block = $event"
+                                        >
+                                            <option value="">
+                                                {{ $t("genie.strategy_block_auto") }}
+                                            </option>
+                                            <option
+                                                v-for="option in blocksFor(element)"
+                                                :key="option.value"
+                                                :value="option.value"
+                                            >
+                                                {{ option.title }}
+                                            </option>
+                                        </Select>
                                     </VerticalGroup>
                                 </Flex>
 

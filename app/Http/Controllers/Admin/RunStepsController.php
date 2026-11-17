@@ -26,6 +26,7 @@ class RunStepsController extends Controller
         $run = $this->run($request->route('run'));
 
         $records = $run->steps()
+            ->withTokenCounts()
             ->paginate(100)
             ->onEachSide(1);
 
@@ -52,7 +53,7 @@ class RunStepsController extends Controller
      */
     public function view(Request $request): Response
     {
-        $runStep = AiRunStep::firstOrFailByUuid($request->route('step'));
+        $runStep = AiRunStep::withTokenCounts()->where('uuid', $request->route('step'))->firstOrFail();
 
         // Reached by id rather than through the relation, which the workspace scope would filter.
         $run = $this->run($runStep->run_id);

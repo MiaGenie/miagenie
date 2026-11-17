@@ -117,10 +117,9 @@ class RuleStepsController extends Controller
                 ->reject(fn ($subType) => $subType['value'] === RuleSubType::IDEAS_MULTIPLE->value)
                 ->values(),
             'postFormats' => PostFormat::withTitle(),
-            'imageProviders' => StepAgentFactory::IMAGE_PROVIDERS,
             'record' => null,
             'version' => new VersionResource($version),
-            'modelProfiles' => ModelProfile::orderBy('position')->get(),
+            'modelProfiles' => $this->modelProfiles(),
             'outputFields' => $outputFields,
             'outputIdeaFields' => (new Idea)->getGenieFields(),
             'versionStatusTypes' => VersionStatus::withTitle(),
@@ -182,10 +181,9 @@ class RuleStepsController extends Controller
             'ruleTypes' => RuleType::withTitle(),
             'ruleSubTypes' => RuleSubType::forEditor($rule->rule_type->value),
             'postFormats' => PostFormat::withTitle(),
-            'imageProviders' => StepAgentFactory::IMAGE_PROVIDERS,
             'record' => new RuleStepResource($record),
             'version' => new VersionResource($version),
-            'modelProfiles' => ModelProfile::orderBy('position')->get(),
+            'modelProfiles' => $this->modelProfiles(),
             'outputFields' => $outputFields,
             'outputIdeaFields' => (new Idea)->getGenieFields(),
             'versionStatusTypes' => VersionStatus::withTitle(),
@@ -310,5 +308,21 @@ class RuleStepsController extends Controller
         }
 
         return $translations;
+    }
+
+    /**
+     * The profiles a step can pick, each saying whether its provider can draw and search. The
+     * editor greys out the rest; it is told rather than left to compare the profile's provider
+     * key, because that key may name another driver (see ModelProfile::driver()).
+     *
+     * @return Collection<int, array<string, mixed>>
+     */
+    protected function modelProfiles(): Collection
+    {
+        return ModelProfile::orderBy('position')->get()->map(fn (ModelProfile $profile) => [
+            ...$profile->toArray(),
+            'supports_images' => StepAgentFactory::supportsImages($profile),
+            'supports_web_search' => StepAgentFactory::supportsWebSearch($profile),
+        ]);
     }
 }

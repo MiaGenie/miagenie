@@ -8,9 +8,9 @@ use App\Concerns\Enum\WithTitle;
 
 enum StrategyStatus: int
 {
-    use WithTitle;
     use FromName;
     use HasState;
+    use WithTitle;
 
     case OPEN = 1;
     case RUNNING = 2;
@@ -20,11 +20,6 @@ enum StrategyStatus: int
     case PENDING_APPROVAL = 6;
     case APPROVED = 7;
 
-
-
-    /**
-     * @return string
-     */
     public function title(): string
     {
         return match ($this) {
@@ -38,9 +33,6 @@ enum StrategyStatus: int
         };
     }
 
-    /**
-     * @return bool
-     */
     public function isError(): bool
     {
         return match ($this) {
@@ -49,9 +41,6 @@ enum StrategyStatus: int
         };
     }
 
-    /**
-     * @return bool
-     */
     public function requiresUpdate(): bool
     {
         return match ($this) {
@@ -61,8 +50,18 @@ enum StrategyStatus: int
     }
 
     /**
-     * @return bool
+     * The statuses a strategy holds while its run has not settled. OPEN is among them because a
+     * run is created OPEN and only moves to RUNNING once its job starts; a strategy that is OPEN
+     * with no run at all is waiting to be generated instead (Strategy::awaitsGeneration()).
      */
+    public function isGenerating(): bool
+    {
+        return match ($this) {
+            self::OPEN, self::RUNNING, self::PENDING_REVIEW, self::REVIEWED => true,
+            default => false,
+        };
+    }
+
     public function isComplete(): bool
     {
         return match ($this) {

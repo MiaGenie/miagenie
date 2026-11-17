@@ -4,7 +4,6 @@ namespace App\Http\Requests\Workspace\Idea;
 
 use App\Enums\FunnelStage;
 use App\Enums\PostFormat;
-use App\Enums\StrategyStatus;
 use App\Genie\Ideas\ContentPillars;
 use App\Genie\Ideas\IdeasRequest;
 use App\Models\Strategy;
@@ -35,14 +34,13 @@ class GenerateIdeas extends FormRequest
     }
 
     /**
-     * The strategy ideas are generated from: the workspace's newest, and only once it is approved.
+     * The strategy ideas are generated from: the workspace's newest approved one. A newer strategy
+     * an admin asked to regenerate takes over only once it is approved in turn.
      */
     public function strategy(): ?Strategy
     {
         if (! $this->strategyResolved) {
-            $latest = Strategy::latest()->first();
-
-            $this->strategy = $latest?->status === StrategyStatus::APPROVED ? $latest : null;
+            $this->strategy = Strategy::approved()->latest('id')->first();
             $this->strategyResolved = true;
         }
 

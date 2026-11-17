@@ -23,9 +23,9 @@ class IdeasContextTest extends TestCase
     protected int $nextSubFieldId = 1;
 
     /**
-     * A run whose version defines the content_pillars field the way version 5 does — an array of
-     * objects with a title, an importance, a style, a description and a list of topics — with
-     * two pillars written on the strategy.
+     * A run whose version defines the content_pillars field the way the default version does — an
+     * array of objects with a name, an importance, a description and a list of topics — with two
+     * pillars written on the strategy.
      */
     protected function runWithPillars(array $content = []): AiRun
     {
@@ -35,7 +35,7 @@ class IdeasContextTest extends TestCase
         ], 4);
 
         $pillars = $this->sub('content_pillars', 'Content Pillars', SubFieldType::ARRAY, [
-            $this->sub('title', 'Title', SubFieldType::STRING, [], 0),
+            $this->sub('name', 'Name', SubFieldType::STRING, [], 0),
             $this->sub('importance', 'Relative Importance', SubFieldType::STRING, [], 1),
             $this->sub('description', 'Description', SubFieldType::STRING, [], 3),
             $topics,
@@ -55,13 +55,13 @@ class IdeasContextTest extends TestCase
         $run->setRelation('strategy', new Strategy(['content' => $content ?: [
             'content_pillars' => [
                 [
-                    'title' => 'Craft',
+                    'name' => 'Craft',
                     'importance' => 'High',
                     'description' => 'How things are made',
                     'topics' => [['topic_name' => 'Tools', 'topic_subtopics' => ['Chisels', 'Planes']]],
                 ],
                 [
-                    'title' => 'Stories',
+                    'name' => 'Stories',
                     'importance' => 'Medium',
                     'description' => 'Who we made them for',
                     'topics' => [['topic_name' => 'Clients', 'topic_subtopics' => ['Homes']]],
@@ -114,7 +114,7 @@ class IdeasContextTest extends TestCase
 
         $pillar = $context->pillar();
 
-        $this->assertStringContainsString('**Title**: Stories', $pillar);
+        $this->assertStringContainsString('**Name**: Stories', $pillar);
         $this->assertStringContainsString('**Relative Importance**: Medium', $pillar);
         $this->assertStringContainsString('**Description**: Who we made them for', $pillar);
         $this->assertStringContainsString('**Topic**: Clients', $pillar);

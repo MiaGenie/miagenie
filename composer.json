@@ -6,7 +6,7 @@
         "php": "^8.4",
         "inovector/mixpost-enterprise": "dev-main",
         "inovector/mixpost-pro-team": "dev-main",
-        "laravel/ai": "^0.11.0",
+        "laravel/ai": "^1.4",
         "laravel/framework": "^13.0",
         "laravel/horizon": "^5.15",
         "laravel/reverb": "^1.0",
@@ -18,7 +18,7 @@
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
-        "laravel/boost": "^2.5",
+        "laravel/boost": "^2.10",
         "laravel/pail": "^1.2.5",
         "laravel/pao": "^1.0.6",
         "laravel/pint": "^1.27",

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\GenieSyncStatus;
+use App\Enums\GenieSyncAction;
 use App\Enums\GenieType;
 use App\Http\Resources\Admin\LogResource;
 use App\Models\AiRun;
@@ -18,6 +18,9 @@ class LogsController extends Controller
 {
     /**
      * Every log entry, newest first; `?run_step={uuid}` narrows it to the calls of one run step.
+     *
+     * The list leaves out the `request`/`response` payloads and orders by the primary key: sorting
+     * the full rows by the unindexed `created_at` overflows MySQL's sort buffer once a payload is large.
      */
     public function index(Request $request): AnonymousResourceCollection|Response
     {
@@ -26,8 +29,9 @@ class LogsController extends Controller
             : null;
 
         $logRecords = Log::query()
+            ->select(['id', 'uuid', 'type', 'action', 'run_step_id', 'duration', 'input_tokens', 'output_tokens', 'created_at', 'updated_at'])
             ->when($runStep, fn ($query) => $query->where('run_step_id', $runStep->id))
-            ->latest()
+            ->latest('id')
             ->paginate(100)
             ->onEachSide(1)
             ->withQueryString();
@@ -35,7 +39,7 @@ class LogsController extends Controller
         return Inertia::render('Genie/Admin/Logs/Index', [
             'records' => LogResource::collection($logRecords),
             'genieTypes' => GenieType::withTitle(),
-            'genieSyncStatus' => GenieSyncStatus::withTitle(),
+            'genieSyncActions' => GenieSyncAction::withTitle(),
             'filter' => ['run_step' => $request->query('run_step', '')],
             'runStep' => $runStep ? [
                 'id' => $runStep->uuid,
@@ -49,7 +53,7 @@ class LogsController extends Controller
 
     public function view(Request $request): Response
     {
-        $log = Log::all()->find($request->route('log'));
+        $log = Log::findOrFail($request->route('log'));
 
         return Inertia::render('Genie/Admin/Logs/View', [
             'log' => new LogResource($log),

@@ -2,11 +2,14 @@
 
 namespace App\Concerns\Requests;
 
+use App\Enums\StrategyBlock;
+use App\Enums\StrategyStyle;
 use App\Enums\SubFieldType;
 use App\Enums\VersionGroupType;
 use App\Models\VersionField;
 use App\Models\VersionFieldSubField;
 use App\Rules\SnakeCase;
+use App\Rules\StrategyStyleTokens;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\Rule;
 
@@ -40,8 +43,8 @@ trait HandlesSubFields
             $rules[$prefix.'.editable'] = ['nullable', 'boolean'];
             $rules[$prefix.'.enum_values'] = ['nullable', 'array'];
             $rules[$prefix.'.icon'] = ['nullable', 'string', 'max:255'];
-            $rules[$prefix.'.class'] = ['nullable', 'string', 'max:255'];
-            $rules[$prefix.'.block'] = ['nullable', 'string', 'max:255'];
+            $rules[$prefix.'.class'] = ['nullable', 'max:255', new StrategyStyleTokens];
+            $rules[$prefix.'.block'] = ['nullable', Rule::enum(StrategyBlock::class)];
             $rules[$prefix.'.children'] = ['nullable', 'array'];
 
             $prefix .= '.children.*';
@@ -64,7 +67,43 @@ trait HandlesSubFields
                 'sub_fields',
                 $validator
             );
+
+            $this->assertBlocksFit(
+                (array) $this->input('sub_fields', []),
+                'sub_fields',
+                $validator
+            );
         });
+    }
+
+    /**
+     * A block is a layout for one shape, so it is checked against the sub-field's type and its
+     * children as posted: bullets need an array of strings, choices an object of booleans.
+     *
+     * An unknown block or type is left to the field rules, which already report it.
+     *
+     * @param  array<int, array<string, mixed>>  $subFields
+     */
+    protected function assertBlocksFit(array $subFields, string $path, $validator): void
+    {
+        foreach (array_values($subFields) as $index => $subField) {
+            $subField = (array) $subField;
+            $type = SubFieldType::tryFrom((int) ($subField['type'] ?? 0));
+            $block = StrategyBlock::tryFrom((string) ($subField['block'] ?? ''));
+
+            if ($type !== null && $block !== null && StrategyBlock::forRow($subField) === null) {
+                $validator->errors()->add(
+                    "$path.$index.block",
+                    __('genie.sub_field_block_not_supported', ['block' => $block->title()])
+                );
+            }
+
+            $this->assertBlocksFit(
+                $type?->hasChildren() ? (array) ($subField['children'] ?? []) : [],
+                "$path.$index.children",
+                $validator
+            );
+        }
     }
 
     /**
@@ -297,8 +336,8 @@ trait HandlesSubFields
                     'editable' => $this->resolveEditable($subField),
                     'enum_values' => $enumValues ?: null,
                     'icon' => $subField['icon'] ?? null,
-                    'class' => $subField['class'] ?? null,
-                    'block' => $subField['block'] ?? null,
+                    'class' => StrategyStyle::sanitize($subField['class'] ?? null),
+                    'block' => StrategyBlock::forRow($subField)?->value,
                     'position' => $position,
                 ]
             );

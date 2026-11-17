@@ -24,11 +24,22 @@ class StepAgentFactory
     public const DEFAULT_TIMEOUT = 300;
 
     /**
-     * Providers the SDK can generate images with, as `ModelProfile::$provider` values.
+     * Drivers the SDK can generate images with, matched against `ModelProfile::driver()`. Bedrock is
+     * left out on purpose: it needs aws/aws-sdk-php, which the application does not install.
      *
      * @var list<string>
      */
-    public const IMAGE_PROVIDERS = ['openai', 'azure', 'gemini', 'xai', 'openrouter', 'bedrock'];
+    public const IMAGE_PROVIDERS = ['openai', 'azure', 'gemini', 'xai', 'openrouter'];
+
+    /**
+     * Drivers whose text models can search the web, matched against `ModelProfile::driver()`: the
+     * SDK providers implementing SupportsWebSearch, except Groq, which searches only with its
+     * compound models. prepare() refuses a searching step on any other provider, because the SDK (from
+     * laravel/ai 1.1) would silently drop the tool.
+     *
+     * @var list<string>
+     */
+    public const WEB_SEARCH_PROVIDERS = ['openai', 'azure', 'anthropic', 'gemini', 'xai', 'openrouter'];
 
     public function __construct(protected StepSchemaBuilder $schemas = new StepSchemaBuilder) {}
 
@@ -90,9 +101,31 @@ class StepAgentFactory
     {
         $provider = $this->provider($step);
 
+        $this->ensureCanSearch($step);
+
         $this->configureAiProvider($provider);
 
         return $provider;
+    }
+
+    /**
+     * Refuse a step that searches the web on a provider that cannot.
+     *
+     * ValidatesStepWebSearch checks this when the step is saved, but the step's profile can be
+     * switched to another provider afterwards. Since laravel/ai 1.1 the SDK does not object: it
+     * drops a WebSearch tool the provider cannot run, and the step answers from the model alone as
+     * though it had searched.
+     */
+    protected function ensureCanSearch(RuleStep $step): void
+    {
+        if (! $step->searchesWeb() || self::supportsWebSearch($step)) {
+            return;
+        }
+
+        throw new RuntimeException(
+            "Step [{$step->id}] searches the web, but its profile's provider [{$step->modelProfile?->provider}] cannot. "
+            .'Pick a profile whose provider can search, or turn web search off.'
+        );
     }
 
     /**
@@ -107,13 +140,23 @@ class StepAgentFactory
     }
 
     /**
-     * Whether the profile's provider can generate images at all.
+     * Whether the profile's provider can generate images at all, judged by its driver.
      */
     public static function supportsImages(ModelProfile|RuleStep $subject): bool
     {
         $profile = $subject instanceof RuleStep ? $subject->modelProfile : $subject;
 
-        return $profile !== null && in_array($profile->provider, self::IMAGE_PROVIDERS, true);
+        return $profile !== null && in_array($profile->driver(), self::IMAGE_PROVIDERS, true);
+    }
+
+    /**
+     * Whether the profile's provider can search the web, judged by its driver.
+     */
+    public static function supportsWebSearch(ModelProfile|RuleStep $subject): bool
+    {
+        $profile = $subject instanceof RuleStep ? $subject->modelProfile : $subject;
+
+        return $profile !== null && in_array($profile->driver(), self::WEB_SEARCH_PROVIDERS, true);
     }
 
     public function provider(RuleStep $step): Lab|string

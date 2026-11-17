@@ -85,7 +85,7 @@ return [
 
     'waits' => [
         'redis:default' => 60,
-        'redis:genie-ai' => 300,
+        'genie-redis:genie-ai' => 300,
     ],
 
     /*
@@ -196,7 +196,9 @@ return [
         ],
 
         'genie-ai' => [
-            'connection' => 'redis',
+            // Its own connection: retry_after (720) > Runner::CLAIM_EXPIRES_AFTER (660) >= this
+            // timeout (660) > AiRunJob::$timeout (600). A shorter retry_after re-runs live jobs.
+            'connection' => 'genie-redis',
             'queue' => ['genie-ai'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',

@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\RunResponseError;
 use App\Enums\RunStatus;
 use App\Genie\Runs\Runners;
 use App\Models\AiRun;
@@ -32,9 +33,10 @@ class AiRunJob implements ShouldQueue
     public int $tries = 3;
 
     /**
-     * The model call is the long pole; this, the SDK per-call timeout and the Horizon supervisor
-     * timeout all cap each other, so they are kept in step: the `genie-ai` supervisor allows 660
-     * seconds, this job 600, and the step's profile timeout stays below both.
+     * The model call is the long pole; this, the SDK per-call timeout, the Horizon supervisor
+     * timeout, the step claim and the queue's retry_after all cap each other, so they are kept in
+     * step: the connection's retry_after is 720 seconds, Runner::CLAIM_EXPIRES_AFTER and the
+     * `genie-ai` supervisor 660, this job 600, and the step's profile timeout stays below all.
      */
     public int $timeout = 600;
 
@@ -43,6 +45,12 @@ class AiRunJob implements ShouldQueue
      * image generation, which takes minutes — survives.
      */
     public const QUEUE = 'genie-ai';
+
+    /**
+     * The `redis` connection's 90-second retry_after would hand a job that is still drawing images
+     * to a second worker; this connection's outlasts every job on the queue.
+     */
+    public const CONNECTION = 'genie-redis';
 
     /**
      * Wait progressively longer between retries, so a rate limit has time to clear.
@@ -57,6 +65,7 @@ class AiRunJob implements ShouldQueue
         // before handle() has set the current workspace.
         $this->run = $run->withoutRelations();
 
+        $this->onConnection(self::CONNECTION);
         $this->onQueue(self::QUEUE);
     }
 
@@ -66,12 +75,18 @@ class AiRunJob implements ShouldQueue
 
         $runner = Runners::for($this->run->rule->rule_type);
 
+        if ($runner->isSuperseded($this->run)) {
+            Log::info('Genie run superseded, not carried on', ['run_id' => $this->run->id]);
+
+            return;
+        }
+
         // A released job comes back here; pick the failed step up again rather than stepping over it.
         if ($this->attempts() > 1) {
             $runner->retryFailed($this->run);
         }
 
-        if ($runner->advance($this->run)) {
+        if ($runner->advance($this->run, $this->job?->uuid())) {
             self::dispatch($this->run->fresh());
 
             return;
@@ -89,15 +104,35 @@ class AiRunJob implements ShouldQueue
      */
     protected function releaseIfRetryable(): void
     {
-        if ($this->run->fresh()->status !== RunStatus::ERROR) {
-            return;
-        }
-
-        if ($this->attempts() >= $this->tries) {
+        if (! $this->isRetryable()) {
             return;
         }
 
         $this->release($this->backoff[$this->attempts() - 1] ?? 180);
+    }
+
+    /**
+     * Whether the run stopped on a failure that another attempt could get past.
+     *
+     * An exhausted credit balance, quota or spend limit does not clear within the backoff, so a
+     * step the SDK failed with InsufficientCreditsException (recorded by Runner::fail() as
+     * RunResponseError::INSUFFICIENT_CREDITS) ends the run rather than failing the same way on
+     * every remaining attempt. A manual resume (Runner::retryFailed()) clears the error first.
+     */
+    protected function isRetryable(): bool
+    {
+        if ($this->run->fresh()->status !== RunStatus::ERROR) {
+            return false;
+        }
+
+        if ($this->attempts() >= $this->tries) {
+            return false;
+        }
+
+        return $this->run->steps()
+            ->where('status', RunStatus::ERROR)
+            ->where('error', RunResponseError::INSUFFICIENT_CREDITS)
+            ->doesntExist();
     }
 
     public function failed(?Throwable $exception): void

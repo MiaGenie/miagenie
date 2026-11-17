@@ -31,15 +31,13 @@ class OpenAIConfig extends Config implements ConfigContract
     public function rules(): array
     {
         return [
-            'api_key' => ['required'],
+            'api_key' => ['nullable', 'string'],
             'request_timeout' => ['nullable', 'integer', 'min:1', 'max:3600'],
         ];
     }
 
     public function messages(): array
     {
-        return [
-            'api_key' => __('validation.required', ['attribute' => 'API Key']),
-        ];
+        return [];
     }
 }

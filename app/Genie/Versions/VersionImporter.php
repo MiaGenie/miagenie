@@ -2,6 +2,11 @@
 
 namespace App\Genie\Versions;
 
+use App\Enums\RuleSubType;
+use App\Enums\StrategyBlock;
+use App\Enums\StrategySection;
+use App\Enums\StrategyStyle;
+use App\Enums\VersionGroupType;
 use App\Enums\VersionStatus;
 use App\Models\ModelProfile;
 use App\Models\Rule;
@@ -10,6 +15,7 @@ use App\Models\Version;
 use App\Models\VersionField;
 use App\Models\VersionFieldOption;
 use App\Models\VersionFieldSubField;
+use App\Support\MdiIcon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -99,6 +105,8 @@ class VersionImporter
     {
         $field = VersionField::create([
             ...$this->attributesFor(new VersionField, $row, ['options', 'sub_fields']),
+            ...$this->fieldStyling($row),
+            ...$this->fieldIcon($row),
             'version_id' => $version->id,
         ]);
 
@@ -129,6 +137,7 @@ class VersionImporter
 
             $subField = VersionFieldSubField::create([
                 ...$this->attributesFor(new VersionFieldSubField, $row, ['children']),
+                ...$this->subFieldStyling($row),
                 'field_id' => $field->id,
                 'parent_id' => $parentId,
             ]);
@@ -165,6 +174,7 @@ class VersionImporter
 
         return RuleStep::create([
             ...$this->attributesFor(new RuleStep, $row, ['model_profile', 'depends_on']),
+            ...$this->stepWebSearch($row),
             'rule_id' => $rule->id,
             'model_profile_id' => $this->modelProfileId($row['model_profile'] ?? null),
             'depends_on_field' => $dependsOnField,
@@ -228,6 +238,84 @@ class VersionImporter
         }
 
         return $this->modelProfileIds[$name];
+    }
+
+    /**
+     * A step's web search, switched off with its cap and domains for a sub type that may not
+     * search, as the step form would store it.
+     *
+     * @param  array<string, mixed>  $row
+     * @return array<string, mixed>
+     */
+    public function stepWebSearch(array $row): array
+    {
+        $subType = RuleSubType::tryFrom((int) ($row['rule_sub_type'] ?? 0));
+
+        if ($subType?->supportsWebSearch() ?? false) {
+            return [];
+        }
+
+        return ['web_search' => false, 'web_search_max' => null, 'web_search_domains' => null];
+    }
+
+    /**
+     * A field's section block and style tokens, as far as the vocabulary knows them, and only for
+     * a group whose fields are styled.
+     *
+     * An older export carries whatever free text the columns held, which the field form would now
+     * refuse; it is dropped here rather than written back.
+     *
+     * @param  array<string, mixed>  $row
+     * @return array{block: string|null, class: string|null}
+     */
+    public function fieldStyling(array $row): array
+    {
+        if (! $this->groupOf($row)?->supportsStyling()) {
+            return ['block' => null, 'class' => null];
+        }
+
+        return [
+            'block' => StrategySection::tryFrom((string) ($row['block'] ?? ''))?->value,
+            'class' => StrategyStyle::sanitize($row['class'] ?? null),
+        ];
+    }
+
+    /**
+     * A field's icon and its SVG path, kept only for a group whose fields carry icons and only when
+     * both hold what the field form accepts; otherwise neither, as the form would store it.
+     *
+     * @param  array<string, mixed>  $row
+     * @return array{icon: string|null, icon_path: string|null}
+     */
+    public function fieldIcon(array $row): array
+    {
+        if (! $this->groupOf($row)?->supportsIcon()) {
+            return ['icon' => null, 'icon_path' => null];
+        }
+
+        return MdiIcon::sanitize($row['icon'] ?? null, $row['icon_path'] ?? null);
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     */
+    protected function groupOf(array $row): ?VersionGroupType
+    {
+        return VersionGroupType::tryFrom((int) ($row['group_type'] ?? 0));
+    }
+
+    /**
+     * A sub-field's block, when it fits the sub-field's type and children, and its style tokens.
+     *
+     * @param  array<string, mixed>  $row
+     * @return array{block: string|null, class: string|null}
+     */
+    public function subFieldStyling(array $row): array
+    {
+        return [
+            'block' => StrategyBlock::forRow($row)?->value,
+            'class' => StrategyStyle::sanitize($row['class'] ?? null),
+        ];
     }
 
     /**

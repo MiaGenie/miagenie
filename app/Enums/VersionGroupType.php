@@ -22,4 +22,22 @@ enum VersionGroupType: int
             self::STRATEGIES => 'strategies'
         };
     }
+
+    /**
+     * Whether a field of this group may carry an icon. Only the strategy fields do: the icon heads
+     * the field's section where the workspace reviews and reads its strategy.
+     */
+    public function supportsIcon(): bool
+    {
+        return $this === self::STRATEGIES;
+    }
+
+    /**
+     * Whether a field of this group may carry a section block and style tokens. As with the icon,
+     * only a strategy field is presented on the strategy pages, where they apply.
+     */
+    public function supportsStyling(): bool
+    {
+        return $this === self::STRATEGIES;
+    }
 }

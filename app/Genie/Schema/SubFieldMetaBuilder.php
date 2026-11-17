@@ -2,6 +2,8 @@
 
 namespace App\Genie\Schema;
 
+use App\Enums\StrategyBlock;
+use App\Enums\StrategyStyle;
 use App\Enums\SubFieldType;
 use App\Models\VersionField;
 use App\Models\VersionFieldSubField;
@@ -11,11 +13,14 @@ use Illuminate\Support\Collection;
  * Compiles what the page needs to know about a strategy field's sub-fields, but the compiled JSON
  * Schema cannot carry.
  *
- * `StepSchemaBuilder::decorate()` deliberately emits none of `editable`, `icon`, `class` or
- * `position`: they say nothing about the contract sent to the provider, and Illuminate's serializer
- * drops unknown keywords anyway. Editability still has to reach the strategy pages, so it travels
- * beside the schema in a tree of the same shape — node for node — and the page walks the two
- * together.
+ * `StepSchemaBuilder::decorate()` deliberately emits none of `editable`, `icon`, `class`, `block`
+ * or `position`: they say nothing about the contract sent to the provider, and Illuminate's
+ * serializer drops unknown keywords anyway. Editability and styling still have to reach the
+ * strategy pages, so they travel beside the schema in a tree of the same shape — node for node —
+ * and the page walks the two together.
+ *
+ * A node carries `block` (a `StrategyBlock` that fits it) and `class` (its `StrategyStyle` tokens)
+ * only when the sub-field sets them; without a block the page infers the layout from the schema.
  */
 class SubFieldMetaBuilder
 {
@@ -84,7 +89,7 @@ class SubFieldMetaBuilder
             ->sortBy('position')
             ->values();
 
-        $node = ['editable' => $this->isEditable($subField, $children)];
+        $node = ['editable' => $this->isEditable($subField, $children)] + $this->styling($subField, $children);
 
         return match ($subField->type) {
             SubFieldType::OBJECT => $node + ['properties' => $this->properties($children, $all)],
@@ -96,6 +101,32 @@ class SubFieldMetaBuilder
                 ]],
             SubFieldType::STRING, SubFieldType::BOOLEAN => $node,
         };
+    }
+
+    /**
+     * The sub-field's block and style tokens, as far as they are valid for it.
+     *
+     * Checked against the shape rather than trusted, as editability is: the stored block may
+     * predate a change of type or children, and a row written by any other route than the admin
+     * form may hold anything.
+     *
+     * @param  Collection<int, VersionFieldSubField>  $children
+     * @return array{block?: string, class?: string}
+     */
+    protected function styling(VersionFieldSubField $subField, Collection $children): array
+    {
+        $block = StrategyBlock::resolve(
+            $subField->block,
+            $subField->type,
+            $children->map(fn (VersionFieldSubField $child) => $child->type)->all(),
+        );
+
+        $class = StrategyStyle::sanitize($subField->class);
+
+        return array_filter([
+            'block' => $block?->value,
+            'class' => $class,
+        ], fn (?string $value) => $value !== null);
     }
 
     /**

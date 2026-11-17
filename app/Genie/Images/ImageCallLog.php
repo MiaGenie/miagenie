@@ -7,6 +7,8 @@ use App\Enums\GenieType;
 use App\Models\AiRunStep;
 use App\Models\AiRunStepFile;
 use App\Models\Log;
+use App\Models\TokenUsage;
+use Laravel\Ai\Responses\Data\Usage;
 
 /**
  * One genie_logs entry per image call, tied to the run step it was made for.
@@ -17,6 +19,11 @@ use App\Models\Log;
  */
 class ImageCallLog
 {
+    /**
+     * @param  Usage|null  $usage  What the call cost, whenever the provider answered — also when
+     *                             storing the image failed afterwards. Counted as the workspace
+     *                             ledger counts it (TokenUsage::countsFrom()).
+     */
     public function record(
         AiRunStep $runStep,
         ImagePrompt $prompt,
@@ -25,6 +32,7 @@ class ImageCallLog
         ?string $error = null,
         ?string $mode = null,
         ?AiRunStepFile $parent = null,
+        ?Usage $usage = null,
     ): void {
         Log::create([
             'type' => GenieType::RUN_RESPONSE,
@@ -38,6 +46,7 @@ class ImageCallLog
                 ? ['error' => $error]
                 : ['file' => $file?->file?->uuid, 'position' => $file?->position],
             'duration' => $duration,
+            ...($usage ? TokenUsage::countsFrom($usage) : []),
         ]);
     }
 }

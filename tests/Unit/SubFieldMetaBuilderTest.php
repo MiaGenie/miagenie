@@ -133,4 +133,76 @@ class SubFieldMetaBuilderTest extends TestCase
     {
         $this->assertSame([], (new SubFieldMetaBuilder)->forFields([$this->field('orphan')]));
     }
+
+    public function test_a_fitting_block_and_known_style_tokens_reach_the_node(): void
+    {
+        $summary = $this->subField('summary', SubFieldType::STRING, [
+            'block' => 'text',
+            'class' => 'strategy-emphasis-muted',
+        ]);
+        $tone = $this->subField('tone_of_voice', SubFieldType::OBJECT, [
+            'block' => 'cards',
+            'class' => 'strategy-tone-orange strategy-animate-fade-in',
+        ], [$summary]);
+
+        $meta = (new SubFieldMetaBuilder)->forFields([$this->field('tone_of_voice', [$tone, $summary])]);
+
+        $this->assertSame('cards', $meta['tone_of_voice']['block']);
+        $this->assertSame('strategy-tone-orange strategy-animate-fade-in', $meta['tone_of_voice']['class']);
+        $this->assertSame(
+            ['editable' => true, 'block' => 'text', 'class' => 'strategy-emphasis-muted'],
+            $meta['tone_of_voice']['properties']['summary'],
+        );
+    }
+
+    public function test_a_block_that_does_not_fit_the_shape_is_dropped(): void
+    {
+        // Bullets draw strings; children make the items objects.
+        $title = $this->subField('title', SubFieldType::STRING);
+        $pillars = $this->subField('content_pillars', SubFieldType::ARRAY, ['block' => 'bullets'], [$title]);
+
+        // Choices need booleans, and a block for another type never applies.
+        $name = $this->subField('name', SubFieldType::STRING);
+        $brand = $this->subField('brand', SubFieldType::OBJECT, ['block' => 'choices'], [$name]);
+        $about = $this->subField('about', SubFieldType::STRING, ['block' => 'cards']);
+
+        $meta = (new SubFieldMetaBuilder)->forFields([
+            $this->field('content_pillars', [$pillars, $title]),
+            $this->field('brand', [$brand, $name]),
+            $this->field('about', [$about]),
+        ]);
+
+        $this->assertArrayNotHasKey('block', $meta['content_pillars']);
+        $this->assertArrayNotHasKey('block', $meta['brand']);
+        $this->assertSame(['editable' => true], $meta['about']);
+    }
+
+    public function test_unknown_blocks_and_style_tokens_are_dropped(): void
+    {
+        $dos = $this->subField('3_dos', SubFieldType::ARRAY, [
+            'block' => 'group',
+            'class' => 'text-red-500 strategy-tone-cyan strategy-tone-orange',
+        ]);
+        $donts = $this->subField('4_donts', SubFieldType::ARRAY, ['class' => 'bg-red-50']);
+
+        $meta = (new SubFieldMetaBuilder)->forFields([
+            $this->field('dos', [$dos]),
+            $this->field('donts', [$donts]),
+        ]);
+
+        // Only the first tone survives: a node carries one token per category.
+        $this->assertSame(['editable' => true, 'class' => 'strategy-tone-cyan'], $meta['dos']);
+        $this->assertSame(['editable' => true], $meta['donts']);
+    }
+
+    public function test_the_implicit_wrapper_of_several_roots_carries_no_styling(): void
+    {
+        $title = $this->subField('title', SubFieldType::STRING, ['class' => 'strategy-tone-orange']);
+        $body = $this->subField('body', SubFieldType::STRING, ['position' => 1]);
+
+        $meta = (new SubFieldMetaBuilder)->forFields([$this->field('post', [$title, $body])]);
+
+        $this->assertArrayNotHasKey('class', $meta['post']);
+        $this->assertSame('strategy-tone-orange', $meta['post']['properties']['title']['class']);
+    }
 }

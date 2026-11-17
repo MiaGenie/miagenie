@@ -5,7 +5,14 @@ namespace Tests\Unit;
 use App\Ai\StepResponse;
 use App\Enums\RunResponseError;
 use App\Enums\RunResponseStatus;
+use Laravel\Ai\Exceptions\InsufficientCreditsException;
+use Laravel\Ai\Exceptions\ProviderConnectionException;
+use Laravel\Ai\Exceptions\ProviderOverloadedException;
 use Laravel\Ai\Exceptions\RateLimitedException;
+use Laravel\Ai\Responses\AgentResponse;
+use Laravel\Ai\Responses\Data\Meta;
+use Laravel\Ai\Responses\Data\TextUsage;
+use Laravel\Ai\Responses\Data\UrlCitation;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -47,11 +54,45 @@ class StepResponseTest extends TestCase
         $this->assertNull($response['structured']);
     }
 
+    public function test_an_exhausted_credit_balance_maps_to_its_own_case(): void
+    {
+        $response = StepResponse::fromThrowable(InsufficientCreditsException::forProvider('openai', 429));
+
+        $this->assertSame('insufficient_credits', $response['error']['code']);
+        $this->assertSame(RunResponseError::INSUFFICIENT_CREDITS, StepResponse::error('insufficient_credits'));
+    }
+
+    public function test_an_overloaded_or_unreachable_provider_maps_to_server_error(): void
+    {
+        $this->assertSame(RunResponseError::SERVER_ERROR, StepResponse::errorCode(ProviderOverloadedException::forProvider('anthropic', 529)));
+        $this->assertSame(RunResponseError::SERVER_ERROR, StepResponse::errorCode(ProviderConnectionException::forProvider('openai')));
+    }
+
     public function test_an_unrecognised_exception_maps_to_server_error(): void
     {
         $response = StepResponse::fromThrowable(new RuntimeException('boom'));
 
         $this->assertSame('server_error', $response['error']['code']);
         $this->assertSame('boom', $response['error']['message']);
+    }
+
+    public function test_citations_are_listed_once_per_url_without_their_offsets(): void
+    {
+        $response = new AgentResponse('inv', '{}', new TextUsage, new Meta('openai', 'gpt', collect([
+            new UrlCitation('https://statista.com/a', 'Market size', 0, 10),
+            new UrlCitation('https://example.org/b', null, 11, 20),
+            new UrlCitation('https://statista.com/a', 'Market size', 21, 30),
+            new UrlCitation('', 'No address'),
+        ])));
+
+        $this->assertSame([
+            ['url' => 'https://statista.com/a', 'title' => 'Market size'],
+            ['url' => 'https://example.org/b', 'title' => null],
+        ], StepResponse::citations($response));
+    }
+
+    public function test_a_response_without_citations_lists_none(): void
+    {
+        $this->assertSame([], StepResponse::citations(new AgentResponse('inv', 'text', new TextUsage, new Meta)));
     }
 }

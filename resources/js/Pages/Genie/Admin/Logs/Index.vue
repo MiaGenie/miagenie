@@ -26,7 +26,7 @@ const props = defineProps({
         type: Object,
         require: true
     },
-    genieSyncStatus: {
+    genieSyncActions: {
         type: Object,
         require: true
     },
@@ -101,6 +101,13 @@ const props = defineProps({
                                 scope="col"
                             >
                                 {{ $t('genie.log_duration') }}
+                            </TableCell>
+
+                            <TableCell
+                                component="th"
+                                scope="col"
+                            >
+                                {{ $t('genie.run_tokens') }}
                             </TableCell>
 
                             <TableCell

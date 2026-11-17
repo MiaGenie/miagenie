@@ -57,10 +57,6 @@ const props = defineProps({
         type: Object,
         required: true,
     },
-    imageProviders: {
-        type: Array,
-        required: true,
-    },
     version: {
         type: Object,
         required: true,
@@ -91,7 +87,12 @@ const confirmation = inject("confirmation");
 
 const form = useForm(
     isEdit.value
-        ? cloneDeep(props.record)
+        ? {
+              ...cloneDeep(props.record),
+              // Edited as text, one domain per line; the server splits and normalises it.
+              web_search_domains: (props.record.web_search_domains ?? []).join("\n"),
+              web_search_max: props.record.web_search_max ?? "",
+          }
         : {
               rule_sub_type: isEdit.value ? props.record.rule_sub_type : "",
               post_format: isEdit.value ? props.record.post_format : "",
@@ -115,6 +116,9 @@ const form = useForm(
                   ? props.record.review_message_system
                   : "",
               optional: isEdit.value ? props.record.optional : 0,
+              web_search: false,
+              web_search_max: "",
+              web_search_domains: "",
               depends_on_field: isEdit.value
                   ? props.record.depends_on_field
                   : "",
@@ -157,11 +161,27 @@ const formatRequired = computed(() => Boolean(ruleSubType.value?.format_required
 const isImage = computed(() => Boolean(ruleSubType.value?.image));
 
 /**
- * Whether a provider can generate images; a profile on any other provider cannot be picked for
- * an image step.
+ * Whether a profile's provider can generate images, as the server judged it from the provider's
+ * driver; any other profile cannot be picked for an image step.
  */
-const profileSupportsImages = (profile) =>
-    props.imageProviders.includes(profile.provider);
+const profileSupportsImages = (profile) => Boolean(profile.supports_images);
+
+/**
+ * Only the strategy sub types may search the web, and only on a provider that can.
+ */
+const supportsWebSearch = computed(() => Boolean(ruleSubType.value?.web_search));
+
+const profileSupportsWebSearch = (profile) =>
+    Boolean(profile.supports_web_search);
+
+// Each domain is validated as web_search_domains.N; show the first failure under the field.
+const webSearchDomainsError = computed(
+    () =>
+        form.errors.web_search_domains ??
+        Object.entries(form.errors).find(([key]) =>
+            key.startsWith("web_search_domains."),
+        )?.[1],
+);
 
 // Kept out of the template: a literal "}}}" inside a mustache would end it early.
 const imagePlaceholders = {
@@ -186,6 +206,10 @@ watch(
             find(props.ruleSubTypes, ["value", parseInt(form.rule_sub_type)]) ??
             {};
         isMultiple.value = ruleSubType.value?.name === "BRIEFINGS_MULTIPLE";
+
+        if (!supportsWebSearch.value) {
+            form.web_search = false;
+        }
 
         if (isImage.value) {
             form.response_format = "text";
@@ -596,7 +620,9 @@ const cloneStepInto = (target) => {
                                 :key="option.id"
                                 :value="option.id"
                                 :disabled="
-                                    isImage && !profileSupportsImages(option)
+                                    (isImage && !profileSupportsImages(option)) ||
+                                    (form.web_search &&
+                                        !profileSupportsWebSearch(option))
                                 "
                             >
                                 {{ option.name }} ({{ option.provider }} /
@@ -606,6 +632,76 @@ const cloneStepInto = (target) => {
 
                         <template #footer>
                             <Error :message="form.errors.model_profile_id" />
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup v-if="supportsWebSearch" class="form-field">
+                        <template #title>
+                            <label for="web_search">{{
+                                $t("genie.step_web_search")
+                            }}</label>
+                        </template>
+
+                        <Switch v-model="form.web_search" id="web_search" />
+
+                        <template #footer>
+                            <div class="text-sm text-gray-500">
+                                {{ $t("genie.step_web_search_help") }}
+                            </div>
+                            <Error :message="form.errors.web_search" />
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup
+                        v-if="supportsWebSearch && form.web_search"
+                        class="form-field mt-lg"
+                    >
+                        <template #title>
+                            <label for="web_search_max">{{
+                                $t("genie.step_web_search_max")
+                            }}</label>
+                        </template>
+
+                        <Input
+                            v-model="form.web_search_max"
+                            :error="form.errors.web_search_max !== undefined"
+                            type="number"
+                            min="1"
+                            max="20"
+                            id="web_search_max"
+                        />
+
+                        <template #footer>
+                            <div class="text-sm text-gray-500">
+                                {{ $t("genie.step_web_search_max_help") }}
+                            </div>
+                            <Error :message="form.errors.web_search_max" />
+                        </template>
+                    </VerticalGroup>
+
+                    <VerticalGroup
+                        v-if="supportsWebSearch && form.web_search"
+                        class="form-field mt-lg"
+                    >
+                        <template #title>
+                            <label for="web_search_domains">{{
+                                $t("genie.step_web_search_domains")
+                            }}</label>
+                        </template>
+
+                        <Textarea
+                            v-model="form.web_search_domains"
+                            :error="webSearchDomainsError !== undefined"
+                            id="web_search_domains"
+                            class="w-full"
+                            rows="4"
+                        />
+
+                        <template #footer>
+                            <div class="text-sm text-gray-500">
+                                {{ $t("genie.step_web_search_domains_help") }}
+                            </div>
+                            <Error :message="webSearchDomainsError" />
                         </template>
                     </VerticalGroup>
 

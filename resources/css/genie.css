@@ -596,3 +596,97 @@
     }
 
 }
+/*
+ * Strategy presentation styling. Every class here is a StrategyStyle token (app/Enums/StrategyStyle.php)
+ * an admin picks for a strategy field or sub-field; the page binds the stored value as it is, so a token
+ * must keep its class name and a new token needs its class here.
+ *
+ * A tone only reassigns the --strategy-accent* variables, which the blocks and section headers read, so it
+ * recolours everything below the element that carries it.
+ */
+@layer base {
+    :root {
+        --strategy-accent: var(--color-primary-500);
+        --strategy-accent-strong: var(--color-primary-700);
+        --strategy-accent-soft: var(--color-primary-50);
+        --strategy-accent-context: var(--color-primary-context);
+    }
+}
+
+@layer components {
+
+    .strategy-tone-primary {
+        --strategy-accent: var(--color-primary-500);
+        --strategy-accent-strong: var(--color-primary-700);
+        --strategy-accent-soft: var(--color-primary-50);
+        --strategy-accent-context: var(--color-primary-context);
+    }
+
+    .strategy-tone-miagenie {
+        --strategy-accent: var(--color-miagenie-600);
+        --strategy-accent-strong: var(--color-miagenie-900);
+        --strategy-accent-soft: var(--color-miagenie-50);
+        --strategy-accent-context: var(--color-white);
+    }
+
+    .strategy-tone-cyan {
+        --strategy-accent: var(--color-cyan-700);
+        --strategy-accent-strong: var(--color-cyan-900);
+        --strategy-accent-soft: var(--color-cyan-50);
+        --strategy-accent-context: var(--color-white);
+    }
+
+    .strategy-tone-orange {
+        --strategy-accent: var(--color-orange-600);
+        --strategy-accent-strong: var(--color-orange-700);
+        --strategy-accent-soft: var(--color-orange-50);
+        --strategy-accent-context: var(--color-white);
+    }
+
+    .strategy-emphasis-highlight {
+        @apply rounded-xl border-l-4 px-md py-sm;
+        border-left-color: var(--strategy-accent);
+        background-color: var(--strategy-accent-soft);
+    }
+
+    .strategy-emphasis-muted {
+        @apply opacity-70;
+    }
+
+    .strategy-animate-fade-in {
+        animation: strategy-fade-in 0.5s ease-out both;
+    }
+
+    .strategy-animate-slide-up {
+        animation: strategy-slide-up 0.5s ease-out both;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .strategy-animate-fade-in,
+        .strategy-animate-slide-up {
+            animation: none;
+        }
+    }
+}
+
+@keyframes strategy-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes strategy-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(0.75rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}

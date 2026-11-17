@@ -8,7 +8,9 @@ use App\Genie\Runs\RunPrompt;
 use App\Genie\Runs\RunState;
 use App\Genie\Runs\StepGate;
 use App\Genie\Runs\StepOutput;
+use App\Models\AiRun;
 use App\Models\AiRunStep;
+use App\Models\Strategy;
 
 /**
  * Runs one step of a strategy run.
@@ -25,6 +27,22 @@ class StrategyRunner extends Runner
         StepGate $gate = new StrategyChannelGate,
     ) {
         parent::__construct($agents, $state, $output, $gate);
+    }
+
+    /**
+     * A strategy run is superseded once an admin has asked for a newer strategy: the strategy pages
+     * read only the latest one, so finishing this run would bring back a strategy nobody sees. Only
+     * a settled strategy can be regenerated, so this catches a failed run's pending retry.
+     */
+    public function isSuperseded(AiRun $run): bool
+    {
+        if (! $run->strategy_id) {
+            return false;
+        }
+
+        return Strategy::byWorkspace($run->workspace_id)
+            ->where('id', '>', $run->strategy_id)
+            ->exists();
     }
 
     protected function prompt(AiRunStep $runStep, string $locale): RunPrompt

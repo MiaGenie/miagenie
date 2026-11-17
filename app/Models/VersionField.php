@@ -55,6 +55,8 @@ class VersionField extends Model
         'display_faq_text',
         'class',
         'block',
+        'icon',
+        'icon_path',
         'position',
     ];
 

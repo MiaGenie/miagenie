@@ -4,6 +4,7 @@ import {usePage} from "@inertiajs/vue3";
 import TableRow from "@/Components/DataDisplay/TableRow.vue";
 import TableCell from "@/Components/DataDisplay/TableCell.vue";
 import LogItemAction from "@/Components/Genie/Logs/LogItemAction.vue";
+import TokenCount from "@/Components/Genie/Usage/TokenCount.vue";
 import {find} from "lodash";
 
 const {t: $t} = useI18n();
@@ -16,7 +17,7 @@ const props = defineProps({
 })
 
 const genieTypes = usePage().props.genieTypes;
-const genieSyncStatus = usePage().props.genieSyncStatus;
+const genieSyncActions = usePage().props.genieSyncActions;
 
 </script>
 <template>
@@ -31,11 +32,15 @@ const genieSyncStatus = usePage().props.genieSyncStatus;
         </TableCell>
 
         <TableCell>
-            {{ find(genieSyncStatus, ['value', item.action]).name }}
+            {{ find(genieSyncActions, ['value', item.action]).name }}
         </TableCell>
 
         <TableCell>
             {{ item.duration }}
+        </TableCell>
+
+        <TableCell>
+            <TokenCount :input="item.input_tokens" :output="item.output_tokens"/>
         </TableCell>
 
         <TableCell>

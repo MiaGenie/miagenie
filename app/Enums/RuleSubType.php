@@ -99,6 +99,19 @@ enum RuleSubType: int
     }
 
     /**
+     * Whether a step of this sub type may search the web while it answers. Only the strategy
+     * steps do: that is where market and competitor research belongs. The ideas and posts steps
+     * build on the strategy the run already holds.
+     */
+    public function supportsWebSearch(): bool
+    {
+        return match ($this) {
+            self::BRIEFINGS, self::BRIEFINGS_MULTIPLE, self::CHANNELS => true,
+            default => false,
+        };
+    }
+
+    /**
      * The posts steps a run executes: the first-generation pair and the caption rewrite. The two
      * image revisions are prompts for a job on one slot, never a run step.
      */
@@ -113,7 +126,7 @@ enum RuleSubType: int
     /**
      * The sub types of a rule type as withTitle() rows, plus what the step editor needs to know:
      * whether the step generates (so its schema is fixed in code), whether it must name a format,
-     * and whether it is an image step.
+     * whether it is an image step, and whether it may search the web.
      *
      * @return Collection<int, array<string, mixed>>
      */
@@ -127,6 +140,7 @@ enum RuleSubType: int
                     'generator' => $case->isGenerator(),
                     'format_required' => $case->requiresPostFormat(),
                     'image' => $case->modality() === Modality::IMAGE,
+                    'web_search' => $case->supportsWebSearch(),
                 ]);
             })
             ->values();

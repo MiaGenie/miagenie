@@ -4,9 +4,12 @@ namespace Tests\Unit;
 
 use App\Ai\Agents\StepAgent;
 use App\Enums\ModelTier;
+use App\Enums\RuleSubType;
 use App\Models\ModelProfile;
 use App\Models\RuleStep;
+use Laravel\Ai\Contracts\HasTools;
 use Laravel\Ai\Contracts\Providers\TextProvider;
+use Laravel\Ai\Providers\Tools\WebSearch;
 use ReflectionMethod;
 use Tests\TestCase;
 
@@ -100,5 +103,49 @@ class StepAgentTest extends TestCase
         // Promptable never asks for a default once the agent named a model, but a profile that
         // lost its model name must still resolve to something promptable.
         $this->assertSame('the-default', $this->resolveModel($agent));
+    }
+
+    public function test_a_step_that_does_not_search_has_no_tools(): void
+    {
+        $agent = $this->agent();
+
+        $this->assertInstanceOf(HasTools::class, $agent);
+        $this->assertSame([], $agent->tools());
+    }
+
+    public function test_a_searching_step_carries_a_web_search_with_its_cap_and_domains(): void
+    {
+        $tools = $this->agent([
+            'rule_sub_type' => RuleSubType::BRIEFINGS,
+            'web_search' => true,
+            'web_search_max' => 4,
+            'web_search_domains' => ['statista.com', 'example.org'],
+        ])->tools();
+
+        $this->assertCount(1, $tools);
+        $this->assertInstanceOf(WebSearch::class, $tools[0]);
+        $this->assertSame(4, $tools[0]->maxSearches);
+        $this->assertSame(['statista.com', 'example.org'], $tools[0]->allowedDomains);
+    }
+
+    public function test_a_search_without_a_cap_or_domains_is_left_open(): void
+    {
+        $tools = $this->agent(['rule_sub_type' => RuleSubType::CHANNELS, 'web_search' => true])->tools();
+
+        $this->assertNull($tools[0]->maxSearches);
+        $this->assertSame([], $tools[0]->allowedDomains);
+    }
+
+    /**
+     * The step form refuses the switch outside the strategy sub types, but an imported version
+     * copies the column as exported; the agent must not search for such a step all the same.
+     */
+    public function test_a_switch_left_on_for_a_sub_type_that_may_not_search_carries_no_tools(): void
+    {
+        foreach ([RuleSubType::IDEAS_FORMAT, RuleSubType::POSTS_CONTENT, null] as $subType) {
+            $agent = $this->agent(['rule_sub_type' => $subType, 'web_search' => true, 'web_search_max' => 3]);
+
+            $this->assertSame([], $agent->tools(), $subType?->name ?? 'no sub type');
+        }
     }
 }
