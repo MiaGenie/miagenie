@@ -2,6 +2,9 @@
 
 namespace App\Genie\Versions;
 
+use App\Enums\StrategyBlock;
+use App\Enums\StrategySection;
+use App\Enums\StrategyStyle;
 use App\Enums\VersionStatus;
 use App\Models\ModelProfile;
 use App\Models\Rule;
@@ -99,6 +102,7 @@ class VersionImporter
     {
         $field = VersionField::create([
             ...$this->attributesFor(new VersionField, $row, ['options', 'sub_fields']),
+            ...$this->fieldStyling($row),
             'version_id' => $version->id,
         ]);
 
@@ -129,6 +133,7 @@ class VersionImporter
 
             $subField = VersionFieldSubField::create([
                 ...$this->attributesFor(new VersionFieldSubField, $row, ['children']),
+                ...$this->subFieldStyling($row),
                 'field_id' => $field->id,
                 'parent_id' => $parentId,
             ]);
@@ -228,6 +233,37 @@ class VersionImporter
         }
 
         return $this->modelProfileIds[$name];
+    }
+
+    /**
+     * A field's section block and style tokens, as far as the vocabulary knows them.
+     *
+     * An older export carries whatever free text the columns held, which the field form would now
+     * refuse; it is dropped here rather than written back.
+     *
+     * @param  array<string, mixed>  $row
+     * @return array{block: string|null, class: string|null}
+     */
+    public function fieldStyling(array $row): array
+    {
+        return [
+            'block' => StrategySection::tryFrom((string) ($row['block'] ?? ''))?->value,
+            'class' => StrategyStyle::sanitize($row['class'] ?? null),
+        ];
+    }
+
+    /**
+     * A sub-field's block, when it fits the sub-field's type and children, and its style tokens.
+     *
+     * @param  array<string, mixed>  $row
+     * @return array{block: string|null, class: string|null}
+     */
+    public function subFieldStyling(array $row): array
+    {
+        return [
+            'block' => StrategyBlock::forRow($row)?->value,
+            'class' => StrategyStyle::sanitize($row['class'] ?? null),
+        ];
     }
 
     /**

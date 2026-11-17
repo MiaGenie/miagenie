@@ -6,6 +6,9 @@ use App\Builders\VersionGroupQuery;
 use App\Enums\FormFieldFileType;
 use App\Enums\FormFieldType;
 use App\Enums\FormInputType;
+use App\Enums\StrategyBlock;
+use App\Enums\StrategySection;
+use App\Enums\StrategyStyle;
 use App\Enums\SubFieldType;
 use App\Enums\VersionGroupType;
 use App\Enums\VersionStatus;
@@ -103,6 +106,9 @@ class VersionFieldsController extends Controller
             'fileTypes' => FormFieldFileType::withTitle(),
             'inputTypes' => FormInputType::withInputOptions(),
             'subFieldTypes' => SubFieldType::withSubFieldOptions(),
+            'strategyBlocks' => StrategyBlock::forEditor(),
+            'strategySections' => StrategySection::withTitle(),
+            'strategyStyles' => StrategyStyle::forEditor(),
             'statusTypes' => VersionStatus::withTitle(),
         ]);
     }
@@ -150,6 +156,9 @@ class VersionFieldsController extends Controller
             'fileTypes' => FormFieldFileType::withTitle(),
             'inputTypes' => FormInputType::withInputOptions(),
             'subFieldTypes' => SubFieldType::withSubFieldOptions(),
+            'strategyBlocks' => StrategyBlock::forEditor(),
+            'strategySections' => StrategySection::withTitle(),
+            'strategyStyles' => StrategyStyle::forEditor(),
             'statusTypes' => VersionStatus::withTitle(),
         ]);
     }

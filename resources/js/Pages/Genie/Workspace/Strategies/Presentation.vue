@@ -176,6 +176,8 @@ const approve = () => {
                         :index="index"
                         :accent="index"
                         :edited="isEdited(field.code_name)"
+                        :variant="field.block || 'card'"
+                        :styles="field.class ?? ''"
                     >
                         <template #badge>{{ $t('general.edit') }}</template>
 

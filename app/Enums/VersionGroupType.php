@@ -31,4 +31,13 @@ enum VersionGroupType: int
     {
         return $this === self::STRATEGIES;
     }
+
+    /**
+     * Whether a field of this group may carry a section block and style tokens. As with the icon,
+     * only a strategy field is presented on the strategy pages, where they apply.
+     */
+    public function supportsStyling(): bool
+    {
+        return $this === self::STRATEGIES;
+    }
 }

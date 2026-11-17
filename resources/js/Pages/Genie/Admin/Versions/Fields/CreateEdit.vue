@@ -23,6 +23,7 @@ import VersionFieldSubFields from "@/Components/Genie/Versions/VersionFieldSubFi
 import TranslateButton from "@/Components/Genie/Translations/TranslateButton.vue";
 import VerticalGroup from "@/Components/Layout/VerticalGroup.vue";
 import IconPicker from "@/Components/Form/Genie/IconPicker.vue";
+import StyleTokensPicker from "@/Components/Form/Genie/StyleTokensPicker.vue";
 import Panel from "@/Components/Surface/Panel.vue";
 import Save from "@/Icons/Genie/Save.vue";
 import Trash from "@/Icons/Trash.vue";
@@ -79,6 +80,10 @@ const props = defineProps({
     statusTypes: {
         type: Object,
         required: true
+    },
+    strategySections: {
+        type: Array,
+        default: () => [],
     }
 })
 
@@ -135,17 +140,19 @@ const {
 } = useVersionField(form);
 
 /**
- * Only a strategy field carries an icon: it heads the field's section where the workspace reviews
- * and reads its strategy.
+ * Only a strategy field carries an icon, a section block and style tokens: they shape the field's
+ * section where the workspace reviews and reads its strategy.
  */
-const supportsIcon = computed(() => {
+const isStrategyField = computed(() => {
     return find(props.groupTypes, ['value', Number(form.group_type)])?.name === 'STRATEGIES';
 });
 
-watch(supportsIcon, (supported) => {
+watch(isStrategyField, (supported) => {
     if (!supported) {
         form.icon = '';
         form.icon_path = '';
+        form.class = '';
+        form.block = '';
     }
 });
 
@@ -448,7 +455,7 @@ const cloneFieldInto = (target) => {
                         </template>
                     </VerticalGroup>
 
-                    <VerticalGroup v-if="supportsIcon" class="form-field mt-lg">
+                    <VerticalGroup v-if="isStrategyField" class="form-field mt-lg">
                         <template #title>
                             <label for="icon">{{ $t("genie.field_icon") }}</label>
                         </template>
@@ -910,6 +917,7 @@ const cloneFieldInto = (target) => {
                     </VerticalGroup>
 
                     <Flex
+                        v-if="isStrategyField"
                         :responsive="false"
                         class="form-field mt-lg"
                     >
@@ -919,10 +927,10 @@ const cloneFieldInto = (target) => {
                                 <label for="class">{{ $t("genie.field_class") }}</label>
                             </template>
 
-                            <Input
+                            <StyleTokensPicker
                                 v-model="form.class"
-                                type="text"
                                 id="class"
+                                :error="form.errors.class !== undefined"
                             />
 
                             <template #footer>
@@ -935,13 +943,26 @@ const cloneFieldInto = (target) => {
                                 <label for="block">{{ $t("genie.field_block") }}</label>
                             </template>
 
-                            <Input
-                                v-model="form.block"
-                                type="text"
+                            <Select
+                                :model-value="form.block ?? ''"
                                 id="block"
-                            />
+                                :error="form.errors.block !== undefined"
+                                @update:model-value="form.block = $event"
+                            >
+                                <option value="">{{ $t("genie.strategy_section_card") }}</option>
+                                <option
+                                    v-for="option in strategySections.filter((entry) => entry.value !== 'card')"
+                                    :key="option.value"
+                                    :value="option.value"
+                                >
+                                    {{ option.title }}
+                                </option>
+                            </Select>
 
                             <template #footer>
+                                <div class="text-sm text-gray-500">
+                                    {{ $t("genie.field_block_help") }}
+                                </div>
                                 <Error :message="form.errors.block"/>
                             </template>
                         </VerticalGroup>

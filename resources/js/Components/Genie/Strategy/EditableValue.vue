@@ -112,7 +112,7 @@ const choose = (option) => {
                 :class="[
                     'rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors',
                     option === value
-                        ? 'border-primary-500 bg-primary-500 text-primary-context'
+                        ? 'border-(--strategy-accent) bg-(--strategy-accent) text-(--strategy-accent-context)'
                         : 'border-stone-600 bg-white text-gray-500 hover:border-primary-200 disabled:hover:border-stone-600',
                 ]"
                 @click="choose(option)"

@@ -139,4 +139,40 @@ class VersionImporterTest extends TestCase
 
         $this->assertSame(['name' => 'Step', 'description' => null, 'instructions' => ['en-GB' => 'Do it']], $attributes);
     }
+
+    public function test_a_fields_styling_keeps_only_the_vocabulary(): void
+    {
+        $importer = new VersionImporter;
+
+        $this->assertSame(
+            ['block' => 'feature', 'class' => 'strategy-tone-orange'],
+            $importer->fieldStyling(['block' => 'feature', 'class' => 'strategy-tone-orange font-bold']),
+        );
+        $this->assertSame(['block' => null, 'class' => null], $importer->fieldStyling(['block' => 'group', 'class' => 'font-bold']));
+        $this->assertSame(['block' => null, 'class' => null], $importer->fieldStyling([]));
+    }
+
+    public function test_a_sub_fields_block_is_kept_only_when_it_fits_the_exported_shape(): void
+    {
+        $importer = new VersionImporter;
+        $title = ['type' => SubFieldType::STRING->value, 'children' => []];
+
+        $this->assertSame(
+            ['block' => 'numbered_cards', 'class' => 'strategy-emphasis-muted'],
+            $importer->subFieldStyling([
+                'type' => SubFieldType::ARRAY->value,
+                'block' => 'numbered_cards',
+                'class' => 'strategy-emphasis-muted',
+                'children' => [$title],
+            ]),
+        );
+        $this->assertSame(
+            ['block' => null, 'class' => null],
+            $importer->subFieldStyling(['type' => SubFieldType::ARRAY->value, 'block' => 'bullets', 'children' => [$title]]),
+        );
+        $this->assertSame(
+            ['block' => null, 'class' => null],
+            $importer->subFieldStyling(['type' => SubFieldType::ARRAY->value, 'block' => 'group', 'class' => null, 'children' => []]),
+        );
+    }
 }

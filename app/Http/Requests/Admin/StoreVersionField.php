@@ -5,6 +5,7 @@ namespace App\Http\Requests\Admin;
 use App\Concerns\Requests\HandlesSubFields;
 use App\Concerns\Requests\IngestVersionFields;
 use App\Concerns\Requests\ValidatesIcon;
+use App\Concerns\Requests\ValidatesStrategyStyling;
 use App\Constants\FormTypeDefaults;
 use App\Enums\FormFieldFileType;
 use App\Enums\FormFieldType;
@@ -24,6 +25,7 @@ class StoreVersionField extends FormRequest
     use HandlesSubFields;
     use IngestVersionFields;
     use ValidatesIcon;
+    use ValidatesStrategyStyling;
 
     private Version $version;
 
@@ -31,7 +33,7 @@ class StoreVersionField extends FormRequest
     {
         $this->version ??= Version::firstOrFailByUuid($this->route('version'));
 
-        return array_merge($this->subFieldRules(), $this->iconRules(), [
+        return array_merge($this->subFieldRules(), $this->iconRules(), $this->stylingRules(), [
             'group_type' => ['required', Rule::enum(VersionGroupType::class)],
             'field_type' => ['required', Rule::enum(FormFieldType::class)],
             'input_type' => ['nullable', Rule::enum(FormInputType::class)],
@@ -63,8 +65,6 @@ class StoreVersionField extends FormRequest
             'display_item_title' => ['nullable', 'boolean'],
             'display_faq_title' => ['nullable', 'string', 'max:5000'],
             'display_faq_text' => ['nullable', 'string', 'max:5000'],
-            'class' => ['nullable', 'string', 'max:255'],
-            'block' => ['nullable', 'string', 'max:255'],
         ]);
     }
 
@@ -105,8 +105,7 @@ class StoreVersionField extends FormRequest
                 'display_item_title' => $this->input('display_item_title'),
                 'display_faq_title' => $this->input('display_faq_title'),
                 'display_faq_text' => $this->input('display_faq_text'),
-                'class' => $this->input('class'),
-                'block' => $this->input('block'),
+                ...$this->stylingAttributes(),
                 ...$this->iconAttributes(),
                 'position' => $position,
             ]);

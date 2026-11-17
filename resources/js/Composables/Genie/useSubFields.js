@@ -12,6 +12,8 @@ import { nanoid } from "nanoid";
 const useSubFields = () => {
     const subFieldTypes = usePage().props.subFieldTypes ?? [];
 
+    const strategyBlocks = usePage().props.strategyBlocks ?? [];
+
     const defaultType = () => {
         const string = find(subFieldTypes, ["name", "STRING"]);
 
@@ -97,6 +99,35 @@ const useSubFields = () => {
     };
 
     /**
+     * Whether a block can draw the sub-field as it stands, mirroring StrategyBlock::fits(): its
+     * type, whether it has children, and for choices that every child is a boolean.
+     */
+    const blockFits = (block, subField) => {
+        const children = typeOf(subField).hasChildren ? (subField.children ?? []) : [];
+
+        if (block.type !== Number(subField.type)) {
+            return false;
+        }
+
+        if (block.requiresChildren !== null && block.requiresChildren !== children.length > 0) {
+            return false;
+        }
+
+        return !block.requiresBooleanChildren
+            || children.every((child) => typeOf(child).name === "BOOLEAN");
+    };
+
+    /**
+     * The blocks to offer a sub-field. The one it holds stays listed even once it stops fitting,
+     * so the select never blanks out a value the save would still send; the server says why.
+     */
+    const blocksFor = (subField) => {
+        return strategyBlocks.filter(
+            (block) => blockFits(block, subField) || block.value === subField.block,
+        );
+    };
+
+    /**
      * Drop the constraints that no longer apply once the type changes, so a field cannot
      * keep sending, say, minItems on a string.
      */
@@ -122,6 +153,12 @@ const useSubFields = () => {
             subField.children = [];
         }
 
+        const block = find(strategyBlocks, ["value", subField.block]);
+
+        if (block && !blockFits(block, subField)) {
+            subField.block = "";
+        }
+
         syncEditable(subField);
     };
 
@@ -143,6 +180,7 @@ const useSubFields = () => {
         typeOf,
         setCodeName,
         resetForType,
+        blocksFor,
         canBeEditable,
         syncEditable,
         hasLengthFields,
