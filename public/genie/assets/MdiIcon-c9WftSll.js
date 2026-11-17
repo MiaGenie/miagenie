@@ -1,1 +1,0 @@
-import{c as t,o as r,b as o}from"./app-CPBIBc3C.js";const s={xmlns:"http://www.w3.org/2000/svg",viewBox:"0 0 24 24",fill:"currentColor","aria-hidden":"true",class:"w-5 h-5"},a=["d"],p={__name:"MdiIcon",props:{path:{type:String,required:!0}},setup(e){return(c,n)=>(r(),t("svg",s,[o("path",{d:e.path},null,8,a)]))}};export{p as _};
